@@ -6,30 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { TrendingUp, TrendingDown, Users, Store, Calendar, Download, Eye, Star } from 'lucide-react';
+import { useReportsData } from '@/hooks/useReports';
 
-// Dados mockados para os gráficos
-const dadosComerciosPorCategoria = [
-  { categoria: 'Alimentação', total: 45, novos: 8 },
-  { categoria: 'Saúde', total: 23, novos: 3 },
-  { categoria: 'Fitness', total: 18, novos: 5 },
-  { categoria: 'Serviços', total: 34, novos: 6 },
-  { categoria: 'Varejo', total: 28, novos: 4 }
-];
-
-const dadosUsuariosPorMes = [
-  { mes: 'Jan', usuarios: 12, comercios: 8 },
-  { mes: 'Fev', usuarios: 19, comercios: 12 },
-  { mes: 'Mar', usuarios: 25, comercios: 16 },
-  { mes: 'Abr', usuarios: 32, comercios: 22 },
-  { mes: 'Mai', usuarios: 28, comercios: 18 },
-  { mes: 'Jun', usuarios: 35, comercios: 25 }
-];
-
-const dadosLayoutsPopulares = [
-  { layout: 'Moderno', valor: 65, cor: '#3B82F6' },
-  { layout: 'Clássico', valor: 35, cor: '#10B981' }
-];
-
+// Dados mockados para avaliações (mantidos até termos sistema de avaliação)
 const dadosAvaliacoes = [
   { nota: '5 estrelas', quantidade: 145, cor: '#10B981' },
   { nota: '4 estrelas', quantidade: 89, cor: '#3B82F6' },
@@ -39,6 +18,32 @@ const dadosAvaliacoes = [
 ];
 
 const RelatoriosPage = () => {
+  const {
+    totalUsers,
+    totalComercios,
+    comerciosAtivos,
+    comerciosPorCategoria,
+    totalMissoes,
+    crescimentoMensal,
+    layoutsPopulares,
+    isLoading
+  } = useReportsData();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Calcular taxa de crescimento simulada
+  const taxaCrescimento = totalUsers > 0 ? Math.floor((totalUsers / 10) * 100) / 10 : 0;
+  const visualizacoes = totalComercios * 84; // Simulado baseado no número de comércios
+  const notaMedia = 4.7; // Mantida como constante até implementar sistema de avaliações
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -62,10 +67,10 @@ const RelatoriosPage = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">148</div>
+            <div className="text-2xl font-bold">{totalUsers}</div>
             <p className="text-xs text-muted-foreground flex items-center">
               <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-              +12% desde o mês passado
+              +{taxaCrescimento}% desde o início
             </p>
           </CardContent>
         </Card>
@@ -76,10 +81,10 @@ const RelatoriosPage = () => {
             <Store className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">148</div>
+            <div className="text-2xl font-bold">{comerciosAtivos}</div>
             <p className="text-xs text-muted-foreground flex items-center">
               <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-              +8% desde o mês passado
+              {totalComercios} total cadastrados
             </p>
           </CardContent>
         </Card>
@@ -90,24 +95,24 @@ const RelatoriosPage = () => {
             <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12.4k</div>
+            <div className="text-2xl font-bold">{visualizacoes.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground flex items-center">
               <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-              +25% desde o mês passado
+              Baseado nos comércios ativos
             </p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Nota Média</CardTitle>
+            <CardTitle className="text-sm font-medium">Missões Ativas</CardTitle>
             <Star className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">4.7</div>
+            <div className="text-2xl font-bold">{totalMissoes}</div>
             <p className="text-xs text-muted-foreground flex items-center">
               <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-              +0.2 desde o mês passado
+              Gamificação ativa
             </p>
           </CardContent>
         </Card>
@@ -125,14 +130,14 @@ const RelatoriosPage = () => {
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Crescimento Mensal</CardTitle>
+                <CardTitle>Crescimento Simulado</CardTitle>
                 <CardDescription>
-                  Novos usuários e comércios por mês
+                  Projeção baseada nos dados atuais
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={dadosUsuariosPorMes}>
+                  <LineChart data={crescimentoMensal}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="mes" />
                     <YAxis />
@@ -159,40 +164,43 @@ const RelatoriosPage = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Resumo do Período</CardTitle>
+                <CardTitle>Resumo Atual</CardTitle>
                 <CardDescription>
-                  Estatísticas dos últimos 6 meses
+                  Estatísticas em tempo real
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Taxa de Crescimento</span>
-                  <Badge className="bg-green-100 text-green-800">
-                    +18.2%
-                  </Badge>
+                  <span className="text-sm font-medium">Total de Usuários</span>
+                  <span className="text-2xl font-bold">{totalUsers}</span>
                 </div>
                 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Novos Usuários</span>
-                  <span className="text-2xl font-bold">35</span>
+                  <span className="text-sm font-medium">Comércios Cadastrados</span>
+                  <span className="text-2xl font-bold">{totalComercios}</span>
                 </div>
                 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Novos Comércios</span>
-                  <span className="text-2xl font-bold">25</span>
+                  <span className="text-sm font-medium">Comércios Ativos</span>
+                  <span className="text-2xl font-bold">{comerciosAtivos}</span>
                 </div>
                 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Taxa de Conversão</span>
-                  <span className="text-2xl font-bold">71%</span>
+                  <span className="text-sm font-medium">Taxa de Ativação</span>
+                  <span className="text-2xl font-bold">
+                    {totalComercios > 0 ? Math.round((comerciosAtivos / totalComercios) * 100) : 0}%
+                  </span>
                 </div>
                 
                 <div className="pt-2">
                   <div className="text-xs text-muted-foreground mb-2">
-                    Meta mensal: 30 novos usuários
+                    Progresso da plataforma
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-green-600 h-2 rounded-full" style={{width: '117%'}}></div>
+                    <div 
+                      className="bg-green-600 h-2 rounded-full" 
+                      style={{width: `${Math.min((totalUsers / 100) * 100, 100)}%`}}
+                    ></div>
                   </div>
                 </div>
               </CardContent>
@@ -211,14 +219,14 @@ const RelatoriosPage = () => {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={dadosComerciosPorCategoria}>
+                  <BarChart data={comerciosPorCategoria}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="categoria" />
                     <YAxis />
                     <Tooltip />
                     <Legend />
                     <Bar dataKey="total" fill="#3B82F6" name="Total" />
-                    <Bar dataKey="novos" fill="#10B981" name="Novos (mês)" />
+                    <Bar dataKey="novos" fill="#10B981" name="Novos (est.)" />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -233,8 +241,9 @@ const RelatoriosPage = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {dadosComerciosPorCategoria
+                  {comerciosPorCategoria
                     .sort((a, b) => b.total - a.total)
+                    .slice(0, 5)
                     .map((categoria, index) => (
                     <div key={categoria.categoria} className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
@@ -244,7 +253,7 @@ const RelatoriosPage = () => {
                         <div>
                           <div className="font-medium">{categoria.categoria}</div>
                           <div className="text-sm text-muted-foreground">
-                            {categoria.novos} novos este mês
+                            {categoria.novos} novos estimados
                           </div>
                         </div>
                       </div>
@@ -254,6 +263,11 @@ const RelatoriosPage = () => {
                       </div>
                     </div>
                   ))}
+                  {comerciosPorCategoria.length === 0 && (
+                    <div className="text-center text-muted-foreground py-8">
+                      Nenhum comércio cadastrado ainda
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -270,25 +284,31 @@ const RelatoriosPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={dadosLayoutsPopulares}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ layout, valor }) => `${layout} (${valor}%)`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="valor"
-                    >
-                      {dadosLayoutsPopulares.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.cor} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                {layoutsPopulares.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={layoutsPopulares}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ layout, valor }) => `${layout} (${valor}%)`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="valor"
+                      >
+                        {layoutsPopulares.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.cor} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                    Nenhum dado de layout disponível
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -296,7 +316,7 @@ const RelatoriosPage = () => {
               <CardHeader>
                 <CardTitle>Cores Mais Usadas</CardTitle>
                 <CardDescription>
-                  Paletas de cores populares
+                  Paletas de cores populares (dados simulados)
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -345,7 +365,7 @@ const RelatoriosPage = () => {
               <CardHeader>
                 <CardTitle>Distribuição de Avaliações</CardTitle>
                 <CardDescription>
-                  Como os usuários avaliam os comércios
+                  Como os usuários avaliam os comércios (dados simulados)
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -365,12 +385,12 @@ const RelatoriosPage = () => {
               <CardHeader>
                 <CardTitle>Métricas de Satisfação</CardTitle>
                 <CardDescription>
-                  Indicadores de qualidade do serviço
+                  Indicadores de qualidade do serviço (dados simulados)
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-green-600 mb-2">4.7</div>
+                  <div className="text-4xl font-bold text-green-600 mb-2">{notaMedia}</div>
                   <div className="text-sm text-muted-foreground">Nota média geral</div>
                   <div className="flex justify-center mt-2">
                     {[1,2,3,4,5].map(star => (
@@ -414,7 +434,7 @@ const RelatoriosPage = () => {
                 
                 <div className="pt-4 border-t">
                   <div className="text-sm text-muted-foreground text-center">
-                    94% dos usuários recomendam os comércios cadastrados
+                    Dados de satisfação simulados até implementação do sistema de avaliações
                   </div>
                 </div>
               </CardContent>

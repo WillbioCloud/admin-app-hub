@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { TrendingUp, TrendingDown, Users, Store, Calendar, Download, Eye, Star } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, Store, Calendar, Download, Eye, Star, MessageSquare } from 'lucide-react';
 import { useReportsData } from '@/hooks/useReports';
 
 // Dados mockados para avaliações (mantidos até termos sistema de avaliação)
@@ -24,8 +23,11 @@ const RelatoriosPage = () => {
     comerciosAtivos,
     comerciosPorCategoria,
     totalMissoes,
+    totalTickets,
     crescimentoMensal,
     layoutsPopulares,
+    usuariosPorTipo,
+    missoesPorStatus,
     isLoading
   } = useReportsData();
 
@@ -60,7 +62,7 @@ const RelatoriosPage = () => {
       </div>
 
       {/* KPIs principais */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
@@ -116,6 +118,20 @@ const RelatoriosPage = () => {
             </p>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Tickets Suporte</CardTitle>
+            <MessageSquare className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalTickets}</div>
+            <p className="text-xs text-muted-foreground flex items-center">
+              <TrendingUp className="h-3 w-3 text-blue-500 mr-1" />
+              Total de solicitações
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       <Tabs defaultValue="crescimento" className="space-y-4">
@@ -123,6 +139,8 @@ const RelatoriosPage = () => {
           <TabsTrigger value="crescimento">Crescimento</TabsTrigger>
           <TabsTrigger value="categorias">Categorias</TabsTrigger>
           <TabsTrigger value="layouts">Layouts</TabsTrigger>
+          <TabsTrigger value="usuarios">Usuários</TabsTrigger>
+          <TabsTrigger value="missoes">Missões</TabsTrigger>
           <TabsTrigger value="satisfacao">Satisfação</TabsTrigger>
         </TabsList>
 
@@ -354,6 +372,145 @@ const RelatoriosPage = () => {
                     </div>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="usuarios">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Usuários por Tipo</CardTitle>
+                <CardDescription>
+                  Distribuição dos tipos de usuário
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {usuariosPorTipo.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={usuariosPorTipo}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ tipo, total }) => `${tipo} (${total})`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="total"
+                      >
+                        {usuariosPorTipo.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#3B82F6' : '#10B981'} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                    Nenhum usuário cadastrado ainda
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Estatísticas de Usuários</CardTitle>
+                <CardDescription>
+                  Resumo detalhado dos usuários
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {usuariosPorTipo.map((tipo, index) => (
+                  <div key={tipo.tipo} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-sm font-medium">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <div className="font-medium">{tipo.tipo}</div>
+                        <div className="text-sm text-muted-foreground">
+                          Tipo de usuário
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold">{tipo.total}</div>
+                      <div className="text-sm text-muted-foreground">usuários</div>
+                    </div>
+                  </div>
+                ))}
+                {usuariosPorTipo.length === 0 && (
+                  <div className="text-center text-muted-foreground py-8">
+                    Nenhum usuário cadastrado ainda
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="missoes">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Missões por Status</CardTitle>
+                <CardDescription>
+                  Status das missões na plataforma
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {missoesPorStatus.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={missoesPorStatus}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="status" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="total" fill="#3B82F6" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                    Nenhuma missão cadastrada ainda
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Resumo das Missões</CardTitle>
+                <CardDescription>
+                  Estatísticas detalhadas das missões
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Total de Missões</span>
+                  <span className="text-2xl font-bold">{totalMissoes}</span>
+                </div>
+                
+                {missoesPorStatus.map((status, index) => (
+                  <div key={status.status} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div 
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: status.cor }}
+                      />
+                      <span className="text-sm font-medium">{status.status}</span>
+                    </div>
+                    <span className="font-bold">{status.total}</span>
+                  </div>
+                ))}
+                
+                {missoesPorStatus.length === 0 && (
+                  <div className="text-center text-muted-foreground py-8">
+                    Nenhuma missão cadastrada ainda
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

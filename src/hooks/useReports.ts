@@ -61,7 +61,7 @@ export const useReportsData = () => {
     }
   });
 
-  // Buscar missões ativas
+  // Buscar missões ativas (dados reais da aba gamificações)
   const { data: totalMissoes = 0 } = useQuery({
     queryKey: ['reports', 'total-missoes'],
     queryFn: async () => {
@@ -69,6 +69,17 @@ export const useReportsData = () => {
         .from('missions')
         .select('*', { count: 'exact', head: true })
         .eq('is_active', true);
+      return count || 0;
+    }
+  });
+
+  // Buscar total de tickets de suporte (dados da aba suporte)
+  const { data: totalTickets = 0 } = useQuery({
+    queryKey: ['reports', 'total-tickets'],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from('support_tickets')
+        .select('*', { count: 'exact', head: true });
       return count || 0;
     }
   });
@@ -104,12 +115,62 @@ export const useReportsData = () => {
         return acc;
       }, {});
 
-      const total = Object.values(layouts).reduce((sum: number, count: any) => sum + count, 0);
+      const totalLayouts = data.length;
       
       return Object.entries(layouts).map(([layout, count]) => ({
         layout: layout.charAt(0).toUpperCase() + layout.slice(1),
-        valor: Math.round(((count as number) / total) * 100),
+        valor: totalLayouts > 0 ? Math.round(((count as number) / totalLayouts) * 100) : 0,
         cor: layout === 'moderno' ? '#3B82F6' : '#10B981'
+      }));
+    }
+  });
+
+  // Buscar estatísticas de usuários por tipo
+  const { data: usuariosPorTipo = [] } = useQuery({
+    queryKey: ['reports', 'usuarios-por-tipo'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('user_type');
+      
+      if (!data) return [];
+      
+      const tipos = data.reduce((acc: any, usuario) => {
+        const tipo = usuario.user_type || 'cliente';
+        acc[tipo] = (acc[tipo] || 0) + 1;
+        return acc;
+      }, {});
+
+      return Object.entries(tipos).map(([tipo, total]) => ({
+        tipo: tipo.charAt(0).toUpperCase() + tipo.slice(1),
+        total: total as number
+      }));
+    }
+  });
+
+  // Buscar missões por status (dados da aba gamificações)
+  const { data: missoesPorStatus = [] } = useQuery({
+    queryKey: ['reports', 'missoes-por-status'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('missions')
+        .select('status');
+      
+      if (!data) return [];
+      
+      const status = data.reduce((acc: any, missao) => {
+        const statusMissao = missao.status || 'pending';
+        acc[statusMissao] = (acc[statusMissao] || 0) + 1;
+        return acc;
+      }, {});
+
+      return Object.entries(status).map(([status, total]) => ({
+        status: status === 'pending' ? 'Pendente' : 
+               status === 'approved' ? 'Aprovada' : 
+               status === 'rejected' ? 'Rejeitada' : status,
+        total: total as number,
+        cor: status === 'approved' ? '#10B981' : 
+             status === 'pending' ? '#F59E0B' : '#EF4444'
       }));
     }
   });
@@ -120,8 +181,11 @@ export const useReportsData = () => {
     comerciosAtivos,
     comerciosPorCategoria,
     totalMissoes,
+    totalTickets,
     crescimentoMensal,
     layoutsPopulares,
+    usuariosPorTipo,
+    missoesPorStatus,
     isLoading: false // Simplificado para este exemplo
   };
 };

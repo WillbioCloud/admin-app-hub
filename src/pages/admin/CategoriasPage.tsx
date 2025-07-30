@@ -83,12 +83,12 @@ const categoriasPadrao: Categoria[] = [
     ativa: true
   },
   {
-    id: '7'
-    nome: 'Supermercado'
-    descricao: 'estabelecimento comercial de grande porte, geralmente com autosserviço, variedade de produtos alimentícios e não alimentícios, organizados em seções e corredores.'
-    cor: 'verde'
-    icone: '🛍️'
-    comercios: 32
+    id: '7',
+    nome: 'Supermercado',
+    descricao: 'estabelecimento comercial de grande porte, geralmente com autosserviço, variedade de produtos alimentícios e não alimentícios, organizados em seções e corredores.',
+    cor: '#10B981',
+    icone: '🛒',
+    comercios: 32,
     ativa: true
   }
 ];

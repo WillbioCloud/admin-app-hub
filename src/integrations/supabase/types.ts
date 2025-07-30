@@ -1009,6 +1009,10 @@ export type Database = {
       }
     }
     Functions: {
+      complete_mission: {
+        Args: { p_mission_id: string }
+        Returns: Json
+      }
       complete_mission_for_user: {
         Args:
           | { p_mission_id: string; p_xp_reward: number; p_coin_reward: number }

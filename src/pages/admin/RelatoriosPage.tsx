@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { TrendingUp, TrendingDown, Users, Store, Calendar, Download, Eye, Star, MessageSquare } from 'lucide-react';
-import { useReportsData } from '@/hooks/useReports';
+import { useReports } from '@/hooks/useReports';
 
 // Dados mockados para avaliações (mantidos até termos sistema de avaliação)
 const dadosAvaliacoes = [
@@ -29,7 +29,7 @@ const RelatoriosPage = () => {
     usuariosPorTipo,
     missoesPorStatus,
     isLoading
-  } = useReportsData();
+  } = useReports();
 
   if (isLoading) {
     return (

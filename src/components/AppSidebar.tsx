@@ -1,110 +1,100 @@
 
-import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { 
+import { Home, Users, FileText, Bell, Store, Settings, Palette, User } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+
+import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar
 } from '@/components/ui/sidebar';
-import { 
-  Home,
-  Newspaper,
-  Bell,
-  Image,
-  Store,
-  User,
-  Settings,
-  LogOut,
-  Palette
-} from 'lucide-react';
-import { useAuth, UserRole } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
 
-const adminMenuItems = [
-  { title: 'Dashboard', url: '/dashboard', icon: Home },
-  { title: 'Novidades', url: '/dashboard/news', icon: Newspaper },
-  { title: 'Notificações', url: '/dashboard/alerts', icon: Bell },
-  { title: 'Mídias', url: '/dashboard/media', icon: Image },
-  { title: 'Comércios', url: '/dashboard/comercios', icon: Store },
-];
-
-const comercianteMenuItems = [
-  { title: 'Dashboard', url: '/dashboard', icon: Home },
-  { title: 'Perfil do Comércio', url: '/dashboard/perfil', icon: User },
-  { title: 'Personalização', url: '/dashboard/customizacao', icon: Palette },
-];
+import { useAuth } from '@/contexts/AuthContext';
 
 export function AppSidebar() {
-  const { user, logout } = useAuth();
-  const { state } = useSidebar();
-  const location = useLocation();
-  const isCollapsed = state === 'collapsed';
+  const { user } = useAuth();
 
-  const menuItems = user?.role === 'admin' ? adminMenuItems : comercianteMenuItems;
+  const adminItems = [
+    {
+      title: 'Dashboard',
+      url: '/dashboard',
+      icon: Home,
+    },
+    {
+      title: 'Usuários',
+      url: '/dashboard/usuarios',
+      icon: Users,
+    },
+    {
+      title: 'Novidades',
+      url: '/dashboard/novidades',
+      icon: FileText,
+    },
+    {
+      title: 'Notificações',
+      url: '/dashboard/notificacoes',
+      icon: Bell,
+    },
+    {
+      title: 'Comércios',
+      url: '/dashboard/comercios',
+      icon: Store,
+    },
+  ];
 
-  const handleLogout = () => {
-    logout();
-  };
+  const comercianteItems = [
+    {
+      title: 'Dashboard',
+      url: '/dashboard',
+      icon: Home,
+    },
+    {
+      title: 'Perfil',
+      url: '/dashboard/perfil',
+      icon: User,
+    },
+    {
+      title: 'Personalização',
+      url: '/dashboard/personalizacao',
+      icon: Palette,
+    },
+    {
+      title: 'Configurações',
+      url: '/dashboard/configuracoes',
+      icon: Settings,
+    },
+  ];
+
+  const items = user?.role === 'admin' ? adminItems : comercianteItems;
 
   return (
-    <Sidebar className="border-r">
-      <SidebarHeader className="p-4">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">
-              {user?.role === 'admin' ? 'A' : 'C'}
-            </span>
-          </div>
-          {!isCollapsed && (
-            <div>
-              <p className="font-semibold text-sm">{user?.name}</p>
-              <p className="text-xs text-muted-foreground capitalize">{user?.role}</p>
-            </div>
-          )}
-        </div>
-      </SidebarHeader>
-
+    <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
+          <SidebarGroupLabel>
+            {user?.role === 'admin' ? 'Administração' : 'Comerciante'}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={location.pathname === item.url}>
-                    <NavLink to={item.url} className="flex items-center space-x-2">
-                      <item.icon className="w-4 h-4" />
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to={item.url}
+                      className={({ isActive }) =>
+                        isActive ? 'bg-accent text-accent-foreground' : ''
+                      }
+                    >
+                      <item.icon />
                       <span>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup className="mt-auto">
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Button 
-                    variant="ghost" 
-                    onClick={handleLogout}
-                    className="w-full justify-start"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sair
-                  </Button>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

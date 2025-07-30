@@ -9,6 +9,8 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ComercianteDashboard from "./pages/comerciante/ComercianteDashboard";
+import PersonalizacaoPage from "./pages/comerciante/PersonalizacaoPage";
+import PerfilPage from "./pages/comerciante/PerfilPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,7 +33,12 @@ function DashboardRouter() {
               <ComercianteDashboard />
           } 
         />
-        {/* Rotas específicas serão adicionadas conforme implementamos cada seção */}
+        {user.role === 'comerciante' && (
+          <>
+            <Route path="/personalizacao" element={<PersonalizacaoPage />} />
+            <Route path="/perfil" element={<PerfilPage />} />
+          </>
+        )}
       </Routes>
     </DashboardLayout>
   );

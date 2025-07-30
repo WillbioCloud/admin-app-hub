@@ -69,7 +69,7 @@ const ComercianteDashboard = () => {
               </div>
               <div>
                 <span className="text-sm font-medium">Categoria:</span>
-                <p className="text-sm text-muted-foreground">Restaurante</p>
+                <p className="text-sm text-muted-foreground">Alimentação</p>
               </div>
               <div>
                 <span className="text-sm font-medium">Status:</span>
@@ -110,7 +110,7 @@ const ComercianteDashboard = () => {
             <Button 
               variant="outline" 
               className="w-full mt-4"
-              onClick={() => navigate('/dashboard/customizacao')}
+              onClick={() => navigate('/dashboard/personalizacao')}
             >
               Personalizar Página
             </Button>

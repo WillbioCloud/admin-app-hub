@@ -1,5 +1,5 @@
 
-import { Home, Users, FileText, Bell, Store, Settings, Palette, User } from 'lucide-react';
+import { Home, Users, FileText, Bell, Store, Settings, Palette, User, GamepadIcon } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 import {
@@ -38,6 +38,11 @@ export function AppSidebar() {
       title: 'Categorias',
       url: '/admin/categorias',
       icon: FileText,
+    },
+    {
+      title: 'Gamificações',
+      url: '/admin/gamificacoes',
+      icon: GamepadIcon,
     },
     {
       title: 'Aprovações',

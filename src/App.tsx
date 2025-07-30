@@ -13,6 +13,7 @@ import AdminDashboard from '@/pages/admin/AdminDashboard';
 import UsuariosPage from '@/pages/admin/UsuariosPage';
 import ComerciosPage from '@/pages/admin/ComerciosPage';
 import CategoriasPage from '@/pages/admin/CategoriasPage';
+import GamificacoesPage from '@/pages/admin/GamificacoesPage';
 import AprovacoesPage from '@/pages/admin/AprovacoesPage';
 import RelatoriosPage from '@/pages/admin/RelatoriosPage';
 import AdminPerfilPage from '@/pages/admin/AdminPerfilPage';
@@ -54,6 +55,11 @@ function App() {
           <Route path="/admin/categorias" element={
             <DashboardLayout>
               <CategoriasPage />
+            </DashboardLayout>
+          } />
+          <Route path="/admin/gamificacoes" element={
+            <DashboardLayout>
+              <GamificacoesPage />
             </DashboardLayout>
           } />
           <Route path="/admin/aprovacoes" element={

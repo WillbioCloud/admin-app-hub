@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, Edit, Trash2, GamepadIcon, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,25 +13,18 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { GamificationDialog } from '@/components/gamification/GamificationDialog';
+import { toast } from 'sonner';
 
 // Mock data para demonstração
 const mockGamifications = [
@@ -40,7 +32,7 @@ const mockGamifications = [
     id: '1',
     title: 'Primeira Compra',
     description: 'Complete sua primeira compra no supermercado',
-    type: 'qr_code',
+    type: 'qr_code' as const,
     completion_data: 'SUPER001',
     xp_reward: 100,
     coin_reward: 50,
@@ -55,7 +47,7 @@ const mockGamifications = [
     id: '2',
     title: 'Cliente Fiel',
     description: 'Visite o mesmo comércio 5 vezes',
-    type: 'code',
+    type: 'code' as const,
     completion_data: 'FIEL123',
     xp_reward: 200,
     coin_reward: 100,
@@ -70,7 +62,7 @@ const mockGamifications = [
     id: '3',
     title: 'Desconto Especial',
     description: 'Ganhe desconto em produtos selecionados',
-    type: 'qr_code',
+    type: 'qr_code' as const,
     completion_data: 'DESC456',
     xp_reward: 150,
     coin_reward: 75,
@@ -86,40 +78,45 @@ const mockGamifications = [
 export default function GamificacoesPage() {
   const [gamifications, setGamifications] = useState(mockGamifications);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    type: 'qr_code',
-    completion_data: '',
-    xp_reward: 0,
-    coin_reward: 0,
-    is_active: true,
-    is_unique: false,
-    loteamento_id: '',
-    location_type: ''
-  });
+  const [editingGamification, setEditingGamification] = useState<any>(null);
 
-  const handleSubmit = () => {
-    const newGamification = {
-      id: Date.now().toString(),
-      ...formData,
-      status: 'pending',
-      created_at: new Date().toISOString().split('T')[0]
-    };
-    setGamifications([...gamifications, newGamification]);
-    setIsDialogOpen(false);
-    setFormData({
-      title: '',
-      description: '',
-      type: 'qr_code',
-      completion_data: '',
-      xp_reward: 0,
-      coin_reward: 0,
-      is_active: true,
-      is_unique: false,
-      loteamento_id: '',
-      location_type: ''
-    });
+  const handleCreate = () => {
+    setEditingGamification(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleEdit = (gamification: any) => {
+    setEditingGamification(gamification);
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmit = (data: any) => {
+    if (editingGamification) {
+      // Atualizar gamificação existente
+      setGamifications(prev =>
+        prev.map(g =>
+          g.id === editingGamification.id
+            ? { ...g, ...data }
+            : g
+        )
+      );
+      toast.success('Gamificação atualizada com sucesso!');
+    } else {
+      // Criar nova gamificação
+      const newGamification = {
+        id: Date.now().toString(),
+        ...data,
+        status: 'pending',
+        created_at: new Date().toISOString().split('T')[0]
+      };
+      setGamifications(prev => [...prev, newGamification]);
+      toast.success('Gamificação criada e enviada para aprovação!');
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    setGamifications(prev => prev.filter(g => g.id !== id));
+    toast.success('Gamificação excluída com sucesso!');
   };
 
   const getStatusBadge = (status: string) => {
@@ -148,134 +145,10 @@ export default function GamificacoesPage() {
             Crie e gerencie missões para seus clientes
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Gamificação
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[525px]">
-            <DialogHeader>
-              <DialogTitle>Criar Nova Gamificação</DialogTitle>
-              <DialogDescription>
-                Preencha os dados da nova missão. Ela será enviada para aprovação do administrador.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="title">Título</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Nome da missão"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="description">Descrição</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Descreva como completar a missão"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="type">Tipo</Label>
-                  <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="qr_code">QR Code</SelectItem>
-                      <SelectItem value="code">Código</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="completion_data">Código de Completar</Label>
-                  <Input
-                    id="completion_data"
-                    value={formData.completion_data}
-                    onChange={(e) => setFormData({ ...formData, completion_data: e.target.value })}
-                    placeholder="CODIGO123"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="xp_reward">Recompensa XP</Label>
-                  <Input
-                    id="xp_reward"
-                    type="number"
-                    value={formData.xp_reward}
-                    onChange={(e) => setFormData({ ...formData, xp_reward: parseInt(e.target.value) || 0 })}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="coin_reward">Recompensa Moedas</Label>
-                  <Input
-                    id="coin_reward"
-                    type="number"
-                    value={formData.coin_reward}
-                    onChange={(e) => setFormData({ ...formData, coin_reward: parseInt(e.target.value) || 0 })}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="loteamento_id">Loteamento</Label>
-                  <Input
-                    id="loteamento_id"
-                    value={formData.loteamento_id}
-                    onChange={(e) => setFormData({ ...formData, loteamento_id: e.target.value })}
-                    placeholder="lote_001"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="location_type">Tipo de Local</Label>
-                  <Select value={formData.location_type} onValueChange={(value) => setFormData({ ...formData, location_type: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="supermercado">Supermercado</SelectItem>
-                      <SelectItem value="farmacia">Farmácia</SelectItem>
-                      <SelectItem value="padaria">Padaria</SelectItem>
-                      <SelectItem value="restaurante">Restaurante</SelectItem>
-                      <SelectItem value="loja">Loja</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="is_unique"
-                    checked={formData.is_unique}
-                    onCheckedChange={(checked) => setFormData({ ...formData, is_unique: checked })}
-                  />
-                  <Label htmlFor="is_unique">Missão única</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="is_active"
-                    checked={formData.is_active}
-                    onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-                  />
-                  <Label htmlFor="is_active">Ativa</Label>
-                </div>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit" onClick={handleSubmit}>
-                Criar Gamificação
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={handleCreate}>
+          <Plus className="h-4 w-4 mr-2" />
+          Nova Gamificação
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -371,12 +244,40 @@ export default function GamificacoesPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm" disabled={gamification.status === 'approved'}>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            disabled={gamification.status === 'approved'}
+                            onClick={() => handleEdit(gamification)}
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" size="sm" disabled={gamification.status === 'approved'}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                disabled={gamification.status === 'approved'}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir a gamificação "{gamification.title}"?
+                                  Esta ação não pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(gamification.id)}>
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -489,12 +390,35 @@ export default function GamificacoesPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleEdit(gamification)}
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" size="sm">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir a gamificação "{gamification.title}"?
+                                  Esta ação não pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(gamification.id)}>
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -553,12 +477,35 @@ export default function GamificacoesPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleEdit(gamification)}
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" size="sm">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir a gamificação "{gamification.title}"?
+                                  Esta ação não pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(gamification.id)}>
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -569,6 +516,14 @@ export default function GamificacoesPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <GamificationDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        gamification={editingGamification}
+        onSubmit={handleSubmit}
+        userRole="comerciante"
+      />
     </div>
   );
 }

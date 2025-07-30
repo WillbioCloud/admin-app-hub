@@ -12,6 +12,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { GamificationDialog } from '@/components/gamification/GamificationDialog';
+import { toast } from 'sonner';
 
 // Mock data para demonstração
 const mockGamifications = [
@@ -19,7 +32,7 @@ const mockGamifications = [
     id: '1',
     title: 'Primeira Compra',
     description: 'Complete sua primeira compra no supermercado',
-    type: 'qr_code',
+    type: 'qr_code' as const,
     completion_data: 'SUPER001',
     xp_reward: 100,
     coin_reward: 50,
@@ -32,7 +45,7 @@ const mockGamifications = [
     id: '2',
     title: 'Cliente Fiel',
     description: 'Visite o mesmo comércio 5 vezes',
-    type: 'code',
+    type: 'code' as const,
     completion_data: 'FIEL123',
     xp_reward: 200,
     coin_reward: 100,
@@ -45,6 +58,45 @@ const mockGamifications = [
 
 export default function GamificacoesPage() {
   const [gamifications, setGamifications] = useState(mockGamifications);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingGamification, setEditingGamification] = useState<any>(null);
+
+  const handleCreate = () => {
+    setEditingGamification(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleEdit = (gamification: any) => {
+    setEditingGamification(gamification);
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmit = (data: any) => {
+    if (editingGamification) {
+      // Atualizar gamificação existente
+      setGamifications(prev =>
+        prev.map(g =>
+          g.id === editingGamification.id
+            ? { ...g, ...data }
+            : g
+        )
+      );
+      toast.success('Gamificação atualizada com sucesso!');
+    } else {
+      // Criar nova gamificação
+      const newGamification = {
+        id: Date.now().toString(),
+        ...data
+      };
+      setGamifications(prev => [...prev, newGamification]);
+      toast.success('Gamificação criada com sucesso!');
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    setGamifications(prev => prev.filter(g => g.id !== id));
+    toast.success('Gamificação excluída com sucesso!');
+  };
 
   return (
     <div className="space-y-6">
@@ -55,7 +107,7 @@ export default function GamificacoesPage() {
             Gerencie as missões e recompensas do aplicativo
           </p>
         </div>
-        <Button>
+        <Button onClick={handleCreate}>
           <Plus className="h-4 w-4 mr-2" />
           Nova Gamificação
         </Button>
@@ -165,12 +217,35 @@ export default function GamificacoesPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleEdit(gamification)}
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="outline" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Tem certeza que deseja excluir a gamificação "{gamification.title}"?
+                              Esta ação não pode ser desfeita.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDelete(gamification.id)}>
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -179,6 +254,14 @@ export default function GamificacoesPage() {
           </Table>
         </CardContent>
       </Card>
+
+      <GamificationDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        gamification={editingGamification}
+        onSubmit={handleSubmit}
+        userRole="admin"
+      />
     </div>
   );
 }

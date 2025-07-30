@@ -1,66 +1,120 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { DashboardLayout } from "@/components/DashboardLayout";
-import Login from "./pages/Login";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import ComercianteDashboard from "./pages/comerciante/ComercianteDashboard";
-import PersonalizacaoPage from "./pages/comerciante/PersonalizacaoPage";
-import PerfilPage from "./pages/comerciante/PerfilPage";
-import NotFound from "./pages/NotFound";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from '@/contexts/AuthContext';
 
-const queryClient = new QueryClient();
+// Pages
+import Index from '@/pages/Index';
+import Login from '@/pages/Login';
+import NotFound from '@/pages/NotFound';
 
-function DashboardRouter() {
-  const { user } = useAuth();
-  
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
+// Admin Pages
+import AdminDashboard from '@/pages/admin/AdminDashboard';
+import UsuariosPage from '@/pages/admin/UsuariosPage';
+import ComerciosPage from '@/pages/admin/ComerciosPage';
+import CategoriasPage from '@/pages/admin/CategoriasPage';
+import AprovacoesPage from '@/pages/admin/AprovacoesPage';
+import RelatoriosPage from '@/pages/admin/RelatoriosPage';
 
+// Comerciante Pages
+import ComercianteDashboard from '@/pages/comerciante/ComercianteDashboard';
+import PerfilPage from '@/pages/comerciante/PerfilPage';
+import PersonalizacaoPage from '@/pages/comerciante/PersonalizacaoPage';
+
+// Layout
+import { DashboardLayout } from '@/components/DashboardLayout';
+
+function App() {
   return (
-    <DashboardLayout>
-      <Routes>
-        <Route 
-          path="/" 
-          element={
-            user.role === 'admin' ? 
-              <AdminDashboard /> : 
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+
+          {/* Protected Routes - Admin */}
+          <Route path="/admin/dashboard" element={
+            <DashboardLayout>
+              <AdminDashboard />
+            </DashboardLayout>
+          } />
+          <Route path="/admin/usuarios" element={
+            <DashboardLayout>
+              <UsuariosPage />
+            </DashboardLayout>
+          } />
+          <Route path="/admin/comercios" element={
+            <DashboardLayout>
+              <ComerciosPage />
+            </DashboardLayout>
+          } />
+          <Route path="/admin/categorias" element={
+            <DashboardLayout>
+              <CategoriasPage />
+            </DashboardLayout>
+          } />
+          <Route path="/admin/aprovacoes" element={
+            <DashboardLayout>
+              <AprovacoesPage />
+            </DashboardLayout>
+          } />
+          <Route path="/admin/relatorios" element={
+            <DashboardLayout>
+              <RelatoriosPage />
+            </DashboardLayout>
+          } />
+
+          {/* Protected Routes - Comerciante */}
+          <Route path="/dashboard" element={
+            <DashboardLayout>
               <ComercianteDashboard />
-          } 
-        />
-        {user.role === 'comerciante' && (
-          <>
-            <Route path="/personalizacao" element={<PersonalizacaoPage />} />
-            <Route path="/perfil" element={<PerfilPage />} />
-          </>
-        )}
-      </Routes>
-    </DashboardLayout>
+            </DashboardLayout>
+          } />
+          <Route path="/dashboard/perfil" element={
+            <DashboardLayout>
+              <PerfilPage />
+            </DashboardLayout>
+          } />
+          <Route path="/dashboard/personalizacao" element={
+            <DashboardLayout>
+              <PersonalizacaoPage />
+            </DashboardLayout>
+          } />
+
+          {/* Legacy routes for backward compatibility */}
+          <Route path="/dashboard/usuarios" element={
+            <DashboardLayout>
+              <UsuariosPage />
+            </DashboardLayout>
+          } />
+          <Route path="/dashboard/comercios" element={
+            <DashboardLayout>
+              <ComerciosPage />
+            </DashboardLayout>
+          } />
+          <Route path="/dashboard/categorias" element={
+            <DashboardLayout>
+              <CategoriasPage />
+            </DashboardLayout>
+          } />
+          <Route path="/dashboard/aprovacoes" element={
+            <DashboardLayout>
+              <AprovacoesPage />
+            </DashboardLayout>
+          } />
+          <Route path="/dashboard/relatorios" element={
+            <DashboardLayout>
+              <RelatoriosPage />
+            </DashboardLayout>
+          } />
+
+          {/* 404 */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/dashboard/*" element={<DashboardRouter />} />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
 
 export default App;

@@ -5,6 +5,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { LogOut } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -12,7 +13,10 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { user, isLoading, logout } = useAuth();
+  const { user, isLoading: authLoading, logout } = useAuth();
+  const { isAdmin, isLoading: adminLoading } = useAdminAuth();
+
+  const isLoading = authLoading || adminLoading;
 
   if (isLoading) {
     return (
@@ -23,6 +27,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Verifica se é admin para rotas administrativas
+  if (window.location.pathname.startsWith('/admin') && !isAdmin) {
     return <Navigate to="/login" replace />;
   }
 

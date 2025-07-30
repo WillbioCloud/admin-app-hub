@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { UserPlus, Loader2 } from 'lucide-react';
-import { useCreateUser } from '@/hooks/useUsuarios';
+import { useCreateAdmin } from '@/hooks/useCreateAdmin';
 import { toast } from 'sonner';
 
 export const NovoUsuarioDialog = () => {
@@ -15,12 +15,10 @@ export const NovoUsuarioDialog = () => {
     email: '',
     password: '',
     fullName: '',
-    userType: 'comerciante' as 'admin' | 'comerciante' | 'cliente',
-    appContext: 'admin_web' as 'admin_web' | 'mobile_app',
-    phone: ''
+    userType: 'comerciante' as 'admin' | 'comerciante'
   });
 
-  const createUser = useCreateUser();
+  const { createAdmin, isLoading } = useCreateAdmin();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,20 +28,32 @@ export const NovoUsuarioDialog = () => {
       return;
     }
 
+    if (formData.password.length < 6) {
+      toast.error('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+
     try {
-      await createUser.mutateAsync(formData);
-      toast.success('Usuário criado com sucesso!');
+      const result = await createAdmin({
+        email: formData.email,
+        password: formData.password,
+        full_name: formData.fullName,
+        user_type: formData.userType
+      });
+
+      toast.success('Administrador criado com sucesso!');
       setOpen(false);
       setFormData({
         email: '',
         password: '',
         fullName: '',
-        userType: 'comerciante',
-        appContext: 'admin_web',
-        phone: ''
+        userType: 'comerciante'
       });
+      
+      // Recarrega a página para atualizar a lista de usuários
+      window.location.reload();
     } catch (error: any) {
-      toast.error(`Erro ao criar usuário: ${error.message}`);
+      toast.error(error.message || 'Erro ao criar administrador');
     }
   };
 
@@ -52,15 +62,15 @@ export const NovoUsuarioDialog = () => {
       <DialogTrigger asChild>
         <Button>
           <UserPlus className="h-4 w-4 mr-2" />
-          Novo Usuário
+          Novo Administrador
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Criar Novo Usuário</DialogTitle>
+            <DialogTitle>Criar Novo Administrador</DialogTitle>
             <DialogDescription>
-              Crie uma nova conta de usuário no sistema
+              Crie uma nova conta de administrador no sistema
             </DialogDescription>
           </DialogHeader>
           
@@ -72,6 +82,7 @@ export const NovoUsuarioDialog = () => {
                 value={formData.fullName}
                 onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
                 placeholder="Digite o nome completo"
+                disabled={isLoading}
               />
             </div>
             
@@ -82,7 +93,8 @@ export const NovoUsuarioDialog = () => {
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="usuario@exemplo.com"
+                placeholder="admin@exemplo.com"
+                disabled={isLoading}
               />
             </div>
             
@@ -95,16 +107,7 @@ export const NovoUsuarioDialog = () => {
                 onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                 placeholder="Mínimo 6 caracteres"
                 minLength={6}
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="phone">Telefone</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                placeholder="(11) 99999-9999"
+                disabled={isLoading}
               />
             </div>
             
@@ -112,9 +115,10 @@ export const NovoUsuarioDialog = () => {
               <Label>Tipo de Usuário *</Label>
               <Select 
                 value={formData.userType} 
-                onValueChange={(value: 'admin' | 'comerciante' | 'cliente') => 
+                onValueChange={(value: 'admin' | 'comerciante') => 
                   setFormData(prev => ({ ...prev, userType: value }))
                 }
+                disabled={isLoading}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -122,37 +126,18 @@ export const NovoUsuarioDialog = () => {
                 <SelectContent>
                   <SelectItem value="admin">Administrador</SelectItem>
                   <SelectItem value="comerciante">Comerciante</SelectItem>
-                  <SelectItem value="cliente">Cliente</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="grid gap-2">
-              <Label>Plataforma *</Label>
-              <Select 
-                value={formData.appContext} 
-                onValueChange={(value: 'admin_web' | 'mobile_app') => 
-                  setFormData(prev => ({ ...prev, appContext: value }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin_web">Web App (Admin/Comerciante)</SelectItem>
-                  <SelectItem value="mobile_app">Mobile App (Cliente)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={createUser.isPending}>
-              {createUser.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Criar Usuário
+            <Button type="submit" disabled={isLoading}>
+              {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Criar Administrador
             </Button>
           </DialogFooter>
         </form>

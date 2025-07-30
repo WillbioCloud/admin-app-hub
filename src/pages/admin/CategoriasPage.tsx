@@ -82,6 +82,15 @@ const categoriasPadrao: Categoria[] = [
     comercios: 28,
     ativa: true
   }
+  {
+    id: '7'
+    nome: 'Supermercado'
+    descricao: 'estabelecimento comercial de grande porte, geralmente com autosserviço, variedade de produtos alimentícios e não alimentícios, organizados em seções e corredores.'
+    cor: 'verde'
+    icone: '🛍️'
+    comercios: 32
+    ativa: true
+  }
 ];
 
 const CategoriasPage = () => {

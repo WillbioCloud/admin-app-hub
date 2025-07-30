@@ -21,6 +21,7 @@ import AdminPerfilPage from '@/pages/admin/AdminPerfilPage';
 import ComercianteDashboard from '@/pages/comerciante/ComercianteDashboard';
 import PerfilPage from '@/pages/comerciante/PerfilPage';
 import PersonalizacaoPage from '@/pages/comerciante/PersonalizacaoPage';
+import ConfiguracoesPage from '@/pages/comerciante/ConfiguracoesPage';
 
 // Layout
 import { DashboardLayout } from '@/components/DashboardLayout';
@@ -85,6 +86,11 @@ function App() {
           <Route path="/dashboard/personalizacao" element={
             <DashboardLayout>
               <PersonalizacaoPage />
+            </DashboardLayout>
+          } />
+          <Route path="/dashboard/configuracoes" element={
+            <DashboardLayout>
+              <ConfiguracoesPage />
             </DashboardLayout>
           } />
 

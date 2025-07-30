@@ -16,7 +16,8 @@ const CATEGORIAS = [
   'Saúde e Fitness',
   'Fitness',
   'Serviços',
-  'Varejo'
+  'Varejo',
+  'Supermercado'
 ];
 
 interface FormData {

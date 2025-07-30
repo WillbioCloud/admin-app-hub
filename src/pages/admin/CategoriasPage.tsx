@@ -81,7 +81,7 @@ const categoriasPadrao: Categoria[] = [
     icone: '🛍️',
     comercios: 28,
     ativa: true
-  }
+  },
   {
     id: '7'
     nome: 'Supermercado'

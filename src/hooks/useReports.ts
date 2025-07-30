@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-export const useReportsData = () => {
+export const useReports = () => {
   // Buscar total de usuários
   const { data: totalUsers = 0 } = useQuery({
     queryKey: ['reports', 'total-users'],
@@ -55,13 +55,13 @@ export const useReportsData = () => {
 
       return Object.entries(categorias).map(([categoria, total]) => ({
         categoria,
-        total: total as number,
-        novos: Math.floor((total as number) * 0.2) // Simular novos como 20% do total
+        total: Number(total),
+        novos: Math.floor(Number(total) * 0.2) // Simular novos como 20% do total
       }));
     }
   });
 
-  // Buscar missões ativas (dados reais da aba gamificações)
+  // Buscar missões ativas
   const { data: totalMissoes = 0 } = useQuery({
     queryKey: ['reports', 'total-missoes'],
     queryFn: async () => {
@@ -73,7 +73,7 @@ export const useReportsData = () => {
     }
   });
 
-  // Buscar total de tickets de suporte (dados da aba suporte)
+  // Buscar total de tickets de suporte
   const { data: totalTickets = 0 } = useQuery({
     queryKey: ['reports', 'total-tickets'],
     queryFn: async () => {
@@ -88,12 +88,14 @@ export const useReportsData = () => {
   const { data: crescimentoMensal = [] } = useQuery({
     queryKey: ['reports', 'crescimento-mensal'],
     queryFn: async () => {
-      // Como não temos dados históricos, vamos simular baseado nos totais atuais
       const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'];
+      const totalUsersNum = Number(totalUsers) || 0;
+      const totalComerciosNum = Number(totalComercios) || 0;
+      
       return meses.map((mes, index) => ({
         mes,
-        usuarios: Math.floor(totalUsers * (index + 1) / 6),
-        comercios: Math.floor(totalComercios * (index + 1) / 6)
+        usuarios: Math.floor(totalUsersNum * (index + 1) / 6),
+        comercios: Math.floor(totalComerciosNum * (index + 1) / 6)
       }));
     },
     enabled: totalUsers > 0 && totalComercios > 0
@@ -119,7 +121,7 @@ export const useReportsData = () => {
       
       return Object.entries(layouts).map(([layout, count]) => ({
         layout: layout.charAt(0).toUpperCase() + layout.slice(1),
-        valor: totalLayouts > 0 ? Math.round(((count as number) / totalLayouts) * 100) : 0,
+        valor: totalLayouts > 0 ? Math.round((Number(count) / totalLayouts) * 100) : 0,
         cor: layout === 'moderno' ? '#3B82F6' : '#10B981'
       }));
     }
@@ -143,12 +145,12 @@ export const useReportsData = () => {
 
       return Object.entries(tipos).map(([tipo, total]) => ({
         tipo: tipo.charAt(0).toUpperCase() + tipo.slice(1),
-        total: total as number
+        total: Number(total)
       }));
     }
   });
 
-  // Buscar missões por status (dados da aba gamificações)
+  // Buscar missões por status
   const { data: missoesPorStatus = [] } = useQuery({
     queryKey: ['reports', 'missoes-por-status'],
     queryFn: async () => {
@@ -168,7 +170,7 @@ export const useReportsData = () => {
         status: status === 'pending' ? 'Pendente' : 
                status === 'approved' ? 'Aprovada' : 
                status === 'rejected' ? 'Rejeitada' : status,
-        total: total as number,
+        total: Number(total),
         cor: status === 'approved' ? '#10B981' : 
              status === 'pending' ? '#F59E0B' : '#EF4444'
       }));
@@ -186,6 +188,6 @@ export const useReportsData = () => {
     layoutsPopulares,
     usuariosPorTipo,
     missoesPorStatus,
-    isLoading: false // Simplificado para este exemplo
+    isLoading: false
   };
 };

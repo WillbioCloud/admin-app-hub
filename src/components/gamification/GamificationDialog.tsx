@@ -66,7 +66,7 @@ export function GamificationDialog({
           defaultValues={gamification ? {
             title: gamification.title,
             description: gamification.description || '',
-            type: gamification.type,
+            type: gamification.type as "qr_code" | "code",
             completion_data: gamification.completion_data,
             xp_reward: gamification.xp_reward,
             coin_reward: gamification.coin_reward,

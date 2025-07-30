@@ -6,6 +6,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 // Pages
 import Index from '@/pages/Index';
 import Login from '@/pages/Login';
+import Register from '@/pages/Register';
 import NotFound from '@/pages/NotFound';
 
 // Admin Pages
@@ -36,6 +37,7 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           {/* Protected Routes - Admin */}
           <Route path="/admin/dashboard" element={

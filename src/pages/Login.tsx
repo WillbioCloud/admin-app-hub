@@ -9,29 +9,33 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
   const [error, setError] = useState('');
-  const { login, isLoading, user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
-    const success = await login(email, password);
-    if (success) {
-      // O redirecionamento será baseado no role do usuário
-      // Vamos aguardar o user ser definido no contexto
-      setTimeout(() => {
-        if (user?.role === 'admin') {
-          navigate('/admin/dashboard');
-        } else {
-          navigate('/dashboard');
-        }
-      }, 100);
-    } else {
-      setError('Email ou senha inválidos');
+    try {
+      const success = await login(formData.email, formData.password);
+      
+      if (success) {
+        navigate('/');
+      } else {
+        setError('Email ou senha inválidos');
+      }
+    } catch (error) {
+      setError('Erro ao fazer login. Tente novamente.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -41,7 +45,7 @@ const Login = () => {
         <CardHeader>
           <CardTitle>Login - Painel Administrativo</CardTitle>
           <CardDescription>
-            Entre com suas credenciais para acessar o sistema
+            Acesse sua conta para gerenciar o sistema
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -57,8 +61,8 @@ const Login = () => {
               <Input
                 id="email"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                 required
                 placeholder="seu@email.com"
               />
@@ -69,17 +73,11 @@ const Login = () => {
               <Input
                 id="password"
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                 required
                 placeholder="Sua senha"
               />
-            </div>
-
-            <div className="text-sm text-muted-foreground">
-              <p><strong>Contas de demonstração:</strong></p>
-              <p>Admin: admin@app.com / 123456</p>
-              <p>Comerciante: comerciante@loja.com / 123456</p>
             </div>
           </CardContent>
           

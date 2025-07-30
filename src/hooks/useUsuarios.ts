@@ -60,11 +60,11 @@ export const useUsuarios = () => {
       id: user.id,
       nome: user.full_name || 'Nome não informado',
       email: `${user.full_name?.toLowerCase().replace(' ', '.')}@admin.com`, // Simulado
-      telefone: user.phone || 'Não informado',
+      telefone: 'Não informado', // admin_profiles não tem campo phone
       comercio: comercios.find(c => c.user_id === user.id)?.nome || 'Sem comércio',
       status: 'ativo' as const,
       dataCadastro: user.created_at,
-      categoria: 'Admin',
+      categoria: user.user_type === 'admin' ? 'Admin' : 'Comerciante',
       tipo: 'web_app',
       userType: user.user_type
     })),
@@ -76,7 +76,7 @@ export const useUsuarios = () => {
       comercio: comercios.find(c => c.user_id === user.id)?.nome || 'Sem comércio',
       status: user.is_approved ? 'ativo' as const : 'pendente' as const,
       dataCadastro: user.created_at,
-      categoria: user.user_type === 'comerciante' ? 'Comerciante' : 'Cliente',
+      categoria: user.user_type === 'cliente' ? 'Cliente' : 'Comerciante',
       tipo: 'mobile_app',
       userType: user.user_type
     }))

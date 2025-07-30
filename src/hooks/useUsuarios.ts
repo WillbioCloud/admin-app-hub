@@ -60,7 +60,7 @@ export const useUsuarios = () => {
       id: user.id,
       nome: user.full_name || 'Nome não informado',
       email: `${user.full_name?.toLowerCase().replace(' ', '.')}@admin.com`, // Simulado
-      telefone: 'Não informado', // admin_profiles não tem campo phone
+      telefone: user.phone || 'Não informado',
       comercio: comercios.find(c => c.user_id === user.id)?.nome || 'Sem comércio',
       status: 'ativo' as const,
       dataCadastro: user.created_at,

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,8 +6,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
 import { useForm } from 'react-hook-form';
-import { User, Mail, Shield, Calendar } from 'lucide-react';
+import { User, Mail, Shield, Calendar, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface AdminFormData {
   nome: string;
@@ -18,7 +18,8 @@ interface AdminFormData {
 }
 
 const AdminPerfilPage = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
 
   const form = useForm<AdminFormData>({
@@ -36,13 +37,24 @@ const AdminPerfilPage = () => {
     alert('Perfil atualizado com sucesso!');
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Perfil do Administrador</h2>
-        <p className="text-muted-foreground">
-          Gerencie suas informações pessoais e configurações de conta
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Perfil do Administrador</h2>
+          <p className="text-muted-foreground">
+            Gerencie suas informações pessoais e configurações de conta
+          </p>
+        </div>
+        <Button variant="outline" onClick={handleLogout} className="flex items-center gap-2">
+          <LogOut className="h-4 w-4" />
+          Sair da Conta
+        </Button>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
@@ -221,6 +233,17 @@ const AdminPerfilPage = () => {
               <p className="text-sm text-muted-foreground">Veja e gerencie dispositivos conectados</p>
             </div>
             <Button variant="outline">Ver Sessões</Button>
+          </div>
+
+          <div className="flex items-center justify-between p-4 border rounded-lg bg-red-50 border-red-200">
+            <div>
+              <h4 className="font-medium text-red-900">Encerrar Sessão</h4>
+              <p className="text-sm text-red-700">Sair da sua conta em todos os dispositivos</p>
+            </div>
+            <Button variant="destructive" onClick={handleLogout} className="flex items-center gap-2">
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Button>
           </div>
         </CardContent>
       </Card>

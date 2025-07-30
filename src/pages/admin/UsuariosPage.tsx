@@ -6,57 +6,24 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, UserPlus, MoreHorizontal, Eye, Edit, Trash2, Filter } from 'lucide-react';
-
-interface Usuario {
-  id: string;
-  nome: string;
-  email: string;
-  telefone: string;
-  comercio: string;
-  status: 'ativo' | 'inativo' | 'pendente';
-  dataCadastro: string;
-  categoria: string;
-}
-
-const mockUsuarios: Usuario[] = [
-  {
-    id: '1',
-    nome: 'João da Silva',
-    email: 'joao@lojadojoao.com',
-    telefone: '(11) 99999-9999',
-    comercio: 'Loja do João',
-    status: 'ativo',
-    dataCadastro: '2024-01-15',
-    categoria: 'Alimentação'
-  },
-  {
-    id: '2',
-    nome: 'Maria Santos',
-    email: 'maria@farmacia.com',
-    telefone: '(11) 88888-8888',
-    comercio: 'Farmácia Central',
-    status: 'ativo',
-    dataCadastro: '2024-01-10',
-    categoria: 'Saúde'
-  },
-  {
-    id: '3',
-    nome: 'Carlos Oliveira',
-    email: 'carlos@academia.com',
-    telefone: '(11) 77777-7777',
-    comercio: 'Academia Forte',
-    status: 'pendente',
-    dataCadastro: '2024-01-20',
-    categoria: 'Fitness'
-  }
-];
+import { Search, Eye, Edit, Trash2, Smartphone, Monitor } from 'lucide-react';
+import { useUsuarios } from '@/hooks/useUsuarios';
+import { NovoUsuarioDialog } from '@/components/admin/NovoUsuarioDialog';
 
 const UsuariosPage = () => {
-  const [usuarios, setUsuarios] = useState<Usuario[]>(mockUsuarios);
+  const { 
+    usuarios, 
+    totalUsers, 
+    usuariosAtivos, 
+    usuariosPendentes, 
+    usuariosWebApp, 
+    usuariosMobileApp,
+    isLoading 
+  } = useUsuarios();
+  
   const [busca, setBusca] = useState('');
   const [filtroStatus, setFiltroStatus] = useState<string>('todos');
-  const [filtroCategoria, setFiltroCategoria] = useState<string>('todas');
+  const [filtroTipo, setFiltroTipo] = useState<string>('todos');
 
   const usuariosFiltrados = usuarios.filter(usuario => {
     const matchBusca = usuario.nome.toLowerCase().includes(busca.toLowerCase()) ||
@@ -64,9 +31,9 @@ const UsuariosPage = () => {
                       usuario.comercio.toLowerCase().includes(busca.toLowerCase());
     
     const matchStatus = filtroStatus === 'todos' || usuario.status === filtroStatus;
-    const matchCategoria = filtroCategoria === 'todas' || usuario.categoria === filtroCategoria;
+    const matchTipo = filtroTipo === 'todos' || usuario.tipo === filtroTipo;
     
-    return matchBusca && matchStatus && matchCategoria;
+    return matchBusca && matchStatus && matchTipo;
   });
 
   const getStatusColor = (status: string) => {
@@ -78,11 +45,21 @@ const UsuariosPage = () => {
     }
   };
 
-  const handleStatusChange = (usuarioId: string, novoStatus: 'ativo' | 'inativo') => {
-    setUsuarios(usuarios.map(usuario => 
-      usuario.id === usuarioId ? { ...usuario, status: novoStatus } : usuario
-    ));
+  const getTipoIcon = (tipo: string) => {
+    return tipo === 'mobile_app' ? 
+      <Smartphone className="h-4 w-4" /> : 
+      <Monitor className="h-4 w-4" />;
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -90,13 +67,58 @@ const UsuariosPage = () => {
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Gerenciar Usuários</h2>
           <p className="text-muted-foreground">
-            Gerencie os comerciantes cadastrados na plataforma
+            Gerencie os usuários cadastrados na plataforma
           </p>
         </div>
-        <Button>
-          <UserPlus className="h-4 w-4 mr-2" />
-          Novo Usuário
-        </Button>
+        <NovoUsuarioDialog />
+      </div>
+
+      {/* Estatísticas */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalUsers}</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Usuários Ativos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{usuariosAtivos}</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Usuários Pendentes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-600">{usuariosPendentes}</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Web App / Mobile</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm">
+              <div className="flex items-center gap-1">
+                <Monitor className="h-3 w-3" />
+                <span className="font-bold">{usuariosWebApp}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Smartphone className="h-3 w-3" />
+                <span className="font-bold">{usuariosMobileApp}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4">
@@ -125,17 +147,14 @@ const UsuariosPage = () => {
             </SelectContent>
           </Select>
 
-          <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
+          <Select value={filtroTipo} onValueChange={setFiltroTipo}>
             <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Categoria" />
+              <SelectValue placeholder="Plataforma" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="todas">Todas</SelectItem>
-              <SelectItem value="Alimentação">Alimentação</SelectItem>
-              <SelectItem value="Saúde">Saúde</SelectItem>
-              <SelectItem value="Fitness">Fitness</SelectItem>
-              <SelectItem value="Serviços">Serviços</SelectItem>
-              <SelectItem value="Varejo">Varejo</SelectItem>
+              <SelectItem value="todos">Todas</SelectItem>
+              <SelectItem value="web_app">Web App</SelectItem>
+              <SelectItem value="mobile_app">Mobile App</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -154,7 +173,8 @@ const UsuariosPage = () => {
               <TableRow>
                 <TableHead>Nome</TableHead>
                 <TableHead>Comércio</TableHead>
-                <TableHead>Categoria</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Plataforma</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Data Cadastro</TableHead>
                 <TableHead>Ações</TableHead>
@@ -175,11 +195,21 @@ const UsuariosPage = () => {
                     <Badge variant="outline">{usuario.categoria}</Badge>
                   </TableCell>
                   <TableCell>
+                    <div className="flex items-center gap-2">
+                      {getTipoIcon(usuario.tipo)}
+                      <span className="text-sm">
+                        {usuario.tipo === 'mobile_app' ? 'Mobile' : 'Web'}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
                     <Badge className={getStatusColor(usuario.status)}>
                       {usuario.status}
                     </Badge>
                   </TableCell>
-                  <TableCell>{new Date(usuario.dataCadastro).toLocaleDateString('pt-BR')}</TableCell>
+                  <TableCell>
+                    {new Date(usuario.dataCadastro).toLocaleDateString('pt-BR')}
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-2">
                       <Button variant="ghost" size="sm">
@@ -188,26 +218,9 @@ const UsuariosPage = () => {
                       <Button variant="ghost" size="sm">
                         <Edit className="h-4 w-4" />
                       </Button>
-                      {usuario.status === 'pendente' && (
-                        <>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => handleStatusChange(usuario.id, 'ativo')}
-                            className="text-green-600"
-                          >
-                            Aprovar
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => handleStatusChange(usuario.id, 'inativo')}
-                            className="text-red-600"
-                          >
-                            Rejeitar
-                          </Button>
-                        </>
-                      )}
+                      <Button variant="ghost" size="sm">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>

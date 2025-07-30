@@ -3,9 +3,20 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useReports = () => {
-  // Buscar total de usuários
-  const { data: totalUsers = 0 } = useQuery({
-    queryKey: ['reports', 'total-users'],
+  // Buscar total de usuários web (admin_profiles)
+  const { data: totalAdminUsers = 0 } = useQuery({
+    queryKey: ['reports', 'total-admin-users'],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from('admin_profiles')
+        .select('*', { count: 'exact', head: true });
+      return count || 0;
+    }
+  });
+
+  // Buscar total de usuários mobile (profiles)
+  const { data: totalMobileUsers = 0 } = useQuery({
+    queryKey: ['reports', 'total-mobile-users'],
     queryFn: async () => {
       const { count } = await supabase
         .from('profiles')
@@ -13,6 +24,9 @@ export const useReports = () => {
       return count || 0;
     }
   });
+
+  // Total de usuários combinado
+  const totalUsers = totalAdminUsers + totalMobileUsers;
 
   // Buscar total de comércios
   const { data: totalComercios = 0 } = useQuery({
@@ -127,21 +141,32 @@ export const useReports = () => {
     }
   });
 
-  // Buscar estatísticas de usuários por tipo
+  // Buscar estatísticas de usuários por tipo (combinando admin e mobile)
   const { data: usuariosPorTipo = [] } = useQuery({
     queryKey: ['reports', 'usuarios-por-tipo'],
     queryFn: async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('user_type');
-      
-      if (!data) return [];
-      
-      const tipos = data.reduce((acc: any, usuario) => {
-        const tipo = usuario.user_type || 'cliente';
-        acc[tipo] = (acc[tipo] || 0) + 1;
-        return acc;
-      }, {});
+      const [adminData, mobileData] = await Promise.all([
+        supabase.from('admin_profiles').select('user_type'),
+        supabase.from('profiles').select('user_type')
+      ]);
+
+      const tipos: any = {};
+
+      // Contar usuários admin
+      if (adminData.data) {
+        adminData.data.forEach(usuario => {
+          const tipo = `${usuario.user_type} (Web)`;
+          tipos[tipo] = (tipos[tipo] || 0) + 1;
+        });
+      }
+
+      // Contar usuários mobile
+      if (mobileData.data) {
+        mobileData.data.forEach(usuario => {
+          const tipo = `${usuario.user_type} (Mobile)`;
+          tipos[tipo] = (tipos[tipo] || 0) + 1;
+        });
+      }
 
       return Object.entries(tipos).map(([tipo, total]) => ({
         tipo: tipo.charAt(0).toUpperCase() + tipo.slice(1),
@@ -179,6 +204,8 @@ export const useReports = () => {
 
   return {
     totalUsers,
+    totalAdminUsers,
+    totalMobileUsers,
     totalComercios,
     comerciosAtivos,
     comerciosPorCategoria,

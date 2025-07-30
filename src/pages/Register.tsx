@@ -47,7 +47,14 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log('Iniciando criação de usuário com dados:', {
+        email: formData.email,
+        userType: formData.userType,
+        fullName: formData.fullName,
+        phone: formData.phone
+      });
+
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -56,13 +63,20 @@ const Register = () => {
             full_name: formData.fullName,
             user_type: formData.userType,
             app_context: 'admin_web',
-            phone: formData.phone
+            phone: formData.phone || ''
           }
         }
       });
 
-      if (error) {
-        throw error;
+      console.log('Resposta do signUp:', { data, error: signUpError });
+
+      if (signUpError) {
+        console.error('Erro detalhado do signUp:', signUpError);
+        throw signUpError;
+      }
+
+      if (!data.user) {
+        throw new Error('Usuário não foi criado corretamente');
       }
 
       setSuccess('Conta criada com sucesso! Verifique seu email para confirmar a conta.');
@@ -78,11 +92,25 @@ const Register = () => {
       });
 
     } catch (error: any) {
-      if (error.message.includes('User already registered')) {
-        setError('Este email já está cadastrado. Tente fazer login.');
-      } else {
-        setError(`Erro ao criar conta: ${error.message}`);
+      console.error('Erro completo na criação da conta:', error);
+      
+      let errorMessage = 'Erro desconhecido ao criar conta';
+      
+      if (error.message) {
+        if (error.message.includes('User already registered')) {
+          errorMessage = 'Este email já está cadastrado. Tente fazer login.';
+        } else if (error.message.includes('Database error')) {
+          errorMessage = 'Erro no banco de dados. Tente novamente em alguns minutos.';
+        } else if (error.message.includes('Invalid email')) {
+          errorMessage = 'Email inválido. Verifique o formato do email.';
+        } else if (error.message.includes('Password')) {
+          errorMessage = 'Erro com a senha. Verifique se atende aos requisitos.';
+        } else {
+          errorMessage = `Erro: ${error.message}`;
+        }
       }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

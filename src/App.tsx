@@ -15,6 +15,7 @@ import ComerciosPage from '@/pages/admin/ComerciosPage';
 import CategoriasPage from '@/pages/admin/CategoriasPage';
 import AprovacoesPage from '@/pages/admin/AprovacoesPage';
 import RelatoriosPage from '@/pages/admin/RelatoriosPage';
+import AdminPerfilPage from '@/pages/admin/AdminPerfilPage';
 
 // Comerciante Pages
 import ComercianteDashboard from '@/pages/comerciante/ComercianteDashboard';
@@ -62,6 +63,11 @@ function App() {
           <Route path="/admin/relatorios" element={
             <DashboardLayout>
               <RelatoriosPage />
+            </DashboardLayout>
+          } />
+          <Route path="/admin/perfil" element={
+            <DashboardLayout>
+              <AdminPerfilPage />
             </DashboardLayout>
           } />
 

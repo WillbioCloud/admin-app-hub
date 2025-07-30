@@ -12,7 +12,7 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, user } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,7 +21,15 @@ const Login = () => {
 
     const success = await login(email, password);
     if (success) {
-      navigate('/dashboard');
+      // O redirecionamento será baseado no role do usuário
+      // Vamos aguardar o user ser definido no contexto
+      setTimeout(() => {
+        if (user?.role === 'admin') {
+          navigate('/admin/dashboard');
+        } else {
+          navigate('/dashboard');
+        }
+      }, 100);
     } else {
       setError('Email ou senha inválidos');
     }

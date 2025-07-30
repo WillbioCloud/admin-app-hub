@@ -21,28 +21,38 @@ export function AppSidebar() {
   const adminItems = [
     {
       title: 'Dashboard',
-      url: '/dashboard',
+      url: '/admin/dashboard',
       icon: Home,
     },
     {
       title: 'Usuários',
-      url: '/dashboard/usuarios',
+      url: '/admin/usuarios',
       icon: Users,
     },
     {
-      title: 'Novidades',
-      url: '/dashboard/novidades',
+      title: 'Comércios',
+      url: '/admin/comercios',
+      icon: Store,
+    },
+    {
+      title: 'Categorias',
+      url: '/admin/categorias',
       icon: FileText,
     },
     {
-      title: 'Notificações',
-      url: '/dashboard/notificacoes',
+      title: 'Aprovações',
+      url: '/admin/aprovacoes',
       icon: Bell,
     },
     {
-      title: 'Comércios',
-      url: '/dashboard/comercios',
-      icon: Store,
+      title: 'Relatórios',
+      url: '/admin/relatorios',
+      icon: FileText,
+    },
+    {
+      title: 'Perfil',
+      url: '/admin/perfil',
+      icon: User,
     },
   ];
 

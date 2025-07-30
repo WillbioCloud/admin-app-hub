@@ -10,7 +10,12 @@ const Index = () => {
   useEffect(() => {
     if (!isLoading) {
       if (user) {
-        navigate("/dashboard", { replace: true });
+        // Redirecionar baseado no role do usuário
+        if (user.role === 'admin') {
+          navigate("/admin/dashboard", { replace: true });
+        } else {
+          navigate("/dashboard", { replace: true });
+        }
       } else {
         navigate("/login", { replace: true });
       }

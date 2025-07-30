@@ -23,6 +23,7 @@ import ComercianteDashboard from '@/pages/comerciante/ComercianteDashboard';
 import PerfilPage from '@/pages/comerciante/PerfilPage';
 import PersonalizacaoPage from '@/pages/comerciante/PersonalizacaoPage';
 import ConfiguracoesPage from '@/pages/comerciante/ConfiguracoesPage';
+import Comerciante_GamificacoesPage from '@/pages/comerciante/GamificacoesPage';
 
 // Layout
 import { DashboardLayout } from '@/components/DashboardLayout';
@@ -87,6 +88,11 @@ function App() {
           <Route path="/dashboard/perfil" element={
             <DashboardLayout>
               <PerfilPage />
+            </DashboardLayout>
+          } />
+          <Route path="/dashboard/gamificacoes" element={
+            <DashboardLayout>
+              <Comerciante_GamificacoesPage />
             </DashboardLayout>
           } />
           <Route path="/dashboard/personalizacao" element={

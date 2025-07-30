@@ -1,4 +1,3 @@
-
 import { Home, Users, FileText, Bell, Store, Settings, Palette, User, GamepadIcon } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
@@ -71,6 +70,11 @@ export function AppSidebar() {
       title: 'Perfil',
       url: '/dashboard/perfil',
       icon: User,
+    },
+    {
+      title: 'Gamificações',
+      url: '/dashboard/gamificacoes',
+      icon: GamepadIcon,
     },
     {
       title: 'Personalização',

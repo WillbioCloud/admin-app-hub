@@ -79,7 +79,6 @@ export function GamificationDialog({
           onCancel={handleCancel}
           isEditing={isEditing}
           userRole={userRole}
-          isSubmitting={createGamification.isPending || updateGamification.isPending}
         />
       </DialogContent>
     </Dialog>

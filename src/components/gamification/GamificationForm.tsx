@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { CodeGenerator } from './CodeGenerator';
 
 const gamificationSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
@@ -71,6 +72,8 @@ export function GamificationForm({
     },
   });
 
+  const watchedType = form.watch('type');
+
   const handleSubmit = (data: GamificationFormData) => {
     onSubmit(data);
   };
@@ -109,43 +112,45 @@ export function GamificationForm({
           )}
         />
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tipo</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="qr_code">QR Code</SelectItem>
-                    <SelectItem value="code">Código</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="completion_data"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Código de Completar</FormLabel>
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tipo</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <Input placeholder="CODIGO123" {...field} />
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o tipo" />
+                  </SelectTrigger>
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+                <SelectContent>
+                  <SelectItem value="qr_code">QR Code</SelectItem>
+                  <SelectItem value="code">Código</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="completion_data"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Código de Completar</FormLabel>
+              <FormControl>
+                <CodeGenerator
+                  type={watchedType}
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="grid grid-cols-2 gap-4">
           <FormField

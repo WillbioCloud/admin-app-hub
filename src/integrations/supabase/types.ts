@@ -458,43 +458,55 @@ export type Database = {
       }
       missions: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           coin_reward: number
           completion_data: string
           created_at: string
+          created_by: string | null
           description: string | null
           id: string
           is_active: boolean
           is_unique: boolean
           location_type: string | null
           loteamento_id: string | null
+          status: string | null
           title: string
           type: string
           xp_reward: number
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           coin_reward?: number
           completion_data: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
           id?: string
           is_active?: boolean
           is_unique?: boolean
           location_type?: string | null
           loteamento_id?: string | null
+          status?: string | null
           title: string
           type: string
           xp_reward?: number
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           coin_reward?: number
           completion_data?: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
           id?: string
           is_active?: boolean
           is_unique?: boolean
           location_type?: string | null
           loteamento_id?: string | null
+          status?: string | null
           title?: string
           type?: string
           xp_reward?: number

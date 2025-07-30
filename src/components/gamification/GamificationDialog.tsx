@@ -8,28 +8,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { GamificationForm } from './GamificationForm';
-
-interface Gamification {
-  id?: string;
-  title: string;
-  description: string;
-  type: 'qr_code' | 'code';
-  completion_data: string;
-  xp_reward: number;
-  coin_reward: number;
-  is_active: boolean;
-  is_unique: boolean;
-  loteamento_id: string;
-  location_type: string;
-  status?: string;
-  created_at?: string;
-}
+import { useCreateGamification, useUpdateGamification, Gamification } from '@/hooks/useGamifications';
 
 interface GamificationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   gamification?: Gamification | null;
-  onSubmit: (data: any) => void;
+  onSubmit: () => void;
   userRole?: 'admin' | 'comerciante';
 }
 
@@ -41,10 +26,21 @@ export function GamificationDialog({
   userRole = 'comerciante'
 }: GamificationDialogProps) {
   const isEditing = !!gamification;
+  const createGamification = useCreateGamification();
+  const updateGamification = useUpdateGamification();
 
-  const handleSubmit = (data: any) => {
-    onSubmit(data);
-    onOpenChange(false);
+  const handleSubmit = async (data: any) => {
+    try {
+      if (isEditing && gamification) {
+        await updateGamification.mutateAsync({ id: gamification.id, data });
+      } else {
+        await createGamification.mutateAsync(data);
+      }
+      onSubmit();
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error submitting gamification:', error);
+    }
   };
 
   const handleCancel = () => {
@@ -69,20 +65,21 @@ export function GamificationDialog({
         <GamificationForm
           defaultValues={gamification ? {
             title: gamification.title,
-            description: gamification.description,
+            description: gamification.description || '',
             type: gamification.type,
             completion_data: gamification.completion_data,
             xp_reward: gamification.xp_reward,
             coin_reward: gamification.coin_reward,
             is_active: gamification.is_active,
             is_unique: gamification.is_unique,
-            loteamento_id: gamification.loteamento_id,
-            location_type: gamification.location_type,
+            loteamento_id: gamification.loteamento_id || '',
+            location_type: gamification.location_type || '',
           } : undefined}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           isEditing={isEditing}
           userRole={userRole}
+          isSubmitting={createGamification.isPending || updateGamification.isPending}
         />
       </DialogContent>
     </Dialog>

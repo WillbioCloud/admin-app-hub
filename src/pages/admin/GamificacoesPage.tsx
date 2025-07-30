@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, GamepadIcon } from 'lucide-react';
+import { Plus, Edit, Trash2, GamepadIcon, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -24,79 +24,58 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { GamificationDialog } from '@/components/gamification/GamificationDialog';
-import { toast } from 'sonner';
-
-// Mock data para demonstração
-const mockGamifications = [
-  {
-    id: '1',
-    title: 'Primeira Compra',
-    description: 'Complete sua primeira compra no supermercado',
-    type: 'qr_code' as const,
-    completion_data: 'SUPER001',
-    xp_reward: 100,
-    coin_reward: 50,
-    is_active: true,
-    is_unique: true,
-    loteamento_id: 'lote_001',
-    location_type: 'supermercado'
-  },
-  {
-    id: '2',
-    title: 'Cliente Fiel',
-    description: 'Visite o mesmo comércio 5 vezes',
-    type: 'code' as const,
-    completion_data: 'FIEL123',
-    xp_reward: 200,
-    coin_reward: 100,
-    is_active: true,
-    is_unique: false,
-    loteamento_id: 'lote_001',
-    location_type: 'farmacia'
-  }
-];
+import { useGamifications, useDeleteGamification, useApproveGamification, useRejectGamification, Gamification } from '@/hooks/useGamifications';
 
 export default function GamificacoesPage() {
-  const [gamifications, setGamifications] = useState(mockGamifications);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingGamification, setEditingGamification] = useState<any>(null);
+  const [editingGamification, setEditingGamification] = useState<Gamification | null>(null);
+
+  const { data: gamifications = [], isLoading, error } = useGamifications();
+  const deleteGamification = useDeleteGamification();
+  const approveGamification = useApproveGamification();
+  const rejectGamification = useRejectGamification();
 
   const handleCreate = () => {
     setEditingGamification(null);
     setIsDialogOpen(true);
   };
 
-  const handleEdit = (gamification: any) => {
+  const handleEdit = (gamification: Gamification) => {
     setEditingGamification(gamification);
     setIsDialogOpen(true);
   };
 
-  const handleSubmit = (data: any) => {
-    if (editingGamification) {
-      // Atualizar gamificação existente
-      setGamifications(prev =>
-        prev.map(g =>
-          g.id === editingGamification.id
-            ? { ...g, ...data }
-            : g
-        )
-      );
-      toast.success('Gamificação atualizada com sucesso!');
-    } else {
-      // Criar nova gamificação
-      const newGamification = {
-        id: Date.now().toString(),
-        ...data
-      };
-      setGamifications(prev => [...prev, newGamification]);
-      toast.success('Gamificação criada com sucesso!');
-    }
+  const handleDelete = (id: string) => {
+    deleteGamification.mutate(id);
   };
 
-  const handleDelete = (id: string) => {
-    setGamifications(prev => prev.filter(g => g.id !== id));
-    toast.success('Gamificação excluída com sucesso!');
+  const handleApprove = (id: string) => {
+    approveGamification.mutate(id);
   };
+
+  const handleReject = (id: string) => {
+    rejectGamification.mutate(id);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Carregando gamificações...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-red-600">Erro ao carregar gamificações</div>
+      </div>
+    );
+  }
+
+  const approvedGamifications = gamifications.filter(g => g.status === 'approved');
+  const pendingGamifications = gamifications.filter(g => g.status === 'pending');
+  const rejectedGamifications = gamifications.filter(g => g.status === 'rejected');
 
   return (
     <div className="space-y-6">
@@ -125,24 +104,20 @@ export default function GamificacoesPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Missões Ativas</CardTitle>
-            <GamepadIcon className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Aprovadas</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {gamifications.filter(g => g.is_active).length}
-            </div>
+            <div className="text-2xl font-bold">{approvedGamifications.length}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Missões Únicas</CardTitle>
-            <GamepadIcon className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
+            <GamepadIcon className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {gamifications.filter(g => g.is_unique).length}
-            </div>
+            <div className="text-2xl font-bold">{pendingGamifications.length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -201,8 +176,18 @@ export default function GamificacoesPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Badge variant={gamification.is_active ? 'default' : 'secondary'}>
-                        {gamification.is_active ? 'Ativa' : 'Inativa'}
+                      <Badge 
+                        variant={
+                          gamification.status === 'approved' ? 'default' : 
+                          gamification.status === 'pending' ? 'secondary' : 
+                          'destructive'
+                        }
+                      >
+                        {gamification.status === 'approved' && <CheckCircle className="h-3 w-3 mr-1" />}
+                        {gamification.status === 'pending' && '⏳ '}
+                        {gamification.status === 'rejected' && <XCircle className="h-3 w-3 mr-1" />}
+                        {gamification.status === 'approved' ? 'Aprovada' : 
+                         gamification.status === 'pending' ? 'Pendente' : 'Rejeitada'}
                       </Badge>
                       {gamification.is_unique && (
                         <Badge variant="outline">Única</Badge>
@@ -217,6 +202,26 @@ export default function GamificacoesPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
+                      {gamification.status === 'pending' && (
+                        <>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleApprove(gamification.id)}
+                            disabled={approveGamification.isPending}
+                          >
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleReject(gamification.id)}
+                            disabled={rejectGamification.isPending}
+                          >
+                            <XCircle className="h-4 w-4 text-red-600" />
+                          </Button>
+                        </>
+                      )}
                       <Button 
                         variant="outline" 
                         size="sm"
@@ -259,7 +264,7 @@ export default function GamificacoesPage() {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         gamification={editingGamification}
-        onSubmit={handleSubmit}
+        onSubmit={() => setIsDialogOpen(false)}
         userRole="admin"
       />
     </div>

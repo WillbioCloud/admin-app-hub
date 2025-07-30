@@ -24,102 +24,30 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { GamificationDialog } from '@/components/gamification/GamificationDialog';
-import { toast } from 'sonner';
-
-// Mock data para demonstração
-const mockGamifications = [
-  {
-    id: '1',
-    title: 'Primeira Compra',
-    description: 'Complete sua primeira compra no supermercado',
-    type: 'qr_code' as const,
-    completion_data: 'SUPER001',
-    xp_reward: 100,
-    coin_reward: 50,
-    is_active: true,
-    is_unique: true,
-    loteamento_id: 'lote_001',
-    location_type: 'supermercado',
-    status: 'approved',
-    created_at: '2024-01-15'
-  },
-  {
-    id: '2',
-    title: 'Cliente Fiel',
-    description: 'Visite o mesmo comércio 5 vezes',
-    type: 'code' as const,
-    completion_data: 'FIEL123',
-    xp_reward: 200,
-    coin_reward: 100,
-    is_active: true,
-    is_unique: false,
-    loteamento_id: 'lote_001',
-    location_type: 'farmacia',
-    status: 'pending',
-    created_at: '2024-01-20'
-  },
-  {
-    id: '3',
-    title: 'Desconto Especial',
-    description: 'Ganhe desconto em produtos selecionados',
-    type: 'qr_code' as const,
-    completion_data: 'DESC456',
-    xp_reward: 150,
-    coin_reward: 75,
-    is_active: false,
-    is_unique: true,
-    loteamento_id: 'lote_001',
-    location_type: 'supermercado',
-    status: 'rejected',
-    created_at: '2024-01-18'
-  }
-];
+import { useGamifications, useDeleteGamification, Gamification } from '@/hooks/useGamifications';
 
 export default function GamificacoesPage() {
-  const [gamifications, setGamifications] = useState(mockGamifications);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingGamification, setEditingGamification] = useState<any>(null);
+  const [editingGamification, setEditingGamification] = useState<Gamification | null>(null);
+
+  const { data: gamifications = [], isLoading, error } = useGamifications();
+  const deleteGamification = useDeleteGamification();
 
   const handleCreate = () => {
     setEditingGamification(null);
     setIsDialogOpen(true);
   };
 
-  const handleEdit = (gamification: any) => {
+  const handleEdit = (gamification: Gamification) => {
     setEditingGamification(gamification);
     setIsDialogOpen(true);
   };
 
-  const handleSubmit = (data: any) => {
-    if (editingGamification) {
-      // Atualizar gamificação existente
-      setGamifications(prev =>
-        prev.map(g =>
-          g.id === editingGamification.id
-            ? { ...g, ...data }
-            : g
-        )
-      );
-      toast.success('Gamificação atualizada com sucesso!');
-    } else {
-      // Criar nova gamificação
-      const newGamification = {
-        id: Date.now().toString(),
-        ...data,
-        status: 'pending',
-        created_at: new Date().toISOString().split('T')[0]
-      };
-      setGamifications(prev => [...prev, newGamification]);
-      toast.success('Gamificação criada e enviada para aprovação!');
-    }
-  };
-
   const handleDelete = (id: string) => {
-    setGamifications(prev => prev.filter(g => g.id !== id));
-    toast.success('Gamificação excluída com sucesso!');
+    deleteGamification.mutate(id);
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string | null) => {
     switch (status) {
       case 'approved':
         return <Badge variant="default" className="bg-green-500"><CheckCircle className="h-3 w-3 mr-1" />Aprovada</Badge>;
@@ -131,6 +59,22 @@ export default function GamificacoesPage() {
         return <Badge variant="outline">{status}</Badge>;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Carregando gamificações...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-red-600">Erro ao carregar gamificações</div>
+      </div>
+    );
+  }
 
   const approvedGamifications = gamifications.filter(g => g.status === 'approved');
   const pendingGamifications = gamifications.filter(g => g.status === 'pending');
@@ -521,7 +465,7 @@ export default function GamificacoesPage() {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         gamification={editingGamification}
-        onSubmit={handleSubmit}
+        onSubmit={() => setIsDialogOpen(false)}
         userRole="comerciante"
       />
     </div>

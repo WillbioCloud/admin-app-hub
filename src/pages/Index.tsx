@@ -1,39 +1,36 @@
 
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
-  const navigate = useNavigate();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isAdmin } = useAuth();
 
   useEffect(() => {
-    if (!isLoading) {
-      if (user) {
-        // Redirecionar baseado no role do usuário
-        if (user.role === 'admin') {
-          console.log('Redirecting admin to /admin/dashboard');
-          navigate("/admin/dashboard", { replace: true });
-        } else {
-          console.log('Redirecting comerciante to /dashboard');
-          navigate("/dashboard", { replace: true });
-        }
-      } else {
-        console.log('No user found, redirecting to login');
-        navigate("/login", { replace: true });
-      }
-    }
-  }, [user, isLoading, navigate]);
+    console.log('Index page - User:', user, 'Loading:', isLoading);
+  }, [user, isLoading]);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     );
   }
 
-  return null;
+  if (!user) {
+    console.log('Usuário não autenticado, redirecionando para login');
+    return <Navigate to="/login" replace />;
+  }
+
+  // Usar a função centralizada isAdmin() do contexto
+  if (isAdmin()) {
+    console.log('Usuário é admin, redirecionando para admin dashboard');
+    return <Navigate to="/admin/dashboard" replace />;
+  } else {
+    console.log('Usuário é comerciante, redirecionando para dashboard');
+    return <Navigate to="/dashboard" replace />;
+  }
 };
 
 export default Index;

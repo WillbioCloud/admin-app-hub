@@ -10,15 +10,17 @@ export interface User {
   email: string;
   role: UserRole;
   name: string;
-  comercioId?: string; // Para comerciantes
+  comercioId?: string;
+  isAdmin?: boolean; // Flag adicional para facilitar verificações
 }
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
-  signIn: (email: string, password: string) => Promise<boolean>; // Adicionar alias
+  signIn: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
+  isAdmin: () => boolean; // Helper function centralizada
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,13 +32,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profileLoading, setProfileLoading] = useState(false);
 
   const loadUserProfile = async (supabaseUser: SupabaseUser) => {
-    if (profileLoading) return; // Evitar múltiplas chamadas simultâneas
+    if (profileLoading) return;
     
     setProfileLoading(true);
     try {
       console.log('Loading profile for user:', supabaseUser.email);
       
-      // Tentar buscar perfil admin primeiro
+      // Primeiro tenta buscar perfil admin
       const { data: adminProfile } = await supabase
         .from('admin_profiles')
         .select('*')
@@ -50,11 +52,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: supabaseUser.email || '',
           role: adminProfile.user_type as UserRole,
           name: adminProfile.full_name || supabaseUser.email || 'Usuário',
+          isAdmin: adminProfile.user_type === 'admin'
         });
         return;
       }
 
-      // Se não encontrou perfil admin, verificar se é um usuário mobile
+      // Se não encontrou perfil admin, verifica usuário mobile
       const { data: profile } = await supabase
         .from('profiles')
         .select('*')
@@ -63,16 +66,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (profile) {
         console.log('Mobile profile found:', profile.user_type);
+        const role = profile.user_type === 'admin' ? 'admin' : 'comerciante';
         setUser({
           id: supabaseUser.id,
           email: supabaseUser.email || '',
-          role: profile.user_type === 'admin' ? 'admin' : 'comerciante',
+          role: role,
           name: profile.full_name || supabaseUser.email || 'Usuário',
+          isAdmin: profile.user_type === 'admin'
         });
       } else {
         console.warn('Nenhum perfil encontrado para o usuário. Pode ser um novo usuário ou o trigger do DB falhou.');
         // Não deslogar automaticamente - pode ser um usuário recém criado
-        // onde o perfil ainda está sendo processado pelo trigger
       }
     } catch (error) {
       console.error('Erro ao carregar perfil do usuário:', error);
@@ -81,10 +85,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const isAdmin = () => {
+    return user?.isAdmin === true || user?.role === 'admin';
+  };
+
   useEffect(() => {
     let mounted = true;
 
-    // Configurar listener de mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
@@ -104,7 +111,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    // Verificar sessão existente
     const checkSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -170,9 +176,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider value={{ 
       user, 
       login: authFunction, 
-      signIn: authFunction, // Alias para compatibilidade
+      signIn: authFunction,
       logout, 
-      isLoading: isLoading || profileLoading
+      isLoading: isLoading || profileLoading,
+      isAdmin
     }}>
       {children}
     </AuthContext.Provider>

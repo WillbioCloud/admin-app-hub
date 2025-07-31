@@ -5,7 +5,6 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { LogOut } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -13,10 +12,7 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { user, isLoading: authLoading, logout } = useAuth();
-  const { isAdmin, isLoading: adminLoading } = useAdminAuth();
-
-  const isLoading = authLoading || adminLoading;
+  const { user, isLoading, logout, isAdmin } = useAuth();
 
   if (isLoading) {
     return (
@@ -30,8 +26,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     return <Navigate to="/login" replace />;
   }
 
-  // Verifica se é admin para rotas administrativas
-  if (window.location.pathname.startsWith('/admin') && !isAdmin) {
+  // Usar a função centralizada isAdmin() do contexto
+  if (window.location.pathname.startsWith('/admin') && !isAdmin()) {
+    console.log('Usuário não é admin, redirecionando para login');
     return <Navigate to="/login" replace />;
   }
 
@@ -48,7 +45,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="flex items-center">
               <SidebarTrigger className="mr-4" />
               <h1 className="text-xl font-semibold">
-                Painel {user.role === 'admin' ? 'Administrativo' : 'do Comerciante'}
+                Painel {isAdmin() ? 'Administrativo' : 'do Comerciante'}
               </h1>
             </div>
             <div className="flex items-center space-x-4">

@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { UserPlus, Loader2 } from 'lucide-react';
 import { useCreateAdmin } from '@/hooks/useCreateAdmin';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 export const NovoUsuarioDialog = () => {
@@ -19,6 +20,7 @@ export const NovoUsuarioDialog = () => {
   });
 
   const { createAdmin, isLoading } = useCreateAdmin();
+  const queryClient = useQueryClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,8 +52,10 @@ export const NovoUsuarioDialog = () => {
         userType: 'comerciante'
       });
       
-      // Recarrega a página para atualizar a lista de usuários
-      window.location.reload();
+      // Invalidar queries para atualizar a lista automaticamente
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['mobile-users'] });
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
     } catch (error: any) {
       toast.error(error.message || 'Erro ao criar administrador');
     }

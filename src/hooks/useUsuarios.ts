@@ -10,34 +10,82 @@ export interface UsuarioSupabase {
   phone?: string;
   avatar_url?: string;
   is_approved: boolean;
+  email?: string; // Email real do usuário
 }
 
 export const useUsuarios = () => {
-  // Buscar usuários do admin_profiles (web app)
+  // Buscar usuários do admin_profiles (web app) com emails reais
   const { data: adminUsers = [] } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      console.log('Buscando usuários admin...');
+      
+      // Primeiro busca os perfis admin
+      const { data: profiles, error: profileError } = await supabase
         .from('admin_profiles')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return data || [];
+      if (profileError) {
+        console.error('Erro ao buscar perfis admin:', profileError);
+        throw profileError;
+      }
+
+      // Buscar emails reais através de edge function
+      try {
+        const { data: emailData, error: emailError } = await supabase.functions.invoke('get-user-emails', {
+          body: { userIds: profiles?.map(p => p.id) || [] }
+        });
+
+        if (emailError) {
+          console.warn('Erro ao buscar emails reais, usando dados sem email:', emailError);
+          return profiles?.map(user => ({
+            ...user,
+            email: 'Email não disponível'
+          })) || [];
+        }
+
+        // Juntar dados dos perfis com emails reais
+        const usersWithEmails = profiles?.map(user => ({
+          ...user,
+          email: emailData?.find((e: any) => e.id === user.id)?.email || 'Email não disponível'
+        })) || [];
+
+        return usersWithEmails;
+      } catch (error) {
+        console.warn('Edge function não disponível, retornando dados sem email:', error);
+        return profiles?.map(user => ({
+          ...user,
+          email: 'Email não disponível'
+        })) || [];
+      }
     }
   });
 
-  // Buscar usuários do profiles (mobile app)
+  // Buscar usuários do profiles (mobile app) com emails reais
   const { data: mobileUsers = [] } = useQuery({
     queryKey: ['mobile-users'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      console.log('Buscando usuários mobile...');
+      
+      // Primeiro busca os perfis mobile
+      const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return data || [];
+      if (profileError) {
+        console.error('Erro ao buscar perfis mobile:', profileError);
+        throw profileError;
+      }
+
+      // Usar o email já disponível na tabela profiles ou buscar via edge function
+      const usersWithEmails = profiles?.map(user => ({
+        ...user,
+        email: user.email || 'Email não disponível'
+      })) || [];
+
+      return usersWithEmails;
     }
   });
 
@@ -59,7 +107,7 @@ export const useUsuarios = () => {
     ...adminUsers.map(user => ({
       id: user.id,
       nome: user.full_name || 'Nome não informado',
-      email: `${user.full_name?.toLowerCase().replace(' ', '.')}@admin.com`, // Simulado
+      email: user.email || 'Email não disponível',
       telefone: user.phone || 'Não informado',
       comercio: comercios.find(c => c.user_id === user.id)?.nome || 'Sem comércio',
       status: 'ativo' as const,
@@ -71,7 +119,7 @@ export const useUsuarios = () => {
     ...mobileUsers.map(user => ({
       id: user.id,
       nome: user.full_name || 'Nome não informado',
-      email: `${user.full_name?.toLowerCase().replace(' ', '.')}@mobile.com`, // Simulado
+      email: user.email || 'Email não disponível',
       telefone: user.phone || 'Não informado',
       comercio: comercios.find(c => c.user_id === user.id)?.nome || 'Sem comércio',
       status: user.is_approved ? 'ativo' as const : 'pendente' as const,

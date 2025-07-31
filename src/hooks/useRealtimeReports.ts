@@ -97,26 +97,29 @@ export const useRealtimeReports = () => {
           }
         );
 
-      // Subscrever todos os channels
-      Promise.all([
-        adminChannel.subscribe(),
-        profilesChannel.subscribe(),
-        comerciosChannel.subscribe(),
-        missionsChannel.subscribe(),
-        supportChannel.subscribe()
-      ]).then((results) => {
-        const allConnected = results.every(result => result === 'SUBSCRIBED');
+      // Subscrever todos os channels e verificar status
+      const channels = [adminChannel, profilesChannel, comerciosChannel, missionsChannel, supportChannel];
+      
+      Promise.all(channels.map(channel => channel.subscribe())).then((results) => {
+        // Verificar se todos os channels estão conectados através do status
+        let connectedCount = 0;
+        
+        channels.forEach((channel, index) => {
+          if (channel.state === 'joined') {
+            connectedCount++;
+          }
+        });
+        
+        const allConnected = connectedCount === channels.length;
         setIsConnected(allConnected);
-        console.log('Realtime subscriptions status:', allConnected ? 'Connected' : 'Failed');
+        console.log('Realtime subscriptions status:', allConnected ? 'Connected' : `${connectedCount}/${channels.length} connected`);
       });
 
       return () => {
         console.log('Cleaning up realtime subscriptions...');
-        supabase.removeChannel(adminChannel);
-        supabase.removeChannel(profilesChannel);
-        supabase.removeChannel(comerciosChannel);
-        supabase.removeChannel(missionsChannel);
-        supabase.removeChannel(supportChannel);
+        channels.forEach(channel => {
+          supabase.removeChannel(channel);
+        });
       };
     };
 

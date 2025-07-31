@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,12 +19,12 @@ const Login = () => {
   const { login, user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  console.log('Login page - Auth Loading:', authLoading, 'User:', user?.email || 'No user');
+  console.log('Login: Auth Loading:', authLoading, 'User:', user?.email || 'No user');
 
   // Redirecionar se já estiver logado
   useEffect(() => {
     if (user && !authLoading) {
-      console.log('User logged in, redirecting to home...');
+      console.log('Login: Usuário já logado, redirecionando...');
       navigate('/', { replace: true });
     }
   }, [user, authLoading, navigate]);
@@ -41,15 +41,14 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      console.log('Starting login process...');
+      console.log('Login: Iniciando processo de login...');
       const success = await login(formData.email, formData.password);
       
       if (!success) {
         setError('Email ou senha inválidos. Verifique suas credenciais.');
       }
-      // Se sucesso, o redirecionamento será feito pelo useEffect
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Login: Erro no login:', error);
       setError('Erro ao fazer login. Tente novamente.');
     } finally {
       setIsLoading(false);
@@ -119,9 +118,9 @@ const Login = () => {
             
             <div className="text-center text-sm">
               Não tem uma conta?{' '}
-              <span className="text-primary cursor-pointer hover:underline">
+              <Link to="/register" className="text-primary hover:underline">
                 Criar conta
-              </span>
+              </Link>
             </div>
           </CardFooter>
         </form>

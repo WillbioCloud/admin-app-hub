@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { User as SupabaseUser, Session } from '@supabase/supabase-js';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 export type UserRole = 'admin' | 'comerciante';
 
@@ -28,19 +28,63 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const isAdmin = () => {
+    return user?.role === 'admin';
+  };
+
+  useEffect(() => {
+    console.log('AuthProvider: Iniciando setup de autenticação...');
+    
+    // Verificar sessão atual
+    const getSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('AuthProvider: Sessão atual:', session?.user?.email || 'Nenhuma sessão');
+        
+        if (session?.user) {
+          await loadUserProfile(session.user);
+        }
+      } catch (error) {
+        console.error('AuthProvider: Erro ao obter sessão:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Configurar listener de mudanças de auth
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('AuthProvider: Auth state change:', event, session?.user?.email || 'No user');
+        
+        if (session?.user) {
+          await loadUserProfile(session.user);
+        } else {
+          setUser(null);
+        }
+        setIsLoading(false);
+      }
+    );
+
+    getSession();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   const loadUserProfile = async (supabaseUser: SupabaseUser) => {
     try {
-      console.log('Loading profile for user:', supabaseUser.email);
+      console.log('AuthProvider: Carregando perfil para:', supabaseUser.email);
       
-      // Primeiro tenta buscar perfil admin
-      const { data: adminProfile, error: adminError } = await supabase
+      // Tentar buscar perfil admin primeiro
+      const { data: adminProfile } = await supabase
         .from('admin_profiles')
         .select('*')
         .eq('id', supabaseUser.id)
         .single();
 
-      if (adminProfile && !adminError) {
-        console.log('Admin profile found');
+      if (adminProfile) {
+        console.log('AuthProvider: Perfil admin encontrado');
         setUser({
           id: supabaseUser.id,
           email: supabaseUser.email || '',
@@ -50,15 +94,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Se não encontrou perfil admin, verifica usuário mobile
-      const { data: profile, error: profileError } = await supabase
+      // Se não é admin, tentar perfil mobile
+      const { data: profile } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', supabaseUser.id)
         .single();
 
-      if (profile && !profileError) {
-        console.log('Mobile profile found');
+      if (profile) {
+        console.log('AuthProvider: Perfil mobile encontrado');
         const role = profile.user_type === 'admin' ? 'admin' : 'comerciante';
         setUser({
           id: supabaseUser.id,
@@ -66,19 +110,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: role,
           name: profile.full_name || supabaseUser.email || 'Usuário',
         });
-      } else {
-        console.log('No profile found, creating basic user');
-        // Criar usuário básico sem deslogar
-        setUser({
-          id: supabaseUser.id,
-          email: supabaseUser.email || '',
-          role: 'comerciante',
-          name: supabaseUser.email || 'Usuário',
-        });
+        return;
       }
+
+      // Fallback: criar usuário básico
+      console.log('AuthProvider: Nenhum perfil encontrado, criando usuário básico');
+      setUser({
+        id: supabaseUser.id,
+        email: supabaseUser.email || '',
+        role: 'comerciante',
+        name: supabaseUser.email || 'Usuário',
+      });
+      
     } catch (error) {
-      console.error('Error loading user profile:', error);
-      // Em caso de erro, criar usuário básico
+      console.error('AuthProvider: Erro ao carregar perfil:', error);
+      // Fallback em caso de erro
       setUser({
         id: supabaseUser.id,
         email: supabaseUser.email || '',
@@ -88,55 +134,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const isAdmin = () => {
-    return user?.role === 'admin';
-  };
-
-  useEffect(() => {
-    console.log('Setting up auth listener...');
-    
-    // Configurar listener de mudanças de auth
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state change:', event);
-        
-        if (session?.user) {
-          await loadUserProfile(session.user);
-        } else {
-          setUser(null);
-        }
-        
-        setIsLoading(false);
-      }
-    );
-
-    // Verificar sessão inicial
-    const getInitialSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log('Initial session:', session?.user?.email || 'No user');
-        
-        if (session?.user) {
-          await loadUserProfile(session.user);
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        console.error('Error getting initial session:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    getInitialSession();
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
   const authFunction = async (email: string, password: string): Promise<boolean> => {
-    console.log('Attempting login for:', email);
+    console.log('AuthProvider: Tentando login para:', email);
     
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -145,25 +144,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        console.error('Login error:', error.message);
+        console.error('AuthProvider: Erro de login:', error.message);
         return false;
       }
 
-      console.log('Login successful');
+      console.log('AuthProvider: Login realizado com sucesso');
       return true;
     } catch (error) {
-      console.error('Login exception:', error);
+      console.error('AuthProvider: Exceção durante login:', error);
       return false;
     }
   };
 
   const logout = async () => {
-    console.log('Logging out user');
+    console.log('AuthProvider: Fazendo logout...');
     try {
       await supabase.auth.signOut();
       setUser(null);
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('AuthProvider: Erro no logout:', error);
     }
   };
 

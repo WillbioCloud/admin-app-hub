@@ -26,7 +26,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadUserProfile = async (supabaseUser: SupabaseUser) => {
@@ -34,32 +33,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('Loading profile for user:', supabaseUser.email);
       
       // Primeiro tenta buscar perfil admin
-      const { data: adminProfile } = await supabase
+      const { data: adminProfile, error: adminError } = await supabase
         .from('admin_profiles')
         .select('*')
         .eq('id', supabaseUser.id)
         .single();
 
-      if (adminProfile) {
-        console.log('Admin profile found:', adminProfile.user_type);
+      if (adminProfile && !adminError) {
+        console.log('Admin profile found');
         setUser({
           id: supabaseUser.id,
           email: supabaseUser.email || '',
           role: 'admin',
-          name: adminProfile.full_name || supabaseUser.email || 'Usuário',
+          name: adminProfile.full_name || supabaseUser.email || 'Admin',
         });
         return;
       }
 
       // Se não encontrou perfil admin, verifica usuário mobile
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', supabaseUser.id)
         .single();
 
-      if (profile) {
-        console.log('Mobile profile found:', profile.user_type);
+      if (profile && !profileError) {
+        console.log('Mobile profile found');
         const role = profile.user_type === 'admin' ? 'admin' : 'comerciante';
         setUser({
           id: supabaseUser.id,
@@ -68,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           name: profile.full_name || supabaseUser.email || 'Usuário',
         });
       } else {
-        console.warn('Nenhum perfil encontrado para o usuário. Pode ser um novo usuário.');
+        console.log('No profile found, creating basic user');
         // Criar usuário básico sem deslogar
         setUser({
           id: supabaseUser.id,
@@ -78,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
       }
     } catch (error) {
-      console.error('Erro ao carregar perfil do usuário:', error);
+      console.error('Error loading user profile:', error);
       // Em caso de erro, criar usuário básico
       setUser({
         id: supabaseUser.id,
@@ -94,56 +93,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    let mounted = true;
-
+    console.log('Setting up auth listener...');
+    
+    // Configurar listener de mudanças de auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (!mounted) return;
-
-        console.log('Auth state change:', event, session?.user?.email);
+        console.log('Auth state change:', event);
         
         if (session?.user) {
-          setSession(session);
           await loadUserProfile(session.user);
         } else {
-          setSession(null);
           setUser(null);
         }
         
-        if (mounted) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     );
 
     // Verificar sessão inicial
-    const checkInitialSession = async () => {
+    const getInitialSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!mounted) return;
-
-        console.log('Initial session check:', session?.user?.email);
+        console.log('Initial session:', session?.user?.email || 'No user');
         
         if (session?.user) {
-          setSession(session);
           await loadUserProfile(session.user);
         } else {
-          setSession(null);
           setUser(null);
         }
       } catch (error) {
-        console.error('Erro ao verificar sessão inicial:', error);
+        console.error('Error getting initial session:', error);
       } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     };
 
-    checkInitialSession();
+    getInitialSession();
 
     return () => {
-      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
@@ -152,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('Attempting login for:', email);
     
     try {
-      const { error, data } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -162,7 +149,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return false;
       }
 
-      console.log('Login successful for:', data.user?.email);
+      console.log('Login successful');
       return true;
     } catch (error) {
       console.error('Login exception:', error);
@@ -175,9 +162,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await supabase.auth.signOut();
       setUser(null);
-      setSession(null);
     } catch (error) {
-      console.error('Erro ao fazer logout:', error);
+      console.error('Logout error:', error);
     }
   };
 

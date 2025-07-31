@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,10 +19,12 @@ const Login = () => {
   const { login, user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
 
+  console.log('Login page - Auth Loading:', authLoading, 'User:', user?.email || 'No user');
+
   // Redirecionar se já estiver logado
   useEffect(() => {
     if (user && !authLoading) {
-      console.log('User already logged in, redirecting...');
+      console.log('User logged in, redirecting to home...');
       navigate('/', { replace: true });
     }
   }, [user, authLoading, navigate]);
@@ -59,20 +61,8 @@ const Login = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-muted-foreground">Verificando autenticação...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Se já está logado, não mostrar o formulário
-  if (user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Redirecionando...</p>
         </div>
       </div>
     );
@@ -129,9 +119,9 @@ const Login = () => {
             
             <div className="text-center text-sm">
               Não tem uma conta?{' '}
-              <Link to="/register" className="text-primary hover:underline">
+              <span className="text-primary cursor-pointer hover:underline">
                 Criar conta
-              </Link>
+              </span>
             </div>
           </CardFooter>
         </form>

@@ -11,7 +11,6 @@ export interface User {
   role: UserRole;
   name: string;
   comercioId?: string;
-  isAdmin?: boolean; // Flag adicional para facilitar verificações
 }
 
 interface AuthContextType {
@@ -20,7 +19,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
-  isAdmin: () => boolean; // Helper function centralizada
+  isAdmin: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,12 +28,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [profileLoading, setProfileLoading] = useState(false);
 
   const loadUserProfile = async (supabaseUser: SupabaseUser) => {
-    if (profileLoading) return;
-    
-    setProfileLoading(true);
     try {
       console.log('Loading profile for user:', supabaseUser.email);
       
@@ -50,9 +45,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser({
           id: supabaseUser.id,
           email: supabaseUser.email || '',
-          role: adminProfile.user_type as UserRole,
+          role: 'admin',
           name: adminProfile.full_name || supabaseUser.email || 'Usuário',
-          isAdmin: adminProfile.user_type === 'admin'
         });
         return;
       }
@@ -72,21 +66,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: supabaseUser.email || '',
           role: role,
           name: profile.full_name || supabaseUser.email || 'Usuário',
-          isAdmin: profile.user_type === 'admin'
         });
       } else {
-        console.warn('Nenhum perfil encontrado para o usuário. Pode ser um novo usuário ou o trigger do DB falhou.');
-        // Não deslogar automaticamente - pode ser um usuário recém criado
+        console.warn('Nenhum perfil encontrado para o usuário. Pode ser um novo usuário.');
+        // Criar usuário básico sem deslogar
+        setUser({
+          id: supabaseUser.id,
+          email: supabaseUser.email || '',
+          role: 'comerciante',
+          name: supabaseUser.email || 'Usuário',
+        });
       }
     } catch (error) {
       console.error('Erro ao carregar perfil do usuário:', error);
-    } finally {
-      setProfileLoading(false);
+      // Em caso de erro, criar usuário básico
+      setUser({
+        id: supabaseUser.id,
+        email: supabaseUser.email || '',
+        role: 'comerciante',
+        name: supabaseUser.email || 'Usuário',
+      });
     }
   };
 
   const isAdmin = () => {
-    return user?.isAdmin === true || user?.role === 'admin';
+    return user?.role === 'admin';
   };
 
   useEffect(() => {
@@ -97,11 +101,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!mounted) return;
 
         console.log('Auth state change:', event, session?.user?.email);
-        setSession(session);
         
         if (session?.user) {
+          setSession(session);
           await loadUserProfile(session.user);
         } else {
+          setSession(null);
           setUser(null);
         }
         
@@ -111,19 +116,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    const checkSession = async () => {
+    // Verificar sessão inicial
+    const checkInitialSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!mounted) return;
 
         console.log('Initial session check:', session?.user?.email);
-        setSession(session);
         
         if (session?.user) {
+          setSession(session);
           await loadUserProfile(session.user);
+        } else {
+          setSession(null);
+          setUser(null);
         }
       } catch (error) {
-        console.error('Erro ao verificar sessão:', error);
+        console.error('Erro ao verificar sessão inicial:', error);
       } finally {
         if (mounted) {
           setIsLoading(false);
@@ -131,7 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    checkSession();
+    checkInitialSession();
 
     return () => {
       mounted = false;
@@ -178,7 +187,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login: authFunction, 
       signIn: authFunction,
       logout, 
-      isLoading: isLoading || profileLoading,
+      isLoading,
       isAdmin
     }}>
       {children}

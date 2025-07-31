@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, GamepadIcon, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, GamepadIcon, CheckCircle, XCircle, QrCode, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,17 +23,29 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { GamificationDialog } from '@/components/gamification/GamificationDialog';
+import { QRCodeViewer } from '@/components/gamification/QRCodeViewer';
 import { useGamifications, useDeleteGamification, useApproveGamification, useRejectGamification, Gamification } from '@/hooks/useGamifications';
+import { useCreateNotification } from '@/hooks/useNotifications';
 
 export default function GamificacoesPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingGamification, setEditingGamification] = useState<Gamification | null>(null);
+  const [qrCodeDialogOpen, setQrCodeDialogOpen] = useState(false);
+  const [selectedGamification, setSelectedGamification] = useState<Gamification | null>(null);
 
   const { data: gamifications = [], isLoading, error } = useGamifications();
   const deleteGamification = useDeleteGamification();
   const approveGamification = useApproveGamification();
   const rejectGamification = useRejectGamification();
+  const createNotification = useCreateNotification();
 
   const handleCreate = () => {
     setEditingGamification(null);
@@ -49,12 +61,30 @@ export default function GamificacoesPage() {
     deleteGamification.mutate(id);
   };
 
-  const handleApprove = (id: string) => {
-    approveGamification.mutate(id);
+  const handleApprove = async (gamification: Gamification) => {
+    try {
+      await approveGamification.mutateAsync(gamification.id);
+      
+      // Criar notificação para o app
+      await createNotification.mutateAsync({
+        title: `Nova missão aprovada: ${gamification.title}`,
+        message: `A missão "${gamification.title}" foi aprovada e está disponível no app!`,
+        type: 'nova_missao',
+        metadata: { mission_id: gamification.id },
+        user_id: null // null = notificação global
+      });
+    } catch (error) {
+      console.error('Erro ao aprovar gamificação:', error);
+    }
   };
 
   const handleReject = (id: string) => {
     rejectGamification.mutate(id);
+  };
+
+  const handleViewQRCode = (gamification: Gamification) => {
+    setSelectedGamification(gamification);
+    setQrCodeDialogOpen(true);
   };
 
   if (isLoading) {
@@ -207,7 +237,7 @@ export default function GamificacoesPage() {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => handleApprove(gamification.id)}
+                            onClick={() => handleApprove(gamification)}
                             disabled={approveGamification.isPending}
                           >
                             <CheckCircle className="h-4 w-4 text-green-600" />
@@ -221,6 +251,15 @@ export default function GamificacoesPage() {
                             <XCircle className="h-4 w-4 text-red-600" />
                           </Button>
                         </>
+                      )}
+                      {gamification.type === 'qr_code' && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewQRCode(gamification)}
+                        >
+                          <QrCode className="h-4 w-4" />
+                        </Button>
                       )}
                       <Button 
                         variant="outline" 
@@ -267,6 +306,30 @@ export default function GamificacoesPage() {
         onSubmit={() => setIsDialogOpen(false)}
         userRole="admin"
       />
+
+      <Dialog open={qrCodeDialogOpen} onOpenChange={setQrCodeDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <QrCode className="h-5 w-5" />
+              QR Code da Missão
+            </DialogTitle>
+            <DialogDescription>
+              QR Code para a missão: {selectedGamification?.title}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex justify-center">
+            {selectedGamification && (
+              <QRCodeViewer
+                data={selectedGamification.completion_data}
+                title={selectedGamification.title}
+                size={200}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

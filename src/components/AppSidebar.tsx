@@ -1,4 +1,4 @@
-import { Home, Users, FileText, Bell, Store, Settings, Palette, User, GamepadIcon } from 'lucide-react';
+import { Home, Users, FileText, Bell, Store, Settings, Palette, User, GamepadIcon, Newspaper } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 import {
@@ -42,6 +42,16 @@ export function AppSidebar() {
       title: 'Gamificações',
       url: '/admin/gamificacoes',
       icon: GamepadIcon,
+    },
+    {
+      title: 'Notificações',
+      url: '/admin/notificacoes',
+      icon: Bell,
+    },
+    {
+      title: 'Notícias',
+      url: '/admin/noticias',
+      icon: Newspaper,
     },
     {
       title: 'Aprovações',

@@ -17,6 +17,8 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import UsuariosPage from "./pages/admin/UsuariosPage";
 import ComerciosPage from "./pages/admin/ComerciosPage";
 import GamificacoesPage from "./pages/admin/GamificacoesPage";
+import NotificacoesPage from "./pages/admin/NotificacoesPage";
+import NoticiasPage from "./pages/admin/NoticiasPage";
 import RelatoriosPage from "./pages/admin/RelatoriosPage";
 import CategoriasPage from "./pages/admin/CategoriasPage";
 import AprovacoesPage from "./pages/admin/AprovacoesPage";
@@ -58,6 +60,8 @@ const App = () => (
             <Route path="/admin/usuarios" element={<DashboardLayout><UsuariosPage /></DashboardLayout>} />
             <Route path="/admin/comercios" element={<DashboardLayout><ComerciosPage /></DashboardLayout>} />
             <Route path="/admin/gamificacoes" element={<DashboardLayout><GamificacoesPage /></DashboardLayout>} />
+            <Route path="/admin/notificacoes" element={<DashboardLayout><NotificacoesPage /></DashboardLayout>} />
+            <Route path="/admin/noticias" element={<DashboardLayout><NoticiasPage /></DashboardLayout>} />
             <Route path="/admin/relatorios" element={<DashboardLayout><RelatoriosPage /></DashboardLayout>} />
             <Route path="/admin/categorias" element={<DashboardLayout><CategoriasPage /></DashboardLayout>} />
             <Route path="/admin/aprovacoes" element={<DashboardLayout><AprovacoesPage /></DashboardLayout>} />

@@ -27,38 +27,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Configurar listener de mudanças de autenticação
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state change:', event, session?.user?.email);
-        setSession(session);
-        
-        if (session?.user) {
-          await loadUserProfile(session.user);
-        } else {
-          setUser(null);
-        }
-        setIsLoading(false);
-      }
-    );
-
-    // Verificar sessão existente
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      console.log('Initial session check:', session?.user?.email);
-      setSession(session);
-      
-      if (session?.user) {
-        await loadUserProfile(session.user);
-      }
-      setIsLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   const loadUserProfile = async (supabaseUser: SupabaseUser) => {
+    if (profileLoading) return; // Evitar múltiplas chamadas simultâneas
+    
+    setProfileLoading(true);
     try {
       console.log('Loading profile for user:', supabaseUser.email);
       
@@ -102,14 +76,67 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Erro ao carregar perfil do usuário:', error);
       setUser(null);
+    } finally {
+      setProfileLoading(false);
     }
   };
 
+  useEffect(() => {
+    let mounted = true;
+
+    // Configurar listener de mudanças de autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return;
+
+        console.log('Auth state change:', event, session?.user?.email);
+        setSession(session);
+        
+        if (session?.user) {
+          await loadUserProfile(session.user);
+        } else {
+          setUser(null);
+        }
+        
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    );
+
+    // Verificar sessão existente
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!mounted) return;
+
+        console.log('Initial session check:', session?.user?.email);
+        setSession(session);
+        
+        if (session?.user) {
+          await loadUserProfile(session.user);
+        }
+      } catch (error) {
+        console.error('Erro ao verificar sessão:', error);
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    checkSession();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
   const authFunction = async (email: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
+    console.log('Attempting login for:', email);
     
     try {
-      console.log('Attempting login for:', email);
       const { error, data } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -117,7 +144,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('Login error:', error.message);
-        setIsLoading(false);
         return false;
       }
 
@@ -125,16 +151,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return true;
     } catch (error) {
       console.error('Login exception:', error);
-      setIsLoading(false);
       return false;
     }
   };
 
   const logout = async () => {
     console.log('Logging out user');
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setSession(null);
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    }
   };
 
   return (
@@ -143,7 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login: authFunction, 
       signIn: authFunction, // Alias para compatibilidade
       logout, 
-      isLoading 
+      isLoading: isLoading || profileLoading
     }}>
       {children}
     </AuthContext.Provider>

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,28 +16,52 @@ const Login = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  const { login } = useAuth();
+  const { login, user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirecionar se já estiver logado
+  useEffect(() => {
+    if (user && !authLoading) {
+      console.log('User already logged in, redirecting...');
+      navigate('/', { replace: true });
+    }
+  }, [user, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.email || !formData.password) {
+      setError('Preencha todos os campos');
+      return;
+    }
+
     setError('');
     setIsLoading(true);
 
     try {
+      console.log('Starting login process...');
       const success = await login(formData.email, formData.password);
       
-      if (success) {
-        navigate('/');
-      } else {
-        setError('Email ou senha inválidos');
+      if (!success) {
+        setError('Email ou senha inválidos. Verifique suas credenciais.');
       }
+      // Se sucesso, o redirecionamento será feito pelo useEffect
     } catch (error) {
+      console.error('Login error:', error);
       setError('Erro ao fazer login. Tente novamente.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Mostrar loading enquanto verifica autenticação inicial
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -65,6 +89,7 @@ const Login = () => {
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                 required
                 placeholder="seu@email.com"
+                disabled={isLoading}
               />
             </div>
             
@@ -77,12 +102,13 @@ const Login = () => {
                 onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                 required
                 placeholder="Sua senha"
+                disabled={isLoading}
               />
             </div>
           </CardContent>
           
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading || authLoading}>
               {isLoading ? 'Entrando...' : 'Entrar'}
             </Button>
             

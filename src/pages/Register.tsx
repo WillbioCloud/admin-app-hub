@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -21,7 +22,17 @@ const Register = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  
+  const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirecionar se já estiver logado
+  useEffect(() => {
+    if (user && !authLoading) {
+      console.log('User already logged in, redirecting...');
+      navigate('/', { replace: true });
+    }
+  }, [user, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +90,7 @@ const Register = () => {
         throw new Error('Usuário não foi criado corretamente');
       }
 
-      setSuccess('Conta criada com sucesso! Verifique seu email para confirmar a conta.');
+      setSuccess('Conta criada com sucesso! Você pode fazer login agora.');
       
       // Limpar formulário
       setFormData({
@@ -90,6 +101,11 @@ const Register = () => {
         phone: '',
         userType: 'comerciante'
       });
+
+      // Redirecionar para login após 2 segundos
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
 
     } catch (error: any) {
       console.error('Erro completo na criação da conta:', error);
@@ -115,6 +131,15 @@ const Register = () => {
       setIsLoading(false);
     }
   };
+
+  // Mostrar loading enquanto verifica autenticação inicial
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -148,6 +173,7 @@ const Register = () => {
                 onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
                 required
                 placeholder="Seu nome completo"
+                disabled={isLoading}
               />
             </div>
             
@@ -160,6 +186,7 @@ const Register = () => {
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                 required
                 placeholder="seu@email.com"
+                disabled={isLoading}
               />
             </div>
 
@@ -171,6 +198,7 @@ const Register = () => {
                 value={formData.phone}
                 onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                 placeholder="(11) 99999-9999"
+                disabled={isLoading}
               />
             </div>
 
@@ -181,6 +209,7 @@ const Register = () => {
                 onValueChange={(value: 'admin' | 'comerciante') => 
                   setFormData(prev => ({ ...prev, userType: value }))
                 }
+                disabled={isLoading}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -202,6 +231,7 @@ const Register = () => {
                 required
                 placeholder="Mínimo 6 caracteres"
                 minLength={6}
+                disabled={isLoading}
               />
             </div>
 
@@ -215,6 +245,7 @@ const Register = () => {
                 required
                 placeholder="Digite a senha novamente"
                 minLength={6}
+                disabled={isLoading}
               />
             </div>
           </CardContent>

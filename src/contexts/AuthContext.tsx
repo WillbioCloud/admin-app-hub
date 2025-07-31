@@ -35,35 +35,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     console.log('AuthProvider: Iniciando setup de autenticação...');
     
-    // Verificar sessão atual
-    const getSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log('AuthProvider: Sessão atual:', session?.user?.email || 'Nenhuma sessão');
-        
-        if (session?.user) {
-          await loadUserProfile(session.user);
-        }
-      } catch (error) {
-        console.error('AuthProvider: Erro ao obter sessão:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Configurar listener de mudanças de auth
+    // Configurar listener de mudanças de auth PRIMEIRO (evita deadlock)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('AuthProvider: Auth state change:', event, session?.user?.email || 'No user');
         
+        // Atualização síncrona do estado
         if (session?.user) {
-          await loadUserProfile(session.user);
+          // Defer a chamada async para evitar deadlock
+          setTimeout(() => {
+            loadUserProfile(session.user);
+          }, 0);
         } else {
           setUser(null);
         }
         setIsLoading(false);
       }
     );
+
+    // Verificar sessão atual DEPOIS do listener
+    const getSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('AuthProvider: Sessão inicial:', session?.user?.email || 'Nenhuma sessão');
+        
+        if (session?.user) {
+          await loadUserProfile(session.user);
+        } else {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('AuthProvider: Erro ao obter sessão:', error);
+        setIsLoading(false);
+      }
+    };
 
     getSession();
 
@@ -76,15 +81,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('AuthProvider: Carregando perfil para:', supabaseUser.email);
       
-      // Tentar buscar perfil admin primeiro
-      const { data: adminProfile } = await supabase
-        .from('admin_profiles')
-        .select('*')
-        .eq('id', supabaseUser.id)
-        .single();
+      // Query unificada para evitar múltiplas chamadas
+      const [adminResult, profileResult] = await Promise.allSettled([
+        supabase.from('admin_profiles').select('*').eq('id', supabaseUser.id).single(),
+        supabase.from('profiles').select('*').eq('id', supabaseUser.id).single()
+      ]);
 
-      if (adminProfile) {
+      // Verificar se é admin
+      if (adminResult.status === 'fulfilled' && adminResult.value.data) {
         console.log('AuthProvider: Perfil admin encontrado');
+        const adminProfile = adminResult.value.data;
         setUser({
           id: supabaseUser.id,
           email: supabaseUser.email || '',
@@ -94,15 +100,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Se não é admin, tentar perfil mobile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', supabaseUser.id)
-        .single();
-
-      if (profile) {
+      // Verificar se é perfil mobile
+      if (profileResult.status === 'fulfilled' && profileResult.value.data) {
         console.log('AuthProvider: Perfil mobile encontrado');
+        const profile = profileResult.value.data;
         const role = profile.user_type === 'admin' ? 'admin' : 'comerciante';
         setUser({
           id: supabaseUser.id,

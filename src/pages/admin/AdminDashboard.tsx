@@ -2,32 +2,41 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, FileText, Bell, Store } from 'lucide-react';
+import { useReports } from '@/hooks/useReports';
 
 const AdminDashboard = () => {
+  const { 
+    totalUsers,
+    totalComercios,
+    comerciosAtivos,
+    totalMissoes,
+    totalTickets
+  } = useReports();
+
   const stats = [
     {
-      title: 'Novos Usuários',
-      value: '1,234',
-      description: '+20.1% do mês passado',
+      title: 'Total de Usuários',
+      value: totalUsers.toLocaleString(),
+      description: 'Web + Mobile Apps',
       icon: Users,
     },
     {
-      title: 'Posts de Novidades',
-      value: '45',
-      description: '12 publicados esta semana',
+      title: 'Comércios Cadastrados',
+      value: totalComercios.toLocaleString(),
+      description: `${comerciosAtivos} ativos`,
+      icon: Store,
+    },
+    {
+      title: 'Missões Ativas',
+      value: totalMissoes.toLocaleString(),
+      description: 'Gamificação em andamento',
       icon: FileText,
     },
     {
-      title: 'Notificações Ativas',
-      value: '8',
-      description: '3 críticas, 5 informativas',
+      title: 'Tickets de Suporte',
+      value: totalTickets.toLocaleString(),
+      description: 'Solicitações pendentes',
       icon: Bell,
-    },
-    {
-      title: 'Comércios Cadastrados',
-      value: '89',
-      description: '+5 novos este mês',
-      icon: Store,
     },
   ];
 
@@ -68,21 +77,21 @@ const AdminDashboard = () => {
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
                 <div className="text-sm">
-                  <p className="font-medium">Nova notificação criada</p>
+                  <p className="font-medium">Sistema atualizado</p>
                   <p className="text-muted-foreground">há 2 horas</p>
                 </div>
               </div>
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
                 <div className="text-sm">
-                  <p className="font-medium">Comércio aprovado</p>
+                  <p className="font-medium">Novos usuários cadastrados</p>
                   <p className="text-muted-foreground">há 4 horas</p>
                 </div>
               </div>
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
                 <div className="text-sm">
-                  <p className="font-medium">Post de novidade publicado</p>
+                  <p className="font-medium">Comércios aprovados</p>
                   <p className="text-muted-foreground">ontem</p>
                 </div>
               </div>
@@ -104,8 +113,12 @@ const AdminDashboard = () => {
                 <span className="text-sm font-medium text-green-600">Online</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm">Última atualização</span>
-                <span className="text-sm text-muted-foreground">há 5 min</span>
+                <span className="text-sm">Total de Usuários</span>
+                <span className="text-sm text-muted-foreground">{totalUsers}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm">Comércios Ativos</span>
+                <span className="text-sm text-muted-foreground">{comerciosAtivos}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm">Versão</span>

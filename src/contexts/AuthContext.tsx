@@ -16,6 +16,7 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
+  signIn: (email: string, password: string) => Promise<boolean>; // Adicionar alias
   logout: () => void;
   isLoading: boolean;
 }
@@ -31,6 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Configurar listener de mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.email);
         setSession(session);
         
         if (session?.user) {
@@ -44,6 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Verificar sessão existente
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.email);
       setSession(session);
       
       if (session?.user) {
@@ -57,7 +60,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadUserProfile = async (supabaseUser: SupabaseUser) => {
     try {
-      // Tentar buscar perfil admin
+      console.log('Loading profile for user:', supabaseUser.email);
+      
+      // Tentar buscar perfil admin primeiro
       const { data: adminProfile } = await supabase
         .from('admin_profiles')
         .select('*')
@@ -65,6 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (adminProfile) {
+        console.log('Admin profile found:', adminProfile.user_type);
         setUser({
           id: supabaseUser.id,
           email: supabaseUser.email || '',
@@ -82,12 +88,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (profile) {
+        console.log('Mobile profile found:', profile.user_type);
         setUser({
           id: supabaseUser.id,
           email: supabaseUser.email || '',
           role: profile.user_type === 'admin' ? 'admin' : 'comerciante',
           name: profile.full_name || supabaseUser.email || 'Usuário',
         });
+      } else {
+        console.log('No profile found for user');
+        setUser(null);
       }
     } catch (error) {
       console.error('Erro ao carregar perfil do usuário:', error);
@@ -95,37 +105,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const authFunction = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('Attempting login for:', email);
+      const { error, data } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
-        console.error('Erro no login:', error.message);
+        console.error('Login error:', error.message);
         setIsLoading(false);
         return false;
       }
 
+      console.log('Login successful for:', data.user?.email);
       return true;
     } catch (error) {
-      console.error('Erro no login:', error);
+      console.error('Login exception:', error);
       setIsLoading(false);
       return false;
     }
   };
 
   const logout = async () => {
+    console.log('Logging out user');
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      login: authFunction, 
+      signIn: authFunction, // Alias para compatibilidade
+      logout, 
+      isLoading 
+    }}>
       {children}
     </AuthContext.Provider>
   );

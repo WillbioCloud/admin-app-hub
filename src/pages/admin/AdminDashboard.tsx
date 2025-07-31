@@ -1,8 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, FileText, Bell, Store } from 'lucide-react';
+import { Users, FileText, Bell, Store, Wifi, WifiOff } from 'lucide-react';
 import { useReports } from '@/hooks/useReports';
+import { useRealtimeReports } from '@/hooks/useRealtimeReports';
+import { Badge } from '@/components/ui/badge';
 
 const AdminDashboard = () => {
   const { 
@@ -12,6 +13,8 @@ const AdminDashboard = () => {
     totalMissoes,
     totalTickets
   } = useReports();
+
+  const { isConnected } = useRealtimeReports();
 
   const stats = [
     {
@@ -42,11 +45,17 @@ const AdminDashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard Administrativo</h2>
-        <p className="text-muted-foreground">
-          Visão geral do sistema e estatísticas principais
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard Administrativo</h2>
+          <p className="text-muted-foreground">
+            Visão geral do sistema e estatísticas principais
+          </p>
+        </div>
+        <Badge variant={isConnected ? "default" : "destructive"} className="flex items-center gap-2">
+          {isConnected ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
+          {isConnected ? 'Tempo Real Ativo' : 'Tempo Real Desconectado'}
+        </Badge>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -119,6 +128,12 @@ const AdminDashboard = () => {
               <div className="flex justify-between">
                 <span className="text-sm">Comércios Ativos</span>
                 <span className="text-sm text-muted-foreground">{comerciosAtivos}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm">Tempo Real</span>
+                <span className={`text-sm font-medium ${isConnected ? 'text-green-600' : 'text-red-600'}`}>
+                  {isConnected ? 'Conectado' : 'Desconectado'}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm">Versão</span>

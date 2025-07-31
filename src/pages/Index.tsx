@@ -12,11 +12,14 @@ const Index = () => {
       if (user) {
         // Redirecionar baseado no role do usuário
         if (user.role === 'admin') {
+          console.log('Redirecting admin to /admin/dashboard');
           navigate("/admin/dashboard", { replace: true });
         } else {
+          console.log('Redirecting comerciante to /dashboard');
           navigate("/dashboard", { replace: true });
         }
       } else {
+        console.log('No user found, redirecting to login');
         navigate("/login", { replace: true });
       }
     }

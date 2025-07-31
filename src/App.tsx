@@ -46,84 +46,31 @@ const App = () => (
         <Toaster />
         <BrowserRouter>
           <Routes>
+            {/* Rotas Públicas */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             
-            <Route path="/" element={
-              <DashboardLayout>
-                <Index />
-              </DashboardLayout>
-            } />
+            {/* Rota Raiz: Apenas o Index para redirecionar */}
+            <Route path="/" element={<Index />} />
             
-            {/* Admin Routes */}
-            <Route path="/admin" element={
-              <DashboardLayout>
-                <AdminDashboard />
-              </DashboardLayout>
-            } />
-            <Route path="/admin/usuarios" element={
-              <DashboardLayout>
-                <UsuariosPage />
-              </DashboardLayout>
-            } />
-            <Route path="/admin/comercios" element={
-              <DashboardLayout>
-                <ComerciosPage />
-              </DashboardLayout>
-            } />
-            <Route path="/admin/gamificacoes" element={
-              <DashboardLayout>
-                <GamificacoesPage />
-              </DashboardLayout>
-            } />
-            <Route path="/admin/relatorios" element={
-              <DashboardLayout>
-                <RelatoriosPage />
-              </DashboardLayout>
-            } />
-            <Route path="/admin/categorias" element={
-              <DashboardLayout>
-                <CategoriasPage />
-              </DashboardLayout>
-            } />
-            <Route path="/admin/aprovacoes" element={
-              <DashboardLayout>
-                <AprovacoesPage />
-              </DashboardLayout>
-            } />
-            <Route path="/admin/perfil" element={
-              <DashboardLayout>
-                <AdminPerfilPage />
-              </DashboardLayout>
-            } />
+            {/* Rotas de Admin (Protegidas pelo DashboardLayout) */}
+            <Route path="/admin/dashboard" element={<DashboardLayout><AdminDashboard /></DashboardLayout>} />
+            <Route path="/admin/usuarios" element={<DashboardLayout><UsuariosPage /></DashboardLayout>} />
+            <Route path="/admin/comercios" element={<DashboardLayout><ComerciosPage /></DashboardLayout>} />
+            <Route path="/admin/gamificacoes" element={<DashboardLayout><GamificacoesPage /></DashboardLayout>} />
+            <Route path="/admin/relatorios" element={<DashboardLayout><RelatoriosPage /></DashboardLayout>} />
+            <Route path="/admin/categorias" element={<DashboardLayout><CategoriasPage /></DashboardLayout>} />
+            <Route path="/admin/aprovacoes" element={<DashboardLayout><AprovacoesPage /></DashboardLayout>} />
+            <Route path="/admin/perfil" element={<DashboardLayout><AdminPerfilPage /></DashboardLayout>} />
 
-            {/* Comerciante Routes */}
-            <Route path="/comerciante" element={
-              <DashboardLayout>
-                <ComercianteDashboard />
-              </DashboardLayout>
-            } />
-            <Route path="/comerciante/perfil" element={
-              <DashboardLayout>
-                <PerfilPage />
-              </DashboardLayout>
-            } />
-            <Route path="/comerciante/personalizacao" element={
-              <DashboardLayout>
-                <PersonalizacaoPage />
-              </DashboardLayout>
-            } />
-            <Route path="/comerciante/configuracoes" element={
-              <DashboardLayout>
-                <ConfiguracoesPage />
-              </DashboardLayout>
-            } />
-            <Route path="/comerciante/gamificacoes" element={
-              <DashboardLayout>
-                <ComercianteGamificacoesPage />
-              </DashboardLayout>
-            } />
+            {/* Rotas de Comerciante (Protegidas pelo DashboardLayout) */}
+            <Route path="/dashboard" element={<DashboardLayout><ComercianteDashboard /></DashboardLayout>} />
+            <Route path="/dashboard/perfil" element={<DashboardLayout><PerfilPage /></DashboardLayout>} />
+            <Route path="/dashboard/personalizacao" element={<DashboardLayout><PersonalizacaoPage /></DashboardLayout>} />
+            <Route path="/dashboard/configuracoes" element={<DashboardLayout><ConfiguracoesPage /></DashboardLayout>} />
+            <Route path="/dashboard/gamificacoes" element={<DashboardLayout><ComercianteGamificacoesPage /></DashboardLayout>} />
 
+            {/* Rotas de Fallback */}
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<Navigate to="/404" replace />} />
           </Routes>

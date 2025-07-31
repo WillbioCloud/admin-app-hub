@@ -70,12 +70,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           name: profile.full_name || supabaseUser.email || 'Usuário',
         });
       } else {
-        console.log('No profile found for user');
-        setUser(null);
+        console.warn('Nenhum perfil encontrado para o usuário. Pode ser um novo usuário ou o trigger do DB falhou.');
+        // Não deslogar automaticamente - pode ser um usuário recém criado
+        // onde o perfil ainda está sendo processado pelo trigger
       }
     } catch (error) {
       console.error('Erro ao carregar perfil do usuário:', error);
-      setUser(null);
     } finally {
       setProfileLoading(false);
     }

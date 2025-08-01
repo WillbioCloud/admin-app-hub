@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Search, Eye, Edit, Trash2, Smartphone, Monitor, Users } from 'lucide-react';
 import { useUsuarios } from '@/hooks/useUsuarios';
 import { NovoUsuarioDialog } from '@/components/admin/NovoUsuarioDialog';
@@ -62,7 +63,8 @@ const UsuariosPage = () => {
   }
 
   return (
-    <div className="space-y-8">
+    <TooltipProvider>
+      <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-4xl font-bold text-foreground">Gerenciar Usuários</h1>
@@ -215,24 +217,56 @@ const UsuariosPage = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge className={getStatusColor(usuario.status)}>
-                      {usuario.status}
-                    </Badge>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge className={getStatusColor(usuario.status)}>
+                          {usuario.status}
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          {usuario.status === 'ativo' && 'Usuário ativo e pode acessar a plataforma'}
+                          {usuario.status === 'pendente' && 'Usuário aguardando aprovação do administrador'}
+                          {usuario.status !== 'ativo' && usuario.status !== 'pendente' && 'Usuário desabilitado temporariamente'}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
                   </TableCell>
                   <TableCell>
                     {new Date(usuario.dataCadastro).toLocaleDateString('pt-BR')}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="sm" className="hover:bg-blue-100 hover:text-blue-600">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="hover:bg-green-100 hover:text-green-600">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="hover:bg-red-100 hover:text-red-600">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="sm" className="hover:bg-blue-100 hover:text-blue-600">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Ver detalhes do usuário</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="sm" className="hover:bg-green-100 hover:text-green-600">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Editar informações do usuário</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="sm" className="hover:bg-red-100 hover:text-red-600">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Remover usuário da plataforma</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -241,7 +275,8 @@ const UsuariosPage = () => {
           </Table>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 };
 

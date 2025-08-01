@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, FileText, Bell, Store, Wifi, WifiOff } from 'lucide-react';
+import { Users, FileText, Bell, Store, Wifi, WifiOff, RefreshCw, UserCheck, BarChart3, MessageSquare, Clock } from 'lucide-react';
 import { useReports } from '@/hooks/useReports';
 import { useRealtimeReports } from '@/hooks/useRealtimeReports';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
+  const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
   const { 
     totalUsers,
     totalComercios,
@@ -15,6 +21,14 @@ const AdminDashboard = () => {
   } = useReports();
 
   const { isConnected } = useRealtimeReports();
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    // Simular atualização
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setLastUpdate(new Date());
+    setIsRefreshing(false);
+  };
 
   const getCurrentTime = () => {
     const hour = new Date().getHours();
@@ -71,6 +85,20 @@ const AdminDashboard = () => {
           </p>
         </div>
         <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Clock className="h-4 w-4" />
+            <span>Última atualização: {lastUpdate.toLocaleTimeString()}</span>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Atualizar Painel
+          </Button>
           <Badge 
             variant={isConnected ? "default" : "destructive"} 
             className="flex items-center gap-2 px-4 py-2 text-sm"
@@ -202,17 +230,45 @@ const AdminDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <button className="w-full p-3 text-left rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
-                  <p className="font-medium text-sm">Aprovar comércios pendentes</p>
-                  <p className="text-xs text-muted-foreground">3 aguardando aprovação</p>
+                <button 
+                  onClick={() => navigate('/admin/comercios')}
+                  className="w-full p-3 text-left rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-3"
+                >
+                  <Store className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium text-sm">Aprovar comércios pendentes</p>
+                    <p className="text-xs text-muted-foreground">3 aguardando aprovação</p>
+                  </div>
                 </button>
-                <button className="w-full p-3 text-left rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
-                  <p className="font-medium text-sm">Revisar relatórios</p>
-                  <p className="text-xs text-muted-foreground">Dados atualizados</p>
+                <button 
+                  onClick={() => navigate('/admin/relatorios')}
+                  className="w-full p-3 text-left rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-3"
+                >
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium text-sm">Revisar relatórios</p>
+                    <p className="text-xs text-muted-foreground">Dados atualizados</p>
+                  </div>
                 </button>
-                <button className="w-full p-3 text-left rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
-                  <p className="font-medium text-sm">Gerenciar notificações</p>
-                  <p className="text-xs text-muted-foreground">2 novas mensagens</p>
+                <button 
+                  onClick={() => navigate('/admin/notificacoes')}
+                  className="w-full p-3 text-left rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-3"
+                >
+                  <MessageSquare className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium text-sm">Gerenciar notificações</p>
+                    <p className="text-xs text-muted-foreground">2 novas mensagens</p>
+                  </div>
+                </button>
+                <button 
+                  onClick={() => navigate('/admin/usuarios')}
+                  className="w-full p-3 text-left rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-3"
+                >
+                  <UserCheck className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium text-sm">Gerenciar usuários</p>
+                    <p className="text-xs text-muted-foreground">Ver todos os usuários</p>
+                  </div>
                 </button>
               </div>
             </CardContent>

@@ -6,9 +6,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
 import { useForm } from 'react-hook-form';
-import { User, Mail, Shield, Calendar, LogOut } from 'lucide-react';
+import { User, Mail, Shield, Calendar, LogOut, Eye, Settings, Users as UsersIcon, Store } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { ProfilePhotoUpload } from '@/components/admin/ProfilePhotoUpload';
+import { SecurityDialog } from '@/components/admin/SecurityDialog';
+import { useReports } from '@/hooks/useReports';
 
 interface AdminFormData {
   nome: string;
@@ -21,6 +24,15 @@ const AdminPerfilPage = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
+  const [profilePhoto, setProfilePhoto] = useState('');
+  
+  // Buscar estatísticas reais
+  const { 
+    totalUsers, 
+    totalComercios, 
+    comerciosAtivos, 
+    totalMissoes 
+  } = useReports();
 
   const form = useForm<AdminFormData>({
     defaultValues: {
@@ -58,39 +70,52 @@ const AdminPerfilPage = () => {
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        <Card>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Nível de Acesso</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Nível de Acesso</CardTitle>
+              <div className="text-3xl font-bold text-foreground mt-2">Admin</div>
+              <Badge variant="default" className="mt-2">Acesso Total</Badge>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <Shield className="h-6 w-6 text-foreground" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Admin</div>
-            <Badge variant="default" className="mt-2">Acesso Total</Badge>
-          </CardContent>
         </Card>
 
-        <Card>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-green-500/20 to-green-600/20 border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Status da Conta</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Status da Conta</CardTitle>
+              <div className="text-3xl font-bold text-green-600 mt-2">Ativo</div>
+              <Badge variant="default" className="mt-2">Verificado</Badge>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <User className="h-6 w-6 text-green-600" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Ativo</div>
-            <Badge variant="default" className="mt-2">Verificado</Badge>
-          </CardContent>
         </Card>
 
-        <Card>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-purple-500/20 to-purple-600/20 border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Último Login</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Último Login</CardTitle>
+              <div className="text-3xl font-bold text-foreground mt-2">Hoje</div>
+              <p className="text-sm text-muted-foreground mt-1">{new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <Calendar className="h-6 w-6 text-foreground" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Hoje</div>
-            <p className="text-xs text-muted-foreground">09:30</p>
-          </CardContent>
         </Card>
       </div>
+
+      {/* Upload de Foto de Perfil */}
+      <ProfilePhotoUpload
+        currentPhoto={profilePhoto}
+        onPhotoChange={setProfilePhoto}
+        userName={form.getValues('nome')}
+      />
 
       <Card>
         <CardHeader>
@@ -216,7 +241,15 @@ const AdminPerfilPage = () => {
               <h4 className="font-medium">Alterar Senha</h4>
               <p className="text-sm text-muted-foreground">Atualize sua senha regularmente para manter a segurança</p>
             </div>
-            <Button variant="outline">Alterar Senha</Button>
+            <SecurityDialog
+              type="password"
+              trigger={
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  Alterar Senha
+                </Button>
+              }
+            />
           </div>
 
           <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -224,7 +257,15 @@ const AdminPerfilPage = () => {
               <h4 className="font-medium">Autenticação de Dois Fatores</h4>
               <p className="text-sm text-muted-foreground">Adicione uma camada extra de segurança à sua conta</p>
             </div>
-            <Button variant="outline">Configurar 2FA</Button>
+            <SecurityDialog
+              type="2fa"
+              trigger={
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  Configurar 2FA
+                </Button>
+              }
+            />
           </div>
 
           <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -232,7 +273,15 @@ const AdminPerfilPage = () => {
               <h4 className="font-medium">Sessões Ativas</h4>
               <p className="text-sm text-muted-foreground">Veja e gerencie dispositivos conectados</p>
             </div>
-            <Button variant="outline">Ver Sessões</Button>
+            <SecurityDialog
+              type="sessions"
+              trigger={
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  Ver Sessões
+                </Button>
+              }
+            />
           </div>
 
           <div className="flex items-center justify-between p-4 border rounded-lg bg-red-50 border-red-200">
@@ -257,21 +306,25 @@ const AdminPerfilPage = () => {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-4">
-            <div className="p-4 border rounded-lg text-center">
-              <div className="text-2xl font-bold text-blue-600">142</div>
-              <p className="text-sm text-muted-foreground">Comércios Aprovados</p>
+            <div className="p-4 border rounded-lg text-center bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50">
+              <Store className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold text-blue-600">{comerciosAtivos}</div>
+              <p className="text-sm text-muted-foreground">Comércios Ativos</p>
             </div>
-            <div className="p-4 border rounded-lg text-center">
-              <div className="text-2xl font-bold text-green-600">28</div>
-              <p className="text-sm text-muted-foreground">Usuários Ativos</p>
+            <div className="p-4 border rounded-lg text-center bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/50">
+              <UsersIcon className="h-8 w-8 text-green-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold text-green-600">{totalUsers}</div>
+              <p className="text-sm text-muted-foreground">Total de Usuários</p>
             </div>
-            <div className="p-4 border rounded-lg text-center">
-              <div className="text-2xl font-bold text-orange-600">15</div>
-              <p className="text-sm text-muted-foreground">Aprovações Pendentes</p>
+            <div className="p-4 border rounded-lg text-center bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/50 dark:to-orange-900/50">
+              <div className="text-2xl mb-2">🎯</div>
+              <div className="text-2xl font-bold text-orange-600">{totalMissoes}</div>
+              <p className="text-sm text-muted-foreground">Missões Ativas</p>
             </div>
-            <div className="p-4 border rounded-lg text-center">
-              <div className="text-2xl font-bold text-purple-600">8</div>
-              <p className="text-sm text-muted-foreground">Categorias Criadas</p>
+            <div className="p-4 border rounded-lg text-center bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/50">
+              <div className="text-2xl mb-2">🏪</div>
+              <div className="text-2xl font-bold text-purple-600">{totalComercios}</div>
+              <p className="text-sm text-muted-foreground">Total Comércios</p>
             </div>
           </div>
         </CardContent>

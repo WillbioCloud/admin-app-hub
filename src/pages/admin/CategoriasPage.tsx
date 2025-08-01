@@ -8,7 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
-import { Plus, Edit, Trash2, Tag, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Tag, Search, Loader2 } from 'lucide-react';
+import { useCategorias, useCategoriaStats } from '@/hooks/useCategorias';
 
 interface Categoria {
   id: string;
@@ -99,6 +100,10 @@ const CategoriasPage = () => {
   const [criandoNova, setCriandoNova] = useState(false);
   const [busca, setBusca] = useState('');
 
+  // Buscar dados reais do Supabase
+  const { data: categoriasReais, isLoading } = useCategorias();
+  const { data: stats } = useCategoriaStats();
+
   const form = useForm<FormData>({
     defaultValues: {
       nome: '',
@@ -187,19 +192,31 @@ const CategoriasPage = () => {
             <Tag className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{categorias.length}</div>
+            {isLoading ? (
+              <div className="flex items-center">
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <span>Carregando...</span>
+              </div>
+            ) : (
+              <div className="text-2xl font-bold">{stats?.totalCategorias || 0}</div>
+            )}
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Categorias Ativas</CardTitle>
+            <CardTitle className="text-sm font-medium">Comércios Ativos</CardTitle>
             <div className="h-2 w-2 bg-green-500 rounded-full" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {categorias.filter(c => c.ativa).length}
-            </div>
+            {isLoading ? (
+              <div className="flex items-center">
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <span>Carregando...</span>
+              </div>
+            ) : (
+              <div className="text-2xl font-bold">{stats?.comerciosAtivos || 0}</div>
+            )}
           </CardContent>
         </Card>
         
@@ -209,9 +226,14 @@ const CategoriasPage = () => {
             <div className="h-4 w-4 text-muted-foreground">🏪</div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {categorias.reduce((acc, cat) => acc + cat.comercios, 0)}
-            </div>
+            {isLoading ? (
+              <div className="flex items-center">
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <span>Carregando...</span>
+              </div>
+            ) : (
+              <div className="text-2xl font-bold">{stats?.totalComercios || 0}</div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -323,7 +345,76 @@ const CategoriasPage = () => {
       {/* Lista de Categorias */}
       <Card>
         <CardHeader>
-          <CardTitle>Categorias Configuradas</CardTitle>
+          <CardTitle>Categorias dos Comércios</CardTitle>
+          <CardDescription>
+            Categorias encontradas nos comércios cadastrados
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex items-center justify-center p-8">
+              <Loader2 className="h-8 w-8 animate-spin mr-2" />
+              <span>Carregando categorias...</span>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Categoria</TableHead>
+                  <TableHead>Comércios</TableHead>
+                  <TableHead>Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {categoriasReais && categoriasReais.length > 0 ? (
+                  categoriasReais.map((categoriaReal, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <div className="flex items-center space-x-3">
+                          <div className="font-medium">{categoriaReal.categoria}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">
+                          {categoriaReal.total} comércios
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              // Aqui você pode implementar ações específicas para categorias reais
+                              console.log('Ver comércios da categoria:', categoriaReal.categoria);
+                            }}
+                          >
+                            <Search className="h-4 w-4" />
+                            Ver Comércios
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center py-8">
+                      <div className="text-muted-foreground">
+                        Nenhuma categoria encontrada nos comércios cadastrados
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Lista de Categorias Padrão */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Categorias Configuradas (Modelo)</CardTitle>
           <CardDescription>
             {categoriasFiltradas.length} categoria(s) encontrada(s)
           </CardDescription>
@@ -334,7 +425,6 @@ const CategoriasPage = () => {
               <TableRow>
                 <TableHead>Categoria</TableHead>
                 <TableHead>Descrição</TableHead>
-                <TableHead>Comércios</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Ações</TableHead>
               </TableRow>
@@ -358,11 +448,6 @@ const CategoriasPage = () => {
                     <p className="text-sm text-muted-foreground">
                       {categoria.descricao}
                     </p>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">
-                      {categoria.comercios} comércios
-                    </Badge>
                   </TableCell>
                   <TableCell>
                     <Badge 

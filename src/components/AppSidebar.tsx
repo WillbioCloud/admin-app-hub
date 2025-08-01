@@ -94,7 +94,7 @@ export function AppSidebar() {
               <h2 className="font-bold text-lg text-gray-900 dark:text-white">FBZ</h2>
             </div>
           </div>
-          <SidebarTrigger className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" />
+          
         </div>
 
         {/* Search Bar */}

@@ -795,6 +795,7 @@ export type Database = {
           id: string
           image_url: string | null
           is_active: boolean
+          mission_id_unlock: string | null
           mission_unlock_id: string | null
           stock: number | null
           title: string
@@ -806,6 +807,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean
+          mission_id_unlock?: string | null
           mission_unlock_id?: string | null
           stock?: number | null
           title: string
@@ -817,11 +819,19 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean
+          mission_id_unlock?: string | null
           mission_unlock_id?: string | null
           stock?: number | null
           title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "rewards_mission_id_unlock_fkey"
+            columns: ["mission_id_unlock"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "rewards_mission_unlock_id_fkey"
             columns: ["mission_unlock_id"]

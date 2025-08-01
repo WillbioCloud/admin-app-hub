@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
-import { CheckCircle, XCircle, Clock, User, GamepadIcon } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Store, GamepadIcon, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -13,99 +14,83 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-
-// Mock data para demonstração
-const mockPendingGamifications = [
-  {
-    id: '1',
-    title: 'Cliente Fiel',
-    description: 'Visite o mesmo comércio 5 vezes',
-    type: 'code',
-    completion_data: 'FIEL123',
-    xp_reward: 200,
-    coin_reward: 100,
-    is_active: true,
-    is_unique: false,
-    loteamento_id: 'lote_001',
-    location_type: 'farmacia',
-    comerciante_name: 'João da Silva',
-    comercio_name: 'Farmácia Central',
-    created_at: '2024-01-20'
-  },
-  {
-    id: '2',
-    title: 'Compra do Mês',
-    description: 'Faça uma compra acima de R$ 100',
-    type: 'qr_code',
-    completion_data: 'COMPRA100',
-    xp_reward: 300,
-    coin_reward: 150,
-    is_active: true,
-    is_unique: true,
-    loteamento_id: 'lote_001',
-    location_type: 'supermercado',
-    comerciante_name: 'Maria Santos',
-    comercio_name: 'Supermercado Bom Preço',
-    created_at: '2024-01-22'
-  }
-];
-
-const mockPendingUsers = [
-  {
-    id: '1',
-    name: 'Carlos Silva',
-    email: 'carlos@email.com',
-    tipo: 'comerciante',
-    comercio: 'Padaria do Carlos',
-    created_at: '2024-01-18'
-  },
-  {
-    id: '2',
-    name: 'Ana Costa',
-    email: 'ana@email.com',
-    tipo: 'comerciante',
-    comercio: 'Loja da Ana',
-    created_at: '2024-01-20'
-  }
-];
+import { usePendingComercios, useApproveComercio, useRejectComercio } from '@/hooks/useComercios';
+import { useGamifications } from '@/hooks/useGamifications';
+import { useCreateNotification } from '@/hooks/useNotifications';
+import { ComercioPreview } from '@/components/admin/ComercioPreview';
 
 export default function AprovacoesPage() {
-  const [pendingGamifications, setPendingGamifications] = useState(mockPendingGamifications);
-  const [pendingUsers, setPendingUsers] = useState(mockPendingUsers);
+  const { data: pendingComercios = [], isLoading: isLoadingComercios } = usePendingComercios();
+  const { data: gamifications = [], isLoading: isLoadingGamifications } = useGamifications();
+  const approveComercio = useApproveComercio();
+  const rejectComercio = useRejectComercio();
+  const createNotification = useCreateNotification();
+
+  const pendingGamifications = gamifications.filter(g => g.status === 'pending');
+
+  const handleApproveComercio = async (comercio: any) => {
+    try {
+      await approveComercio.mutateAsync(comercio.id);
+      // Criar notificação para o comerciante
+      await createNotification.mutateAsync({
+        title: 'Comércio Aprovado!',
+        message: `Seu comércio "${comercio.nome}" foi aprovado e já está disponível na plataforma.`,
+        type: 'novo_comercio',
+        metadata: { comercio_id: comercio.id },
+        user_id: comercio.user_id
+      });
+    } catch (error) {
+      console.error('Erro ao aprovar comércio:', error);
+    }
+  };
+
+  const handleRejectComercio = async (comercio: any) => {
+    try {
+      await rejectComercio.mutateAsync(comercio.id);
+      // Criar notificação para o comerciante
+      await createNotification.mutateAsync({
+        title: 'Comércio Rejeitado',
+        message: `Seu comércio "${comercio.nome}" foi rejeitado. Entre em contato para mais informações.`,
+        type: 'novo_comercio',
+        metadata: { comercio_id: comercio.id },
+        user_id: comercio.user_id
+      });
+    } catch (error) {
+      console.error('Erro ao rejeitar comércio:', error);
+    }
+  };
 
   const handleApproveGamification = (id: string) => {
-    setPendingGamifications(prev => prev.filter(g => g.id !== id));
+    // TODO: Implementar aprovação de gamificação
+    console.log('Aprovar gamificação:', id);
   };
 
   const handleRejectGamification = (id: string) => {
-    setPendingGamifications(prev => prev.filter(g => g.id !== id));
+    // TODO: Implementar rejeição de gamificação
+    console.log('Rejeitar gamificação:', id);
   };
 
-  const handleApproveUser = (id: string) => {
-    setPendingUsers(prev => prev.filter(u => u.id !== id));
-  };
-
-  const handleRejectUser = (id: string) => {
-    setPendingUsers(prev => prev.filter(u => u.id !== id));
-  };
+  if (isLoadingComercios || isLoadingGamifications) {
+    return <div>Carregando...</div>;
+  }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Aprovações</h1>
         <p className="text-muted-foreground">
-          Gerencie pendências de usuários e gamificações
+          Gerencie comércios e gamificações pendentes de aprovação
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Usuários Pendentes</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Comércios Pendentes</CardTitle>
+            <Store className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingUsers.length}</div>
+            <div className="text-2xl font-bold">{pendingComercios.length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -123,27 +108,27 @@ export default function AprovacoesPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingUsers.length + pendingGamifications.length}</div>
+            <div className="text-2xl font-bold">{pendingComercios.length + pendingGamifications.length}</div>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="usuarios" className="w-full">
+      <Tabs defaultValue="comercios" className="w-full">
         <TabsList>
-          <TabsTrigger value="usuarios">
-            Usuários ({pendingUsers.length})
+          <TabsTrigger value="comercios">
+            Comércios ({pendingComercios.length})
           </TabsTrigger>
           <TabsTrigger value="gamificacoes">
             Gamificações ({pendingGamifications.length})
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="usuarios">
+        <TabsContent value="comercios">
           <Card>
             <CardHeader>
-              <CardTitle>Usuários Pendentes de Aprovação</CardTitle>
+              <CardTitle>Comércios Pendentes de Aprovação</CardTitle>
               <CardDescription>
-                Comerciantes aguardando aprovação para acessar o sistema
+                Comércios cadastrados pelos comerciantes aguardando aprovação
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -151,31 +136,60 @@ export default function AprovacoesPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Comércio</TableHead>
+                    <TableHead>Categoria</TableHead>
+                    <TableHead>Layout</TableHead>
                     <TableHead>Data</TableHead>
                     <TableHead>Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {pendingUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
+                  {pendingComercios.map((comercio) => (
+                    <TableRow key={comercio.id}>
                       <TableCell>
-                        <Badge variant="outline">{user.tipo}</Badge>
+                        <div>
+                          <div className="font-medium">{comercio.nome}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {comercio.descricao?.substring(0, 50)}...
+                          </div>
+                        </div>
                       </TableCell>
-                      <TableCell>{user.comercio}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {user.created_at}
+                      <TableCell>
+                        <Badge variant="outline">{comercio.categoria || 'N/A'}</Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="text-xs">
+                            {comercio.layout_template || 'moderno'}
+                          </Badge>
+                          <div 
+                            className="w-3 h-3 rounded-full border"
+                            style={{ backgroundColor: comercio.primary_color || '#3B82F6' }}
+                          />
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {new Date(comercio.created_at).toLocaleDateString('pt-BR')}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle>Preview do Comércio - {comercio.nome}</DialogTitle>
+                              </DialogHeader>
+                              <ComercioPreview comercio={comercio} />
+                            </DialogContent>
+                          </Dialog>
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => handleApproveUser(user.id)}
+                            onClick={() => handleApproveComercio(comercio)}
+                            disabled={approveComercio.isPending}
                             className="text-green-600 hover:text-green-700"
                           >
                             <CheckCircle className="h-4 w-4" />
@@ -183,7 +197,8 @@ export default function AprovacoesPage() {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => handleRejectUser(user.id)}
+                            onClick={() => handleRejectComercio(comercio)}
+                            disabled={rejectComercio.isPending}
                             className="text-red-600 hover:text-red-700"
                           >
                             <XCircle className="h-4 w-4" />
@@ -194,9 +209,9 @@ export default function AprovacoesPage() {
                   ))}
                 </TableBody>
               </Table>
-              {pendingUsers.length === 0 && (
+              {pendingComercios.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
-                  Nenhum usuário pendente de aprovação
+                  Nenhum comércio pendente de aprovação
                 </div>
               )}
             </CardContent>
@@ -237,9 +252,9 @@ export default function AprovacoesPage() {
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{gamification.comerciante_name}</div>
+                          <div className="font-medium">Comerciante</div>
                           <div className="text-sm text-muted-foreground">
-                            {gamification.comercio_name}
+                            {gamification.created_by || 'N/A'}
                           </div>
                         </div>
                       </TableCell>

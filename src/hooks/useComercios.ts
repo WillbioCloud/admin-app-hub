@@ -18,6 +18,7 @@ export interface Comercio {
   primary_color: string | null;
   horario_func: any;
   ativo: boolean | null;
+  status?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -42,6 +43,27 @@ export const useComercios = () => {
   });
 };
 
+// Hook para buscar comércios pendentes
+export const usePendingComercios = () => {
+  return useQuery({
+    queryKey: ['comercios-pending'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('comercios')
+        .select('*')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao buscar comércios pendentes:', error);
+        throw error;
+      }
+      
+      return data as Comercio[];
+    },
+  });
+};
+
 // Hook para aprovar comércio
 export const useApproveComercio = () => {
   const queryClient = useQueryClient();
@@ -50,7 +72,10 @@ export const useApproveComercio = () => {
     mutationFn: async (id: string) => {
       const { data, error } = await supabase
         .from('comercios')
-        .update({ ativo: true })
+        .update({ 
+          ativo: true,
+          status: 'approved'
+        })
         .eq('id', id)
         .select()
         .single();
@@ -64,6 +89,7 @@ export const useApproveComercio = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comercios'] });
+      queryClient.invalidateQueries({ queryKey: ['comercios-pending'] });
       toast.success('Comércio aprovado com sucesso!');
     },
     onError: (error) => {
@@ -81,7 +107,10 @@ export const useRejectComercio = () => {
     mutationFn: async (id: string) => {
       const { data, error } = await supabase
         .from('comercios')
-        .update({ ativo: false })
+        .update({ 
+          ativo: false,
+          status: 'rejected'
+        })
         .eq('id', id)
         .select()
         .single();
@@ -95,6 +124,7 @@ export const useRejectComercio = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comercios'] });
+      queryClient.invalidateQueries({ queryKey: ['comercios-pending'] });
       toast.success('Comércio rejeitado');
     },
     onError: (error) => {

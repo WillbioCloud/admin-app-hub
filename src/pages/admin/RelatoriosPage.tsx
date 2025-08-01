@@ -47,90 +47,100 @@ const RelatoriosPage = () => {
   const notaMedia = 4.7; // Mantida como constante até implementar sistema de avaliações
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Relatórios e Analytics</h2>
-          <p className="text-muted-foreground">
-            Visualize métricas e estatísticas da plataforma
+          <h1 className="text-4xl font-bold text-foreground">Relatórios e Analytics</h1>
+          <p className="text-lg text-muted-foreground mt-2">
+            Visualize métricas e estatísticas detalhadas da plataforma
           </p>
         </div>
-        <Button>
+        <Button className="shadow-lg hover:shadow-xl transition-shadow">
           <Download className="h-4 w-4 mr-2" />
           Exportar Relatório
         </Button>
       </div>
 
       {/* KPIs principais */}
-      <div className="grid gap-4 md:grid-cols-5">
-        <Card>
+      <div className="grid gap-6 md:grid-cols-5">
+        <Card className="relative overflow-hidden bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total de Usuários</CardTitle>
+              <div className="text-3xl font-bold text-foreground mt-2">{totalUsers}</div>
+              <p className="text-xs text-muted-foreground flex items-center mt-2">
+                <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+                +{taxaCrescimento}% desde o início
+              </p>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <Users className="h-6 w-6 text-foreground" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalUsers}</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-              +{taxaCrescimento}% desde o início
-            </p>
-          </CardContent>
         </Card>
         
-        <Card>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-green-500/20 to-green-600/20 border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Comércios Ativos</CardTitle>
-            <Store className="h-4 w-4 text-muted-foreground" />
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Comércios Ativos</CardTitle>
+              <div className="text-3xl font-bold text-green-600 mt-2">{comerciosAtivos}</div>
+              <p className="text-xs text-muted-foreground flex items-center mt-2">
+                <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+                {totalComercios} total cadastrados
+              </p>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <Store className="h-6 w-6 text-green-600" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{comerciosAtivos}</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-              {totalComercios} total cadastrados
-            </p>
-          </CardContent>
         </Card>
         
-        <Card>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-purple-500/20 to-purple-600/20 border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Visualizações</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Visualizações</CardTitle>
+              <div className="text-3xl font-bold text-foreground mt-2">{visualizacoes.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground flex items-center mt-2">
+                <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+                Baseado nos comércios ativos
+              </p>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <Eye className="h-6 w-6 text-foreground" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{visualizacoes.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-              Baseado nos comércios ativos
-            </p>
-          </CardContent>
         </Card>
         
-        <Card>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Missões Ativas</CardTitle>
-            <Star className="h-4 w-4 text-yellow-500" />
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Missões Ativas</CardTitle>
+              <div className="text-3xl font-bold text-yellow-600 mt-2">{totalMissoes}</div>
+              <p className="text-xs text-muted-foreground flex items-center mt-2">
+                <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+                Gamificação ativa
+              </p>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <Star className="h-6 w-6 text-yellow-600" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalMissoes}</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-              Gamificação ativa
-            </p>
-          </CardContent>
         </Card>
 
-        <Card>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-orange-500/20 to-orange-600/20 border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tickets Suporte</CardTitle>
-            <MessageSquare className="h-4 w-4 text-blue-500" />
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Tickets Suporte</CardTitle>
+              <div className="text-3xl font-bold text-orange-600 mt-2">{totalTickets}</div>
+              <p className="text-xs text-muted-foreground flex items-center mt-2">
+                <TrendingUp className="h-3 w-3 text-blue-500 mr-1" />
+                Total de solicitações
+              </p>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <MessageSquare className="h-6 w-6 text-orange-600" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalTickets}</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <TrendingUp className="h-3 w-3 text-blue-500 mr-1" />
-              Total de solicitações
-            </p>
-          </CardContent>
         </Card>
       </div>
 

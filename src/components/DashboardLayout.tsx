@@ -38,28 +38,45 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-gradient-to-br from-background via-background to-muted/20">
         <AppSidebar />
         <div className="flex-1">
-          <header className="h-16 border-b flex items-center justify-between px-4">
-            <div className="flex items-center">
-              <SidebarTrigger className="mr-4" />
-              <h1 className="text-xl font-semibold">
-                Painel {isAdmin() ? 'Administrativo' : 'do Comerciante'}
-              </h1>
+          <header className="h-16 border-b bg-background/80 backdrop-blur-sm flex items-center justify-between px-6 shadow-sm">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="hover:bg-accent rounded-lg p-2 transition-colors" />
+              <div>
+                <h1 className="text-xl font-bold text-foreground">
+                  {isAdmin() ? 'Painel Administrativo' : 'Painel do Comerciante'}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  {isAdmin() ? 'Gerencie toda a plataforma' : 'Gerencie seu comércio'}
+                </p>
+              </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground">
-                Olá, {user.name}
-              </span>
-              <Button variant="outline" size="sm" onClick={handleLogout}>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-sm font-medium text-foreground">
+                  {user.name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {isAdmin() ? 'Administrador' : 'Comerciante'}
+                </p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleLogout}
+                className="hover:bg-destructive hover:text-destructive-foreground transition-colors"
+              >
                 <LogOut className="h-4 w-4 mr-2" />
                 Sair
               </Button>
             </div>
           </header>
-          <main className="p-6">
-            {children}
+          <main className="p-6 min-h-[calc(100vh-4rem)]">
+            <div className="max-w-7xl mx-auto">
+              {children}
+            </div>
           </main>
         </div>
       </div>

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Eye, Edit, Trash2, Smartphone, Monitor } from 'lucide-react';
+import { Search, Eye, Edit, Trash2, Smartphone, Monitor, Users } from 'lucide-react';
 import { useUsuarios } from '@/hooks/useUsuarios';
 import { NovoUsuarioDialog } from '@/components/admin/NovoUsuarioDialog';
 
@@ -62,62 +62,74 @@ const UsuariosPage = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Gerenciar Usuários</h2>
-          <p className="text-muted-foreground">
-            Gerencie os usuários cadastrados na plataforma
+          <h1 className="text-4xl font-bold text-foreground">Gerenciar Usuários</h1>
+          <p className="text-lg text-muted-foreground mt-2">
+            Gerencie todos os usuários cadastrados na plataforma
           </p>
         </div>
         <NovoUsuarioDialog />
       </div>
 
       {/* Estatísticas */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
+      <div className="grid gap-6 md:grid-cols-4">
+        <Card className="relative overflow-hidden bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-0 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total de Usuários</CardTitle>
+              <div className="text-3xl font-bold text-foreground mt-2">{totalUsers}</div>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <Users className="h-6 w-6 text-foreground" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalUsers}</div>
-          </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Usuários Ativos</CardTitle>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-green-500/20 to-green-600/20 border-0 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Usuários Ativos</CardTitle>
+              <div className="text-3xl font-bold text-green-600 mt-2">{usuariosAtivos}</div>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <div className="w-6 h-6 bg-green-500 rounded-full"></div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{usuariosAtivos}</div>
-          </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Usuários Pendentes</CardTitle>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 border-0 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Usuários Pendentes</CardTitle>
+              <div className="text-3xl font-bold text-yellow-600 mt-2">{usuariosPendentes}</div>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <div className="w-6 h-6 bg-yellow-500 rounded-full"></div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{usuariosPendentes}</div>
-          </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Web App / Mobile</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-sm">
-              <div className="flex items-center gap-1">
-                <Monitor className="h-3 w-3" />
-                <span className="font-bold">{usuariosWebApp}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Smartphone className="h-3 w-3" />
-                <span className="font-bold">{usuariosMobileApp}</span>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-purple-500/20 to-purple-600/20 border-0 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Web / Mobile</CardTitle>
+              <div className="text-sm mt-2 space-y-1">
+                <div className="flex items-center gap-2">
+                  <Monitor className="h-4 w-4" />
+                  <span className="font-bold text-foreground">{usuariosWebApp}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Smartphone className="h-4 w-4" />
+                  <span className="font-bold text-foreground">{usuariosMobileApp}</span>
+                </div>
               </div>
             </div>
-          </CardContent>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <Monitor className="h-6 w-6 text-foreground" />
+            </div>
+          </CardHeader>
         </Card>
       </div>
 
@@ -160,9 +172,9 @@ const UsuariosPage = () => {
         </div>
       </div>
 
-      <Card>
+      <Card className="shadow-lg border-0">
         <CardHeader>
-          <CardTitle>Usuários Cadastrados</CardTitle>
+          <CardTitle className="text-xl">Lista de Usuários</CardTitle>
           <CardDescription>
             {usuariosFiltrados.length} usuário(s) encontrado(s)
           </CardDescription>
@@ -182,7 +194,7 @@ const UsuariosPage = () => {
             </TableHeader>
             <TableBody>
               {usuariosFiltrados.map((usuario) => (
-                <TableRow key={usuario.id}>
+                <TableRow key={usuario.id} className="hover:bg-muted/50 transition-colors">
                   <TableCell>
                     <div>
                       <div className="font-medium">{usuario.nome}</div>
@@ -190,7 +202,7 @@ const UsuariosPage = () => {
                       <div className="text-sm text-muted-foreground">{usuario.telefone}</div>
                     </div>
                   </TableCell>
-                  <TableCell>{usuario.comercio}</TableCell>
+                  <TableCell className="font-medium">{usuario.comercio}</TableCell>
                   <TableCell>
                     <Badge variant="outline">{usuario.categoria}</Badge>
                   </TableCell>
@@ -212,13 +224,13 @@ const UsuariosPage = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" className="hover:bg-blue-100 hover:text-blue-600">
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" className="hover:bg-green-100 hover:text-green-600">
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" className="hover:bg-red-100 hover:text-red-600">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>

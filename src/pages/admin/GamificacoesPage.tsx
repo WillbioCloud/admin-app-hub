@@ -108,64 +108,72 @@ export default function GamificacoesPage() {
   const rejectedGamifications = gamifications.filter(g => g.status === 'rejected');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gamificações</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-4xl font-bold text-foreground">Gamificações</h1>
+          <p className="text-lg text-muted-foreground mt-2">
             Gerencie as missões e recompensas do aplicativo
           </p>
         </div>
-        <Button onClick={handleCreate}>
+        <Button onClick={handleCreate} className="shadow-lg hover:shadow-xl transition-shadow">
           <Plus className="h-4 w-4 mr-2" />
           Nova Gamificação
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="relative overflow-hidden bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Missões</CardTitle>
-            <GamepadIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{gamifications.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Aprovadas</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{approvedGamifications.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-            <GamepadIcon className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingGamifications.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total XP Disponível</CardTitle>
-            <GamepadIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {gamifications.reduce((sum, g) => sum + g.xp_reward, 0)}
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total de Missões</CardTitle>
+              <div className="text-3xl font-bold text-foreground mt-2">{gamifications.length}</div>
             </div>
-          </CardContent>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <GamepadIcon className="h-6 w-6 text-foreground" />
+            </div>
+          </CardHeader>
+        </Card>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-green-500/20 to-green-600/20 border-0 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Aprovadas</CardTitle>
+              <div className="text-3xl font-bold text-green-600 mt-2">{approvedGamifications.length}</div>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <CheckCircle className="h-6 w-6 text-green-600" />
+            </div>
+          </CardHeader>
+        </Card>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 border-0 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Pendentes</CardTitle>
+              <div className="text-3xl font-bold text-yellow-600 mt-2">{pendingGamifications.length}</div>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <GamepadIcon className="h-6 w-6 text-yellow-600" />
+            </div>
+          </CardHeader>
+        </Card>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-purple-500/20 to-purple-600/20 border-0 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total XP Disponível</CardTitle>
+              <div className="text-3xl font-bold text-foreground mt-2">
+                {gamifications.reduce((sum, g) => sum + g.xp_reward, 0)}
+              </div>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <GamepadIcon className="h-6 w-6 text-foreground" />
+            </div>
+          </CardHeader>
         </Card>
       </div>
 
-      <Card>
+      <Card className="shadow-lg border-0">
         <CardHeader>
-          <CardTitle>Lista de Gamificações</CardTitle>
+          <CardTitle className="text-xl">Lista de Gamificações</CardTitle>
           <CardDescription>
             Gerencie todas as missões e recompensas disponíveis no aplicativo
           </CardDescription>

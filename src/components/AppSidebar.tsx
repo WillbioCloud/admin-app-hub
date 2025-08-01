@@ -101,25 +101,43 @@ export function AppSidebar() {
   const items = user?.role === 'admin' ? adminItems : comercianteItems;
 
   return (
-    <Sidebar>
-      <SidebarContent>
+    <Sidebar className="border-r bg-card/50 backdrop-blur-sm">
+      <SidebarContent className="p-4">
+        <div className="mb-6">
+          <div className="flex items-center gap-3 px-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">L</span>
+            </div>
+            <div>
+              <h2 className="font-bold text-lg text-foreground">Lovable</h2>
+              <p className="text-xs text-muted-foreground">
+                {user?.role === 'admin' ? 'Admin Dashboard' : 'Business Panel'}
+              </p>
+            </div>
+          </div>
+        </div>
+        
         <SidebarGroup>
-          <SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-3">
             {user?.role === 'admin' ? 'Administração' : 'Comerciante'}
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url}
                       className={({ isActive }) =>
-                        isActive ? 'bg-accent text-accent-foreground' : ''
+                        `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
+                          isActive 
+                            ? 'bg-primary text-primary-foreground shadow-lg' 
+                            : 'hover:bg-accent hover:text-accent-foreground'
+                        }`
                       }
                     >
-                      <item.icon />
-                      <span>{item.title}</span>
+                      <item.icon className="h-5 w-5" />
+                      <span className="font-medium">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

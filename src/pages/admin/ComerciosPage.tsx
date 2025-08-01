@@ -41,44 +41,58 @@ const ComerciosPage = () => {
   const inativos = comercios.filter(c => !c.ativo).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Comércios</h2>
-          <p className="text-muted-foreground">Gerencie os estabelecimentos</p>
+          <h1 className="text-4xl font-bold text-foreground">Comércios</h1>
+          <p className="text-lg text-muted-foreground mt-2">
+            Gerencie todos os estabelecimentos cadastrados
+          </p>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Total</CardTitle>
+      <div className="grid gap-6 md:grid-cols-3">
+        <Card className="relative overflow-hidden bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-0 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total</CardTitle>
+              <div className="text-3xl font-bold text-foreground mt-2">{comercios.length}</div>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <Store className="h-6 w-6 text-foreground" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{comercios.length}</div>
-          </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Ativos</CardTitle>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-green-500/20 to-green-600/20 border-0 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Ativos</CardTitle>
+              <div className="text-3xl font-bold text-green-600 mt-2">{ativos}</div>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <CheckCircle className="h-6 w-6 text-green-600" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{ativos}</div>
-          </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Inativos</CardTitle>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-red-500/20 to-red-600/20 border-0 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Inativos</CardTitle>
+              <div className="text-3xl font-bold text-red-600 mt-2">{inativos}</div>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <XCircle className="h-6 w-6 text-red-600" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{inativos}</div>
-          </CardContent>
         </Card>
       </div>
 
-      <Card>
+      <Card className="shadow-lg border-0">
         <CardHeader>
-          <CardTitle>Lista de Comércios</CardTitle>
+          <CardTitle className="text-xl">Lista de Comércios</CardTitle>
+          <CardDescription>
+            Gerencie o status de todos os estabelecimentos
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -92,7 +106,7 @@ const ComerciosPage = () => {
             </TableHeader>
             <TableBody>
               {comercios.map((comercio) => (
-                <TableRow key={comercio.id}>
+                <TableRow key={comercio.id} className="hover:bg-muted/50 transition-colors">
                   <TableCell className="font-medium">{comercio.nome}</TableCell>
                   <TableCell>{comercio.categoria || 'N/A'}</TableCell>
                   <TableCell>
@@ -103,15 +117,18 @@ const ComerciosPage = () => {
                   <TableCell>
                     <div className="flex gap-2">
                       {!comercio.ativo && (
-                        <Button size="sm" onClick={() => handleApprove(comercio)}>
-                          <CheckCircle className="h-4 w-4" />
+                        <Button size="sm" onClick={() => handleApprove(comercio)} className="hover:shadow-lg transition-shadow">
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Aprovar
                         </Button>
                       )}
-                      <Button size="sm" variant="outline" onClick={() => rejectComercio.mutate(comercio.id)}>
-                        <XCircle className="h-4 w-4" />
+                      <Button size="sm" variant="outline" onClick={() => rejectComercio.mutate(comercio.id)} className="hover:bg-orange-100 hover:text-orange-600">
+                        <XCircle className="h-4 w-4 mr-1" />
+                        Rejeitar
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => deleteComercio.mutate(comercio.id)}>
-                        <Trash2 className="h-4 w-4" />
+                      <Button size="sm" variant="outline" onClick={() => deleteComercio.mutate(comercio.id)} className="hover:bg-red-100 hover:text-red-600">
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Excluir
                       </Button>
                     </div>
                   </TableCell>

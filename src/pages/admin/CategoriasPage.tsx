@@ -170,71 +170,74 @@ const CategoriasPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Gerenciar Categorias</h2>
-          <p className="text-muted-foreground">
+          <h1 className="text-4xl font-bold text-foreground">Gerenciar Categorias</h1>
+          <p className="text-lg text-muted-foreground mt-2">
             Configure as categorias disponíveis para os comerciantes
           </p>
         </div>
-        <Button onClick={() => setCriandoNova(true)}>
+        <Button onClick={() => setCriandoNova(true)} className="shadow-lg hover:shadow-xl transition-shadow">
           <Plus className="h-4 w-4 mr-2" />
           Nova Categoria
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+      <div className="grid gap-6 md:grid-cols-3">
+        <Card className="relative overflow-hidden bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Categorias</CardTitle>
-            <Tag className="h-4 w-4 text-muted-foreground" />
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total de Categorias</CardTitle>
+              {isLoading ? (
+                <div className="flex items-center mt-2">
+                  <Loader2 className="h-6 w-6 animate-spin text-foreground" />
+                </div>
+              ) : (
+                <div className="text-3xl font-bold text-foreground mt-2">{stats?.totalCategorias || 0}</div>
+              )}
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <Tag className="h-6 w-6 text-foreground" />
+            </div>
           </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex items-center">
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                <span>Carregando...</span>
-              </div>
-            ) : (
-              <div className="text-2xl font-bold">{stats?.totalCategorias || 0}</div>
-            )}
-          </CardContent>
         </Card>
         
-        <Card>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-green-500/20 to-green-600/20 border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Comércios Ativos</CardTitle>
-            <div className="h-2 w-2 bg-green-500 rounded-full" />
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Comércios Ativos</CardTitle>
+              {isLoading ? (
+                <div className="flex items-center mt-2">
+                  <Loader2 className="h-6 w-6 animate-spin text-green-600" />
+                </div>
+              ) : (
+                <div className="text-3xl font-bold text-green-600 mt-2">{stats?.comerciosAtivos || 0}</div>
+              )}
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <div className="w-6 h-6 bg-green-500 rounded-full"></div>
+            </div>
           </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex items-center">
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                <span>Carregando...</span>
-              </div>
-            ) : (
-              <div className="text-2xl font-bold">{stats?.comerciosAtivos || 0}</div>
-            )}
-          </CardContent>
         </Card>
         
-        <Card>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-purple-500/20 to-purple-600/20 border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Comércios</CardTitle>
-            <div className="h-4 w-4 text-muted-foreground">🏪</div>
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Comércios</CardTitle>
+              {isLoading ? (
+                <div className="flex items-center mt-2">
+                  <Loader2 className="h-6 w-6 animate-spin text-foreground" />
+                </div>
+              ) : (
+                <div className="text-3xl font-bold text-foreground mt-2">{stats?.totalComercios || 0}</div>
+              )}
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <div className="text-2xl">🏪</div>
+            </div>
           </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex items-center">
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                <span>Carregando...</span>
-              </div>
-            ) : (
-              <div className="text-2xl font-bold">{stats?.totalComercios || 0}</div>
-            )}
-          </CardContent>
         </Card>
       </div>
 
@@ -343,9 +346,9 @@ const CategoriasPage = () => {
       )}
 
       {/* Lista de Categorias */}
-      <Card>
+      <Card className="shadow-lg border-0">
         <CardHeader>
-          <CardTitle>Categorias dos Comércios</CardTitle>
+          <CardTitle className="text-xl">Categorias dos Comércios</CardTitle>
           <CardDescription>
             Categorias encontradas nos comércios cadastrados
           </CardDescription>
@@ -368,31 +371,29 @@ const CategoriasPage = () => {
               <TableBody>
                 {categoriasReais && categoriasReais.length > 0 ? (
                   categoriasReais.map((categoriaReal, index) => (
-                    <TableRow key={index}>
+                    <TableRow key={index} className="hover:bg-muted/50 transition-colors">
                       <TableCell>
                         <div className="flex items-center space-x-3">
                           <div className="font-medium">{categoriaReal.categoria}</div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary">
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
                           {categoriaReal.total} comércios
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              // Aqui você pode implementar ações específicas para categorias reais
-                              console.log('Ver comércios da categoria:', categoriaReal.categoria);
-                            }}
-                          >
-                            <Search className="h-4 w-4" />
-                            Ver Comércios
-                          </Button>
-                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            console.log('Ver comércios da categoria:', categoriaReal.categoria);
+                          }}
+                          className="hover:bg-blue-100 hover:text-blue-600"
+                        >
+                          <Search className="h-4 w-4 mr-2" />
+                          Ver Comércios
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))

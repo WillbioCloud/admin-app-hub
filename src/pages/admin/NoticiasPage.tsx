@@ -129,62 +129,70 @@ export default function NoticiasPage() {
   }).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Notícias</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-4xl font-bold text-foreground">Notícias</h1>
+          <p className="text-lg text-muted-foreground mt-2">
             Gerencie o feed de notícias do aplicativo móvel
           </p>
         </div>
-        <Button onClick={handleCreate}>
+        <Button onClick={handleCreate} className="shadow-lg hover:shadow-xl transition-shadow">
           <Plus className="h-4 w-4 mr-2" />
           Nova Notícia
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="relative overflow-hidden bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Notícias</CardTitle>
-            <Newspaper className="h-4 w-4 text-muted-foreground" />
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total de Notícias</CardTitle>
+              <div className="text-3xl font-bold text-foreground mt-2">{news.length}</div>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <Newspaper className="h-6 w-6 text-foreground" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{news.length}</div>
-          </CardContent>
         </Card>
-        <Card>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-green-500/20 to-green-600/20 border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Últimos 7 dias</CardTitle>
-            <Newspaper className="h-4 w-4 text-blue-500" />
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Últimos 7 dias</CardTitle>
+              <div className="text-3xl font-bold text-green-600 mt-2">{recentNews}</div>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <Newspaper className="h-6 w-6 text-green-600" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{recentNews}</div>
-          </CardContent>
         </Card>
-        <Card>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-red-500/20 to-red-600/20 border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Curtidas</CardTitle>
-            <Heart className="h-4 w-4 text-red-500" />
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total de Curtidas</CardTitle>
+              <div className="text-3xl font-bold text-red-600 mt-2">{totalLikes}</div>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <Heart className="h-6 w-6 text-red-600" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{totalLikes}</div>
-          </CardContent>
         </Card>
-        <Card>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-purple-500/20 to-purple-600/20 border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Comentários</CardTitle>
-            <MessageCircle className="h-4 w-4 text-green-500" />
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total de Comentários</CardTitle>
+              <div className="text-3xl font-bold text-purple-600 mt-2">{totalComments}</div>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <MessageCircle className="h-6 w-6 text-purple-600" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{totalComments}</div>
-          </CardContent>
         </Card>
       </div>
 
-      <Card>
+      <Card className="shadow-lg border-0">
         <CardHeader>
-          <CardTitle>Lista de Notícias</CardTitle>
+          <CardTitle className="text-xl">Lista de Notícias</CardTitle>
           <CardDescription>
             Todas as notícias publicadas no feed do aplicativo
           </CardDescription>

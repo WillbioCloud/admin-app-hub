@@ -138,6 +138,7 @@ export type Database = {
           nome: string
           primary_color: string | null
           servicos: string[] | null
+          status: string | null
           updated_at: string | null
           user_id: string
           whatsapp: string | null
@@ -157,6 +158,7 @@ export type Database = {
           nome: string
           primary_color?: string | null
           servicos?: string[] | null
+          status?: string | null
           updated_at?: string | null
           user_id: string
           whatsapp?: string | null
@@ -176,6 +178,7 @@ export type Database = {
           nome?: string
           primary_color?: string | null
           servicos?: string[] | null
+          status?: string | null
           updated_at?: string | null
           user_id?: string
           whatsapp?: string | null
@@ -673,6 +676,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          coins: number
           created_at: string | null
           email: string | null
           full_name: string | null
@@ -691,6 +695,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          coins?: number
           created_at?: string | null
           email?: string | null
           full_name?: string | null
@@ -709,6 +714,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          coins?: number
           created_at?: string | null
           email?: string | null
           full_name?: string | null
@@ -984,6 +990,49 @@ export type Database = {
           },
         ]
       }
+      user_rewards: {
+        Row: {
+          created_at: string
+          id: string
+          reward_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reward_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reward_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_rewards_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_rewards_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_rewards_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       leaderboard: {
@@ -1012,6 +1061,10 @@ export type Database = {
       }
     }
     Functions: {
+      cleanup_old_notifications: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       complete_mission: {
         Args: { p_mission_id: string }
         Returns: Json
@@ -1038,6 +1091,10 @@ export type Database = {
       perform_health_info_cleanup: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      purchase_reward: {
+        Args: { p_reward_id: string }
+        Returns: Json
       }
     }
     Enums: {

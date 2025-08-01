@@ -16,132 +16,208 @@ const AdminDashboard = () => {
 
   const { isConnected } = useRealtimeReports();
 
+  const getCurrentTime = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Bom dia';
+    if (hour < 18) return 'Boa tarde';
+    return 'Boa noite';
+  };
+
   const stats = [
     {
       title: 'Total de Usuários',
       value: totalUsers.toLocaleString(),
-      description: 'Web + Mobile Apps',
+      description: 'Registrados na plataforma',
       icon: Users,
+      trend: '+12%',
+      gradient: 'from-blue-500/20 to-blue-600/20',
     },
     {
-      title: 'Comércios Cadastrados',
-      value: totalComercios.toLocaleString(),
-      description: `${comerciosAtivos} ativos`,
+      title: 'Comércios Ativos',
+      value: comerciosAtivos.toLocaleString(),
+      description: `${totalComercios} cadastrados`,
       icon: Store,
+      trend: '+8%',
+      gradient: 'from-green-500/20 to-green-600/20',
     },
     {
       title: 'Missões Ativas',
       value: totalMissoes.toLocaleString(),
-      description: 'Gamificação em andamento',
+      description: 'Gamificações ativas',
       icon: FileText,
+      trend: '+15%',
+      gradient: 'from-purple-500/20 to-purple-600/20',
     },
     {
-      title: 'Tickets de Suporte',
+      title: 'Tickets Pendentes',
       value: totalTickets.toLocaleString(),
-      description: 'Solicitações pendentes',
+      description: 'Suporte técnico',
       icon: Bell,
+      trend: '-3%',
+      gradient: 'from-orange-500/20 to-orange-600/20',
     },
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 p-6">
+      {/* Header Section */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Dashboard Administrativo</h2>
-          <p className="text-muted-foreground">
-            Visão geral do sistema e estatísticas principais
+          <h1 className="text-4xl font-bold text-foreground">
+            {getCurrentTime()}, Admin!
+          </h1>
+          <p className="text-lg text-muted-foreground mt-2">
+            Aqui está um resumo do que está acontecendo na sua plataforma hoje
           </p>
         </div>
-        <Badge variant={isConnected ? "default" : "destructive"} className="flex items-center gap-2">
-          {isConnected ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
-          {isConnected ? 'Tempo Real Ativo' : 'Tempo Real Desconectado'}
-        </Badge>
+        <div className="flex items-center gap-4">
+          <Badge 
+            variant={isConnected ? "default" : "destructive"} 
+            className="flex items-center gap-2 px-4 py-2 text-sm"
+          >
+            {isConnected ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
+            {isConnected ? 'Sistema Online' : 'Sistema Offline'}
+          </Badge>
+        </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Grid */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, index) => (
-          <Card key={index}>
+          <Card key={index} className={`relative overflow-hidden bg-gradient-to-br ${stat.gradient} border-0 shadow-lg hover:shadow-xl transition-all duration-300`}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
+              <div className="space-y-1">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {stat.title}
+                </CardTitle>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-foreground">
+                    {stat.value}
+                  </span>
+                  <span className={`text-sm font-medium ${
+                    stat.trend.startsWith('+') ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {stat.trend}
+                  </span>
+                </div>
+              </div>
+              <div className="p-3 bg-background/50 rounded-lg">
+                <stat.icon className="h-6 w-6 text-foreground" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">{stat.description}</p>
+              <p className="text-sm text-muted-foreground">{stat.description}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Atividade Recente</CardTitle>
-            <CardDescription>
-              Últimas ações no sistema
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                <div className="text-sm">
-                  <p className="font-medium">Sistema atualizado</p>
-                  <p className="text-muted-foreground">há 2 horas</p>
+      {/* Main Content Grid */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Activity Section - 2 columns */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="shadow-lg border-0">
+            <CardHeader>
+              <CardTitle className="text-xl">Atividade Recente</CardTitle>
+              <CardDescription>
+                Últimas ações importantes no sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="flex items-start gap-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full mt-1.5"></div>
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground">Sistema atualizado com sucesso</p>
+                    <p className="text-sm text-muted-foreground">Novas funcionalidades de gamificação implementadas</p>
+                    <p className="text-xs text-muted-foreground mt-1">há 2 horas</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 p-4 rounded-lg bg-green-50 dark:bg-green-950/20">
+                  <div className="w-3 h-3 bg-green-500 rounded-full mt-1.5"></div>
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground">+15 novos usuários</p>
+                    <p className="text-sm text-muted-foreground">Crescimento de 12% comparado a ontem</p>
+                    <p className="text-xs text-muted-foreground mt-1">há 4 horas</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 p-4 rounded-lg bg-purple-50 dark:bg-purple-950/20">
+                  <div className="w-3 h-3 bg-purple-500 rounded-full mt-1.5"></div>
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground">3 comércios aprovados</p>
+                    <p className="text-sm text-muted-foreground">Novos parceiros adicionados à plataforma</p>
+                    <p className="text-xs text-muted-foreground mt-1">ontem</p>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                <div className="text-sm">
-                  <p className="font-medium">Novos usuários cadastrados</p>
-                  <p className="text-muted-foreground">há 4 horas</p>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
-                <div className="text-sm">
-                  <p className="font-medium">Comércios aprovados</p>
-                  <p className="text-muted-foreground">ontem</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Sistema</CardTitle>
-            <CardDescription>
-              Status e informações do sistema
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-sm">Status do Sistema</span>
-                <span className="text-sm font-medium text-green-600">Online</span>
+        {/* Status Section - 1 column */}
+        <div className="space-y-6">
+          <Card className="shadow-lg border-0">
+            <CardHeader>
+              <CardTitle className="text-xl">Status do Sistema</CardTitle>
+              <CardDescription>
+                Informações em tempo real
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 dark:bg-green-950/20">
+                  <span className="text-sm font-medium">Sistema</span>
+                  <span className="text-sm font-bold text-green-600 flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    Online
+                  </span>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-background">
+                  <span className="text-sm">Total de Usuários</span>
+                  <span className="text-sm font-medium">{totalUsers.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-background">
+                  <span className="text-sm">Comércios Ativos</span>
+                  <span className="text-sm font-medium">{comerciosAtivos.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-background">
+                  <span className="text-sm">Tempo Real</span>
+                  <span className={`text-sm font-medium flex items-center gap-2 ${isConnected ? 'text-green-600' : 'text-red-600'}`}>
+                    <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                    {isConnected ? 'Conectado' : 'Desconectado'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-background">
+                  <span className="text-sm">Versão</span>
+                  <span className="text-sm font-medium">v1.2.3</span>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-sm">Total de Usuários</span>
-                <span className="text-sm text-muted-foreground">{totalUsers}</span>
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions */}
+          <Card className="shadow-lg border-0">
+            <CardHeader>
+              <CardTitle className="text-xl">Ações Rápidas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <button className="w-full p-3 text-left rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
+                  <p className="font-medium text-sm">Aprovar comércios pendentes</p>
+                  <p className="text-xs text-muted-foreground">3 aguardando aprovação</p>
+                </button>
+                <button className="w-full p-3 text-left rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
+                  <p className="font-medium text-sm">Revisar relatórios</p>
+                  <p className="text-xs text-muted-foreground">Dados atualizados</p>
+                </button>
+                <button className="w-full p-3 text-left rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
+                  <p className="font-medium text-sm">Gerenciar notificações</p>
+                  <p className="text-xs text-muted-foreground">2 novas mensagens</p>
+                </button>
               </div>
-              <div className="flex justify-between">
-                <span className="text-sm">Comércios Ativos</span>
-                <span className="text-sm text-muted-foreground">{comerciosAtivos}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm">Tempo Real</span>
-                <span className={`text-sm font-medium ${isConnected ? 'text-green-600' : 'text-red-600'}`}>
-                  {isConnected ? 'Conectado' : 'Desconectado'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm">Versão</span>
-                <span className="text-sm text-muted-foreground">v1.2.3</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

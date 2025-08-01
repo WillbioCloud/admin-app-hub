@@ -225,6 +225,7 @@ export function GamificationForm({
                     <SelectItem value="loja">Loja</SelectItem>
                     <SelectItem value="posto">Posto de Combustível</SelectItem>
                     <SelectItem value="banco">Banco</SelectItem>
+                    <SelectItem value="loteamento">Loteamento</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

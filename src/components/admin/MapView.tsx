@@ -25,15 +25,23 @@ export function MapView({
   const [isMapReady, setIsMapReady] = useState(false);
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
 
-  // Configurar token do Mapbox (temporário para desenvolvimento)
+  // Configurar token do Mapbox
   useEffect(() => {
-    // Use your Mapbox token here
-    mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
+    // IMPORTANTE: Para que o mapa funcione, você precisa configurar um token válido do Mapbox
+    // Visite https://mapbox.com/ e crie uma conta para obter seu token público
+    // Por enquanto, deixamos em branco para evitar erros
+    mapboxgl.accessToken = '';
   }, []);
 
   // Inicializar mapa
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
+
+    // Verificar se o token do Mapbox está configurado
+    if (!mapboxgl.accessToken) {
+      console.warn('Token do Mapbox não configurado');
+      return;
+    }
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -167,8 +175,29 @@ export function MapView({
     <div className="relative h-full w-full">
       <div ref={mapContainer} className="h-full w-full rounded-lg" />
       
-      {/* Loading overlay */}
-      {!isMapReady && (
+      {/* Loading overlay ou mensagem de configuração */}
+      {!isMapReady && !mapboxgl.accessToken && (
+        <div className="absolute inset-0 bg-gray-100 flex items-center justify-center rounded-lg">
+          <div className="text-center max-w-md p-6">
+            <div className="text-6xl mb-4">🗺️</div>
+            <h3 className="text-lg font-semibold mb-2">Configuração do Mapa</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Para utilizar o mapa, é necessário configurar um token do Mapbox.
+            </p>
+            <div className="bg-blue-50 p-3 rounded-lg text-left">
+              <p className="text-xs text-blue-800 mb-2"><strong>Como configurar:</strong></p>
+              <ol className="text-xs text-blue-700 space-y-1 list-decimal list-inside">
+                <li>Acesse <a href="https://mapbox.com/" target="_blank" className="underline">mapbox.com</a></li>
+                <li>Crie uma conta gratuita</li>
+                <li>Obtenha seu token público</li>
+                <li>Configure no código do mapa</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {!isMapReady && mapboxgl.accessToken && (
         <div className="absolute inset-0 bg-gray-100 flex items-center justify-center rounded-lg">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>

@@ -691,7 +691,7 @@ export type Database = {
           updated_at: string | null
           user_status: string
           user_type: Database["public"]["Enums"]["user_role"]
-          xp: string | null
+          xp: number | null
         }
         Insert: {
           avatar_url?: string | null
@@ -710,7 +710,7 @@ export type Database = {
           updated_at?: string | null
           user_status?: string
           user_type?: Database["public"]["Enums"]["user_role"]
-          xp?: string | null
+          xp?: number | null
         }
         Update: {
           avatar_url?: string | null
@@ -729,7 +729,7 @@ export type Database = {
           updated_at?: string | null
           user_status?: string
           user_type?: Database["public"]["Enums"]["user_role"]
-          xp?: string | null
+          xp?: number | null
         }
         Relationships: []
       }
@@ -1051,26 +1051,30 @@ export type Database = {
           full_name: string | null
           id: string | null
           level: number | null
-          xp: string | null
+          xp: number | null
         }
         Insert: {
           avatar_url?: string | null
           full_name?: string | null
           id?: string | null
           level?: number | null
-          xp?: string | null
+          xp?: number | null
         }
         Update: {
           avatar_url?: string | null
           full_name?: string | null
           id?: string | null
           level?: number | null
-          xp?: string | null
+          xp?: number | null
         }
         Relationships: []
       }
     }
     Functions: {
+      check_and_apply_level_up: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
       cleanup_old_notifications: {
         Args: Record<PropertyKey, never>
         Returns: undefined

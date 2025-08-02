@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useState } from 'react';
 import { Upload, X } from 'lucide-react';
 import { Reward } from '@/hooks/useRewards';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const rewardSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
@@ -31,6 +33,7 @@ interface RewardFormProps {
 export function RewardForm({ defaultValues, onSubmit, onCancel, isEditing = false }: RewardFormProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(defaultValues?.image_url || null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const form = useForm<RewardFormData>({
     resolver: zodResolver(rewardSchema),
@@ -46,6 +49,12 @@ export function RewardForm({ defaultValues, onSubmit, onCancel, isEditing = fals
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Validar tamanho (máx 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Imagem muito grande. Máximo 5MB permitido.');
+        return;
+      }
+
       setImageFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -60,13 +69,53 @@ export function RewardForm({ defaultValues, onSubmit, onCancel, isEditing = fals
     setImageFile(null);
   };
 
-  const handleSubmit = async (data: RewardFormData) => {
-    let imageUrl = imagePreview;
+  const uploadImageToSupabase = async (file: File): Promise<string | null> => {
+    try {
+      setUploading(true);
+      
+      // Gerar nome único para o arquivo
+      const fileExt = file.name.split('.').pop();
+      const fileName = `reward_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `rewards/${fileName}`;
 
+      // Upload para o bucket 'app-media'
+      const { data, error } = await supabase.storage
+        .from('app-media')
+        .upload(filePath, file);
+
+      if (error) {
+        console.error('Erro no upload:', error);
+        toast.error('Erro ao fazer upload da imagem');
+        return null;
+      }
+
+      // Obter URL pública da imagem
+      const { data: { publicUrl } } = supabase.storage
+        .from('app-media')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Erro no upload:', error);
+      toast.error('Erro ao fazer upload da imagem');
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSubmit = async (data: RewardFormData) => {
+    let imageUrl = defaultValues?.image_url || null;
+
+    // Se há uma nova imagem selecionada, fazer upload
     if (imageFile) {
-      // Simular upload da imagem - aqui você implementaria o upload real
-      // Para agora, vamos manter a URL do preview
-      imageUrl = imagePreview;
+      const uploadedUrl = await uploadImageToSupabase(imageFile);
+      if (uploadedUrl) {
+        imageUrl = uploadedUrl;
+      } else {
+        // Se o upload falhar, não continuar
+        return;
+      }
     }
 
     onSubmit({
@@ -234,8 +283,8 @@ export function RewardForm({ defaultValues, onSubmit, onCancel, isEditing = fals
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancelar
           </Button>
-          <Button type="submit">
-            {isEditing ? 'Atualizar Recompensa' : 'Criar Recompensa'}
+          <Button type="submit" disabled={uploading}>
+            {uploading ? 'Fazendo upload...' : (isEditing ? 'Atualizar Recompensa' : 'Criar Recompensa')}
           </Button>
         </div>
       </form>

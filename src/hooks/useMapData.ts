@@ -88,15 +88,14 @@ export const useUpdateComercioLocation = () => {
         .from('comercios')
         .update(updateData)
         .eq('id', id)
-        .select()
-        .single();
+        .select();
 
       if (error) {
         console.error('Erro ao atualizar localização do comércio:', error);
         throw error;
       }
 
-      return data;
+      return data?.[0];
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comercios-location'] });
@@ -126,15 +125,14 @@ export const useUpdatePointOfInterest = () => {
         .from('points_of_interest')
         .update({ image_url })
         .eq('id', id)
-        .select()
-        .single();
+        .select();
 
       if (error) {
         console.error('Erro ao atualizar ponto de interesse:', error);
         throw error;
       }
 
-      return data;
+      return data?.[0];
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['points-of-interest'] });

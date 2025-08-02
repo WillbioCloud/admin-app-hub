@@ -1,4 +1,4 @@
-import { Home, Users, FileText, Bell, Store, Settings, Palette, User, GamepadIcon, Newspaper, Search, Menu, Sun, Moon } from 'lucide-react';
+import { Home, Users, FileText, Bell, Store, Settings, Palette, User, GamepadIcon, Newspaper, Search, Menu, Sun, Moon, Gift } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useState } from 'react';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
@@ -45,6 +45,11 @@ export function AppSidebar() {
     url: user?.role === 'admin' ? '/admin/gamificacoes' : '/dashboard/gamificacoes',
     icon: GamepadIcon,
     color: 'text-red-500'
+  }, {
+    title: 'Recompensas',
+    url: user?.role === 'admin' ? '/admin/recompensas' : '/dashboard/recompensas',
+    icon: Gift,
+    color: 'text-amber-500'
   }, {
     title: 'Notificações',
     url: '/admin/notificacoes',

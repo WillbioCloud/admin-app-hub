@@ -23,6 +23,7 @@ import RelatoriosPage from "./pages/admin/RelatoriosPage";
 import CategoriasPage from "./pages/admin/CategoriasPage";
 import AprovacoesPage from "./pages/admin/AprovacoesPage";
 import AdminPerfilPage from "./pages/admin/AdminPerfilPage";
+import AdminRecompensasPage from "./pages/admin/RecompensasPage";
 
 // Comerciante Pages
 import ComercianteDashboard from "./pages/comerciante/ComercianteDashboard";
@@ -30,6 +31,7 @@ import PerfilPage from "./pages/comerciante/PerfilPage";
 import PersonalizacaoPage from "./pages/comerciante/PersonalizacaoPage";
 import ConfiguracoesPage from "./pages/comerciante/ConfiguracoesPage";
 import ComercianteGamificacoesPage from "./pages/comerciante/GamificacoesPage";
+import ComercianteRecompensasPage from "./pages/comerciante/RecompensasPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -66,6 +68,7 @@ const App = () => (
             <Route path="/admin/categorias" element={<DashboardLayout><CategoriasPage /></DashboardLayout>} />
             <Route path="/admin/aprovacoes" element={<DashboardLayout><AprovacoesPage /></DashboardLayout>} />
             <Route path="/admin/perfil" element={<DashboardLayout><AdminPerfilPage /></DashboardLayout>} />
+            <Route path="/admin/recompensas" element={<DashboardLayout><AdminRecompensasPage /></DashboardLayout>} />
 
             {/* Rotas de Comerciante (Protegidas pelo DashboardLayout) */}
             <Route path="/dashboard" element={<DashboardLayout><ComercianteDashboard /></DashboardLayout>} />
@@ -73,6 +76,7 @@ const App = () => (
             <Route path="/dashboard/personalizacao" element={<DashboardLayout><PersonalizacaoPage /></DashboardLayout>} />
             <Route path="/dashboard/configuracoes" element={<DashboardLayout><ConfiguracoesPage /></DashboardLayout>} />
             <Route path="/dashboard/gamificacoes" element={<DashboardLayout><ComercianteGamificacoesPage /></DashboardLayout>} />
+            <Route path="/dashboard/recompensas" element={<DashboardLayout><ComercianteRecompensasPage /></DashboardLayout>} />
 
             {/* Rotas de Fallback */}
             <Route path="/404" element={<NotFound />} />

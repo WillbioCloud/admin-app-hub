@@ -132,9 +132,12 @@ export type Database = {
           galeria_urls: string[] | null
           horario_func: Json | null
           id: string
+          image_url: string | null
           instagram: string | null
+          latitude: number | null
           layout_template: string | null
           logo_url: string | null
+          longitude: number | null
           nome: string
           primary_color: string | null
           servicos: string[] | null
@@ -152,9 +155,12 @@ export type Database = {
           galeria_urls?: string[] | null
           horario_func?: Json | null
           id?: string
+          image_url?: string | null
           instagram?: string | null
+          latitude?: number | null
           layout_template?: string | null
           logo_url?: string | null
+          longitude?: number | null
           nome: string
           primary_color?: string | null
           servicos?: string[] | null
@@ -172,9 +178,12 @@ export type Database = {
           galeria_urls?: string[] | null
           horario_func?: Json | null
           id?: string
+          image_url?: string | null
           instagram?: string | null
+          latitude?: number | null
           layout_template?: string | null
           logo_url?: string | null
+          longitude?: number | null
           nome?: string
           primary_color?: string | null
           servicos?: string[] | null

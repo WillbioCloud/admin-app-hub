@@ -1,0 +1,148 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { Comercio } from './useComercios';
+
+export interface PointOfInterest {
+  id: string;
+  name: string;
+  category: string;
+  latitude: number;
+  longitude: number;
+  image_url?: string;
+  phone?: string;
+  operating_hours?: string;
+  loteamento_id: string;
+  x_coord?: number;
+  y_coord?: number;
+}
+
+export interface ComercioWithLocation extends Comercio {
+  latitude?: number;
+  longitude?: number;
+  image_url?: string;
+}
+
+// Hook para buscar pontos de interesse
+export const usePointsOfInterest = () => {
+  return useQuery({
+    queryKey: ['points-of-interest'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('points_of_interest')
+        .select('*')
+        .order('name');
+
+      if (error) {
+        console.error('Erro ao buscar pontos de interesse:', error);
+        throw error;
+      }
+      
+      return data as PointOfInterest[];
+    },
+  });
+};
+
+// Hook para buscar comércios com localização
+export const useComerciasWithLocation = () => {
+  return useQuery({
+    queryKey: ['comercios-location'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('comercios')
+        .select('*')
+        .order('nome');
+
+      if (error) {
+        console.error('Erro ao buscar comércios:', error);
+        throw error;
+      }
+      
+      return data as ComercioWithLocation[];
+    },
+  });
+};
+
+// Hook para atualizar localização do comércio
+export const useUpdateComercioLocation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      id, 
+      latitude, 
+      longitude, 
+      image_url 
+    }: { 
+      id: string; 
+      latitude: number; 
+      longitude: number; 
+      image_url?: string;
+    }) => {
+      const updateData: any = { latitude, longitude };
+      if (image_url !== undefined) {
+        updateData.image_url = image_url;
+      }
+
+      const { data, error } = await supabase
+        .from('comercios')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Erro ao atualizar localização do comércio:', error);
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['comercios-location'] });
+      queryClient.invalidateQueries({ queryKey: ['comercios'] });
+      toast.success('Localização atualizada com sucesso!');
+    },
+    onError: (error) => {
+      console.error('Erro ao atualizar localização:', error);
+      toast.error('Erro ao atualizar localização');
+    },
+  });
+};
+
+// Hook para atualizar ponto de interesse
+export const useUpdatePointOfInterest = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      id, 
+      image_url 
+    }: { 
+      id: string; 
+      image_url: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('points_of_interest')
+        .update({ image_url })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Erro ao atualizar ponto de interesse:', error);
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['points-of-interest'] });
+      toast.success('Ponto de interesse atualizado com sucesso!');
+    },
+    onError: (error) => {
+      console.error('Erro ao atualizar ponto de interesse:', error);
+      toast.error('Erro ao atualizar ponto de interesse');
+    },
+  });
+};

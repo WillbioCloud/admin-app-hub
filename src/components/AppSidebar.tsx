@@ -1,4 +1,4 @@
-import { Home, Users, FileText, Bell, Store, Settings, Palette, User, GamepadIcon, Newspaper, Search, Menu, Sun, Moon, Gift } from 'lucide-react';
+import { Home, Users, FileText, Bell, Store, Settings, Palette, User, GamepadIcon, Newspaper, Search, Menu, Sun, Moon, Gift, MapPin } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useState } from 'react';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
@@ -27,6 +27,12 @@ export function AppSidebar() {
     url: '/admin/comercios',
     icon: Store,
     color: 'text-purple-500',
+    adminOnly: true
+  }, {
+    title: 'Mapa',
+    url: '/admin/mapa',
+    icon: MapPin,
+    color: 'text-emerald-500',
     adminOnly: true
   }, {
     title: 'Categorias',

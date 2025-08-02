@@ -3,13 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Comercio } from './useComercios';
 
-// Tipos de dados
 export interface PointOfInterest {
   id: string;
   name: string;
   category: string;
-  latitude: number | null;
-  longitude: number | null;
+  latitude: number;
+  longitude: number;
   image_url?: string;
   phone?: string;
   operating_hours?: string;
@@ -19,77 +18,129 @@ export interface PointOfInterest {
 }
 
 export interface ComercioWithLocation extends Comercio {
-  latitude?: number | null;
-  longitude?: number | null;
+  latitude?: number;
+  longitude?: number;
   image_url?: string;
 }
 
-// Hook para buscar Pontos de Interesse
+// Hook para buscar pontos de interesse
 export const usePointsOfInterest = () => {
   return useQuery({
-    queryKey: ['points_of_interest'],
+    queryKey: ['points-of-interest'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('points_of_interest')
         .select('*')
         .order('name');
-      if (error) throw error;
+
+      if (error) {
+        console.error('Erro ao buscar pontos de interesse:', error);
+        throw error;
+      }
+      
       return data as PointOfInterest[];
     },
   });
 };
 
-// Hook para buscar Comércios
+// Hook para buscar comércios com localização
 export const useComerciasWithLocation = () => {
   return useQuery({
-    queryKey: ['comercios'],
+    queryKey: ['comercios-location'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('comercios')
         .select('*')
         .order('nome');
-      if (error) throw error;
+
+      if (error) {
+        console.error('Erro ao buscar comércios:', error);
+        throw error;
+      }
+      
       return data as ComercioWithLocation[];
     },
   });
 };
 
-// Hook de mutação genérico para atualizar qualquer item
-type ItemUpdatePayload = {
-  id: string;
-  updates: Partial<{ latitude: number; longitude: number; image_url: string }>;
-};
-
-type UseUpdateItemParams = {
-  tableName: 'comercios' | 'points_of_interest';
-};
-
-export function useUpdateItem({ tableName }: UseUpdateItemParams) {
+// Hook para atualizar localização do comércio
+export const useUpdateComercioLocation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, updates }: ItemUpdatePayload) => {
+    mutationFn: async ({ 
+      id, 
+      latitude, 
+      longitude, 
+      image_url 
+    }: { 
+      id: string; 
+      latitude: number; 
+      longitude: number; 
+      image_url?: string;
+    }) => {
+      const updateData: any = { latitude, longitude };
+      if (image_url !== undefined) {
+        updateData.image_url = image_url;
+      }
+
       const { data, error } = await supabase
-        .from(tableName)
-        .update(updates)
+        .from('comercios')
+        .update(updateData)
         .eq('id', id)
-        .select()
-        .single();
+        .select();
 
       if (error) {
-        throw new Error(`Falha ao atualizar ${tableName}: ${error.message}`);
+        console.error('Erro ao atualizar localização do comércio:', error);
+        throw error;
       }
-      return data;
+
+      return data?.[0];
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [tableName] });
-      const message = variables.updates.image_url 
-        ? 'Imagem atualizada com sucesso!' 
-        : 'Localização atualizada com sucesso!';
-      toast.success(message);
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['comercios-location'] });
+      queryClient.invalidateQueries({ queryKey: ['comercios'] });
+      toast.success('Localização atualizada com sucesso!');
     },
     onError: (error) => {
-      toast.error(`Erro na atualização: ${error.message}`);
+      console.error('Erro ao atualizar localização:', error);
+      toast.error('Erro ao atualizar localização');
     },
   });
-}
+};
+
+// Hook para atualizar ponto de interesse
+export const useUpdatePointOfInterest = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      id, 
+      image_url 
+    }: { 
+      id: string; 
+      image_url: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('points_of_interest')
+        .update({ image_url })
+        .eq('id', id)
+        .select();
+
+      if (error) {
+        console.error('Erro ao atualizar ponto de interesse:', error);
+        throw error;
+      }
+
+      return data?.[0];
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['points-of-interest'] });
+      toast.success('Ponto de interesse atualizado com sucesso!');
+    },
+    onError: (error) => {
+      console.error('Erro ao atualizar ponto de interesse:', error);
+      toast.error('Erro ao atualizar ponto de interesse');
+    },
+  });
+};

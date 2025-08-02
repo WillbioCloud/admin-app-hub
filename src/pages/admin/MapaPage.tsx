@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapView } from '@/components/admin/MapView';
 import { ComerciosList } from '@/components/admin/ComerciosList';
-import { usePointsOfInterest, useComerciasWithLocation, useUpdateComercioLocation } from '@/hooks/useMapData';
+import { usePointsOfInterest, useComerciasWithLocation, useUpdateComercioLocation, useUpdatePointOfInterest, useUpdateComercioImage } from '@/hooks/useMapData';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Map } from 'lucide-react';
 
@@ -22,13 +22,19 @@ export default function MapaPage() {
   } = useComerciasWithLocation();
   
   const updateLocationMutation = useUpdateComercioLocation();
+  const updatePOIMutation = useUpdatePointOfInterest();
+  const updateComercioImageMutation = useUpdateComercioImage();
 
   const handleLocationUpdate = (id: string, latitude: number, longitude: number) => {
     updateLocationMutation.mutate({ id, latitude, longitude });
   };
 
-  const handleImageUpdate = (id: string, imageUrl: string) => {
-    updateLocationMutation.mutate({ id, latitude: 0, longitude: 0, image_url: imageUrl });
+  const handleComercioImageUpdate = (id: string, imageUrl: string) => {
+    updateComercioImageMutation.mutate({ id, image_url: imageUrl });
+  };
+
+  const handlePOIImageUpdate = (id: string, imageUrl: string) => {
+    updatePOIMutation.mutate({ id, image_url: imageUrl });
   };
 
   const handleRefresh = () => {
@@ -76,6 +82,8 @@ export default function MapaPage() {
               pointsOfInterest={pointsOfInterest}
               comercios={comercios}
               onComercioLocationUpdate={handleLocationUpdate}
+              onPOIImageUpdate={handlePOIImageUpdate}
+              onComercioImageUpdate={handleComercioImageUpdate}
               selectedComercio={selectedComercio}
             />
           </CardContent>
@@ -93,7 +101,7 @@ export default function MapaPage() {
                 selectedComercio={selectedComercio}
                 onSelectComercio={setSelectedComercio}
                 onAddLocation={handleLocationUpdate}
-                onUpdateImage={handleImageUpdate}
+                onUpdateImage={handleComercioImageUpdate}
               />
             </div>
           </CardContent>

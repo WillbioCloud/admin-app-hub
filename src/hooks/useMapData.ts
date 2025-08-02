@@ -144,3 +144,40 @@ export const useUpdatePointOfInterest = () => {
     },
   });
 };
+
+// Hook para atualizar imagem do comércio
+export const useUpdateComercioImage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      id, 
+      image_url 
+    }: { 
+      id: string; 
+      image_url: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('comercios')
+        .update({ image_url })
+        .eq('id', id)
+        .select();
+
+      if (error) {
+        console.error('Erro ao atualizar imagem do comércio:', error);
+        throw error;
+      }
+
+      return data?.[0];
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['comercios-location'] });
+      queryClient.invalidateQueries({ queryKey: ['comercios'] });
+      toast.success('Imagem do comércio atualizada com sucesso!');
+    },
+    onError: (error) => {
+      console.error('Erro ao atualizar imagem do comércio:', error);
+      toast.error('Erro ao atualizar imagem do comércio');
+    },
+  });
+};

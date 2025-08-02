@@ -4,11 +4,14 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 import { PointOfInterest, ComercioWithLocation } from '@/hooks/useMapData';
+import { ImageUploadDialog } from './ImageUploadDialog';
 
 interface MapViewProps {
   pointsOfInterest: PointOfInterest[];
   comercios: ComercioWithLocation[];
   onComercioLocationUpdate: (id: string, latitude: number, longitude: number) => void;
+  onPOIImageUpdate: (id: string, imageUrl: string) => void;
+  onComercioImageUpdate: (id: string, imageUrl: string) => void;
   selectedComercio?: string;
 }
 
@@ -19,13 +22,26 @@ const CIDADE_INTELIGENTE_ZOOM = 14;
 export function MapView({ 
   pointsOfInterest, 
   comercios, 
-  onComercioLocationUpdate, 
+  onComercioLocationUpdate,
+  onPOIImageUpdate,
+  onComercioImageUpdate,
   selectedComercio 
 }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
+  const [uploadDialog, setUploadDialog] = useState<{
+    open: boolean;
+    entityId: string;
+    entityType: 'comercio' | 'poi';
+    title: string;
+  }>({
+    open: false,
+    entityId: '',
+    entityType: 'poi',
+    title: ''
+  });
 
   // Configurar token do Mapbox
   useEffect(() => {
@@ -38,6 +54,26 @@ export function MapView({
     (window as any).editLocation = (comercioId: string) => {
       console.log('Editando localização do comércio:', comercioId);
       // A edição é feita arrastando o marcador
+    };
+
+    // Adicionar função global para upload de imagem dos POIs
+    (window as any).uploadPOIImage = (poiId: string, poiName: string) => {
+      setUploadDialog({
+        open: true,
+        entityId: poiId,
+        entityType: 'poi',
+        title: `Atualizar imagem - ${poiName}`
+      });
+    };
+
+    // Adicionar função global para upload de imagem dos comércios
+    (window as any).uploadComercioImage = (comercioId: string, comercioName: string) => {
+      setUploadDialog({
+        open: true,
+        entityId: comercioId,
+        entityType: 'comercio',
+        title: `Atualizar imagem - ${comercioName}`
+      });
     };
   }, []);
 
@@ -196,6 +232,15 @@ export function MapView({
                   <span>${poi.operating_hours}</span>
                 </div>
               ` : ''}
+              </div>
+              <div class="p-3 border-t border-gray-100">
+                <button 
+                  onclick="window.uploadPOIImage('${poi.id}', '${poi.name.replace(/'/g, "\\'")}')"
+                  class="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 text-sm font-medium py-2 px-3 rounded-lg transition-colors duration-200"
+                >
+                  📷 Atualizar Imagem
+                </button>
+              </div>
             </div>
           </div>
         `);
@@ -287,12 +332,18 @@ export function MapView({
                   </div>
                 ` : ''}
               </div>
-              <div class="mt-3 pt-3 border-t border-gray-100">
+              <div class="mt-3 pt-3 border-t border-gray-100 space-y-2">
                 <button 
                   onclick="window.editLocation('${comercio.id}')"
                   class="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 text-sm font-medium py-2 px-3 rounded-lg transition-colors duration-200"
                 >
                   📍 Editar Localização (Arraste o marcador)
+                </button>
+                <button 
+                  onclick="window.uploadComercioImage('${comercio.id}', '${comercio.nome.replace(/'/g, "\\'")}')"
+                  class="w-full bg-green-50 hover:bg-green-100 text-green-600 text-sm font-medium py-2 px-3 rounded-lg transition-colors duration-200"
+                >
+                  📷 Atualizar Imagem
                 </button>
               </div>
             </div>
@@ -381,6 +432,22 @@ export function MapView({
           💡 Dica: Arraste os marcadores verdes para reposicionar comércios
         </div>
       </div>
+
+      {/* Image Upload Dialog */}
+      <ImageUploadDialog
+        open={uploadDialog.open}
+        onOpenChange={(open) => setUploadDialog(prev => ({ ...prev, open }))}
+        title={uploadDialog.title}
+        entityId={uploadDialog.entityId}
+        entityType={uploadDialog.entityType}
+        onImageUploaded={(imageUrl) => {
+          if (uploadDialog.entityType === 'poi') {
+            onPOIImageUpdate(uploadDialog.entityId, imageUrl);
+          } else {
+            onComercioImageUpdate(uploadDialog.entityId, imageUrl);
+          }
+        }}
+      />
 
     </div>
   );

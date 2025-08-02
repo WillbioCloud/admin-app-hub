@@ -30,7 +30,7 @@ export function MapView({
     // IMPORTANTE: Para que o mapa funcione, você precisa configurar um token válido do Mapbox
     // Visite https://mapbox.com/ e crie uma conta para obter seu token público
     // Por enquanto, deixamos em branco para evitar erros
-    mapboxgl.accessToken = '';
+    mapboxgl.accessToken = 'pk.eyJ1Ijoid2lsbGJpbyIsImEiOiJjbWR1Z2lvNmMwM2x4MnFwcnM4dmprMjUyIn0.9K8joxkaeNBYtunymoH86w';
   }, []);
 
   // Inicializar mapa

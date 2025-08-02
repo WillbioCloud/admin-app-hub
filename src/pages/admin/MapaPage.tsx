@@ -77,7 +77,7 @@ export default function MapaPage() {
               Loteamento Cidade Inteligente
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-7 h-[calc(100%-4rem)]">
+          <CardContent className="p-0 h-[calc(100%-4rem)]">
             <MapView
               pointsOfInterest={pointsOfInterest}
               comercios={comercios}

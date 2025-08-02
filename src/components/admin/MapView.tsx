@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
+import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 import { PointOfInterest, ComercioWithLocation } from '@/hooks/useMapData';
 
 interface MapViewProps {
@@ -12,7 +14,7 @@ interface MapViewProps {
 
 // Coordenadas do loteamento Cidade Inteligente
 const CIDADE_INTELIGENTE_CENTER: [number, number] = [-48.2982, -15.8267]; // Aproximação baseada no link
-const CIDADE_INTELIGENTE_ZOOM = 16;
+const CIDADE_INTELIGENTE_ZOOM = 14;
 
 export function MapView({ 
   pointsOfInterest, 
@@ -48,12 +50,61 @@ export function MapView({
       style: 'mapbox://styles/mapbox/satellite-streets-v12',
       center: CIDADE_INTELIGENTE_CENTER,
       zoom: CIDADE_INTELIGENTE_ZOOM,
-      maxZoom: 20,
-      minZoom: 14
+      maxZoom: 22,
+      minZoom: 1
     });
 
     // Adicionar controles de navegação
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    
+    // Adicionar controle de geolocalização
+    map.current.addControl(
+      new mapboxgl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true
+        },
+        trackUserLocation: true,
+        showUserHeading: true
+      }),
+      'top-right'
+    );
+    
+    // Adicionar controle de busca de endereço
+    const geocoder = new MapboxGeocoder({
+      accessToken: mapboxgl.accessToken,
+      mapboxgl: mapboxgl,
+      placeholder: 'Buscar localização...',
+      countries: 'br',
+      language: 'pt'
+    });
+    map.current.addControl(geocoder, 'top-left');
+    
+    // Adicionar controle de mudança de estilo de mapa
+    const styleSelector = document.createElement('div');
+    styleSelector.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+    styleSelector.innerHTML = `
+      <button type="button" class="mapboxgl-ctrl-icon" title="Alterar estilo do mapa">
+        🗺️
+      </button>
+    `;
+    
+    const mapStyles = [
+      { name: 'Satélite', style: 'mapbox://styles/mapbox/satellite-streets-v12' },
+      { name: 'Ruas', style: 'mapbox://styles/mapbox/streets-v12' },
+      { name: 'Terreno', style: 'mapbox://styles/mapbox/outdoors-v12' },
+      { name: 'Escuro', style: 'mapbox://styles/mapbox/dark-v11' }
+    ];
+    
+    let currentStyleIndex = 0;
+    styleSelector.addEventListener('click', () => {
+      currentStyleIndex = (currentStyleIndex + 1) % mapStyles.length;
+      map.current?.setStyle(mapStyles[currentStyleIndex].style);
+    });
+    
+    map.current.addControl({
+      onAdd: () => styleSelector,
+      onRemove: () => {}
+    } as any, 'bottom-right');
 
     map.current.on('load', () => {
       setIsMapReady(true);

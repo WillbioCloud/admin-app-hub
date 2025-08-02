@@ -13,7 +13,7 @@ interface MapViewProps {
 }
 
 // Coordenadas do loteamento Cidade Inteligente
-const CIDADE_INTELIGENTE_CENTER: [number, number] = [-48.2982, -15.8267]; // Aproximação baseada no link
+const CIDADE_INTELIGENTE_CENTER: [number, number] = [-48.318956, -15.944808]; // Aproximação baseada no link
 const CIDADE_INTELIGENTE_ZOOM = 14;
 
 export function MapView({ 

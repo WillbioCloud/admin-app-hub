@@ -6,6 +6,7 @@ import { useRealtimeReports } from '@/hooks/useRealtimeReports';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { ActivityFeed } from '@/components/admin/ActivityFeed';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -144,42 +145,7 @@ const AdminDashboard = () => {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Activity Section - 2 columns */}
         <div className="lg:col-span-2 space-y-6">
-          <Card className="shadow-lg border-0">
-            <CardHeader>
-              <CardTitle className="text-xl">Atividade Recente</CardTitle>
-              <CardDescription>
-                Últimas ações importantes no sistema
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="flex items-start gap-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full mt-1.5"></div>
-                  <div className="flex-1">
-                    <p className="font-medium text-foreground">Sistema atualizado com sucesso</p>
-                    <p className="text-sm text-muted-foreground">Novas funcionalidades de gamificação implementadas</p>
-                    <p className="text-xs text-muted-foreground mt-1">há 2 horas</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4 p-4 rounded-lg bg-green-50 dark:bg-green-950/20">
-                  <div className="w-3 h-3 bg-green-500 rounded-full mt-1.5"></div>
-                  <div className="flex-1">
-                    <p className="font-medium text-foreground">+15 novos usuários</p>
-                    <p className="text-sm text-muted-foreground">Crescimento de 12% comparado a ontem</p>
-                    <p className="text-xs text-muted-foreground mt-1">há 4 horas</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4 p-4 rounded-lg bg-purple-50 dark:bg-purple-950/20">
-                  <div className="w-3 h-3 bg-purple-500 rounded-full mt-1.5"></div>
-                  <div className="flex-1">
-                    <p className="font-medium text-foreground">3 comércios aprovados</p>
-                    <p className="text-sm text-muted-foreground">Novos parceiros adicionados à plataforma</p>
-                    <p className="text-xs text-muted-foreground mt-1">ontem</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <ActivityFeed />
         </div>
 
         {/* Status Section - 1 column */}

@@ -71,7 +71,7 @@ export function AprovacoesPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => rejectMutation.mutate(comercio)}
-                          disabled={isProcessing} // Desabilita se qualquer ação estiver em andamento para este item
+                          disabled={isProcessing}
                         >
                           {isRejecting ? (
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -85,7 +85,7 @@ export function AprovacoesPage() {
                         <Button
                           size="sm"
                           onClick={() => approveMutation.mutate(comercio)}
-                          disabled={isProcessing} // Desabilita se qualquer ação estiver em andamento para este item
+                          disabled={isProcessing}
                           className="bg-green-600 hover:bg-green-700"
                         >
                           {isApproving ? (

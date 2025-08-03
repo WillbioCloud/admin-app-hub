@@ -3,8 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ExternalLink } from 'lucide-react';
 import { useComercios, useUpdateComercioAtivoStatus } from '@/hooks/useComercios';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * ComerciosPage
@@ -14,6 +16,7 @@ import { useComercios, useUpdateComercioAtivoStatus } from '@/hooks/useComercios
  * que dispara a mutação dedicada `useUpdateComercioAtivoStatus`.
  */
 export function ComerciosPage() {
+  const navigate = useNavigate();
   const { data: comercios, isLoading, isError, error } = useComercios();
   const updateStatusMutation = useUpdateComercioAtivoStatus();
 
@@ -80,8 +83,10 @@ export function ComerciosPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Nome do Comércio</TableHead>
+                <TableHead>Categoria</TableHead>
                 <TableHead>Status de Aprovação</TableHead>
                 <TableHead className="text-center">Visibilidade (Ativo/Inativo)</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -90,6 +95,7 @@ export function ComerciosPage() {
                   return (
                     <TableRow key={comercio.id}>
                       <TableCell className="font-medium">{comercio.nome}</TableCell>
+                      <TableCell className="text-muted-foreground">{comercio.categoria}</TableCell>
                       <TableCell>
                         <Badge 
                             variant={getStatusVariant(comercio.status)}
@@ -107,6 +113,11 @@ export function ComerciosPage() {
                             aria-readonly={isUpdating}
                           />
                         </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                          <Button variant="outline" size="sm" onClick={() => alert('Função de editar a ser implementada.')}>
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
                       </TableCell>
                     </TableRow>
                 );

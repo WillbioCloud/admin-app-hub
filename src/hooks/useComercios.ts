@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-// A interface representa a estrutura de um Comércio, baseada no seu projeto.
+// Interface que representa a estrutura de um Comércio, baseada no seu projeto.
 export interface Comercio {
   id: string;
   user_id: string;
@@ -29,7 +29,6 @@ export interface Comercio {
 
 /**
  * Hook para buscar TODOS os comércios.
- * Usado na página principal de gerenciamento de comércios do admin.
  */
 export const useComercios = () => {
   return useQuery({
@@ -47,7 +46,6 @@ export const useComercios = () => {
 
 /**
  * Hook para buscar apenas comércios PENDENTES.
- * Usado exclusivamente na página de aprovações do admin.
  */
 export const usePendingComercios = () => {
   return useQuery({
@@ -66,7 +64,6 @@ export const usePendingComercios = () => {
 
 /**
  * Função auxiliar para criar notificação de forma segura.
- * Se falhar, avisa no console e com um toast, mas NÃO impede a aprovação.
  */
 const createNotification = async (userId: string, title: string, message: string) => {
     try {
@@ -85,20 +82,20 @@ const createNotification = async (userId: string, title: string, message: string
 
 /**
  * Hook para APROVAR um comércio.
- * Atualiza o status para 'approved' e 'ativo' como true.
  */
 export const useApproveComercio = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (comercio: Comercio) => {
-      const { data, error } = await supabase
+      // Operação de update SEM .select() para evitar o erro de RLS
+      const { error } = await supabase
         .from('comercios')
         .update({ status: 'approved', ativo: true })
-        .eq('id', comercio.id)
-        .select()
-        .single();
+        .eq('id', comercio.id);
+        
       if (error) throw new Error(`Falha ao aprovar: ${error.message}`);
-      return data;
+      // Retornamos o próprio objeto comercio, pois já temos os dados necessários.
+      return comercio; 
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['comercios'] });
@@ -112,20 +109,19 @@ export const useApproveComercio = () => {
 
 /**
  * Hook para REJEITAR um comércio.
- * Atualiza o status para 'rejected' e 'ativo' como false.
  */
 export const useRejectComercio = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (comercio: Comercio) => {
-      const { data, error } = await supabase
+      // Operação de update SEM .select()
+      const { error } = await supabase
         .from('comercios')
         .update({ status: 'rejected', ativo: false })
-        .eq('id', comercio.id)
-        .select()
-        .single();
+        .eq('id', comercio.id);
+
       if (error) throw new Error(`Falha ao rejeitar: ${error.message}`);
-      return data;
+      return comercio;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['comercios'] });
@@ -139,7 +135,6 @@ export const useRejectComercio = () => {
 
 /**
  * Hook DEDICADO para ativar ou inativar a visibilidade de um comércio.
- * Altera apenas a coluna 'ativo'.
  */
 export const useUpdateComercioAtivoStatus = () => {
     const queryClient = useQueryClient();
@@ -176,7 +171,7 @@ export const useMeuComercio = (userId: string | undefined) => {
         .eq('user_id', userId)
         .single();
       
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
+      if (error && error.code !== 'PGRST116') {
         console.error('Erro ao buscar meu comércio:', error);
         throw error;
       }

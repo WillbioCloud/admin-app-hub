@@ -488,6 +488,7 @@ export type Database = {
           status: string | null
           title: string
           type: string
+          updated_at: string | null
           xp_reward: number
         }
         Insert: {
@@ -506,6 +507,7 @@ export type Database = {
           status?: string | null
           title: string
           type: string
+          updated_at?: string | null
           xp_reward?: number
         }
         Update: {
@@ -524,6 +526,7 @@ export type Database = {
           status?: string | null
           title?: string
           type?: string
+          updated_at?: string | null
           xp_reward?: number
         }
         Relationships: [
@@ -800,6 +803,7 @@ export type Database = {
         Row: {
           coin_cost: number
           created_at: string
+          created_by: string | null
           description: string | null
           id: string
           image_url: string | null
@@ -812,6 +816,7 @@ export type Database = {
         Insert: {
           coin_cost: number
           created_at?: string
+          created_by?: string | null
           description?: string | null
           id?: string
           image_url?: string | null
@@ -824,6 +829,7 @@ export type Database = {
         Update: {
           coin_cost?: number
           created_at?: string
+          created_by?: string | null
           description?: string | null
           id?: string
           image_url?: string | null
@@ -1106,6 +1112,13 @@ export type Database = {
       get_admin_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_creator_info: {
+        Args: { user_id: string }
+        Returns: {
+          full_name: string
+          user_type: string
+        }[]
       }
       get_user_role: {
         Args: Record<PropertyKey, never> | { user_id?: string }

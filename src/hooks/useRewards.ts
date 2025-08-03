@@ -22,11 +22,10 @@ export interface Reward {
 // Alias para manter compatibilidade
 export type Recompensa = Reward;
 
-// --- HOOKS PARA COMERCIANTES ---
 export const useMinhasRecompensas = (comercioId: string | undefined) => {
   return useQuery({
     queryKey: ['minhas-recompensas', comercioId],
-    queryFn: async (): Promise<any[]> => {
+    queryFn: async () => {
       if (!comercioId) return [];
       const { data, error } = await supabase
         .from('rewards')
@@ -59,12 +58,12 @@ export const useRewards = () => {
 export const useCreateRecompensa = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (novaRecompensa: Omit<Reward, 'id' | 'created_at' | 'created_by'>) => {
+    mutationFn: async (novaRecompensa: any) => {
       const { data, error } = await supabase.from('rewards').insert(novaRecompensa).select().single();
       if (error) throw error;
       return data;
     },
-    onSuccess: (data: any) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['minhas-recompensas'] });
       queryClient.invalidateQueries({ queryKey: ['rewards'] });
       toast.success('Recompensa criada com sucesso!');
@@ -78,12 +77,12 @@ export const useCreateReward = useCreateRecompensa;
 export const useUpdateRecompensa = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updateData }: Partial<Reward> & { id: string }) => {
+    mutationFn: async ({ id, ...updateData }: any) => {
       const { data, error } = await supabase.from('rewards').update(updateData).eq('id', id).select().single();
       if (error) throw error;
       return data;
     },
-    onSuccess: (data: any) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['minhas-recompensas'] });
       queryClient.invalidateQueries({ queryKey: ['rewards'] });
       toast.success('Recompensa atualizada com sucesso!');
@@ -97,12 +96,12 @@ export const useUpdateReward = useUpdateRecompensa;
 export const useDeleteRecompensa = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, comercio_id }: { id: string, comercio_id?: string }) => {
+    mutationFn: async ({ id }: { id: string }) => {
       const { error } = await supabase.from('rewards').delete().eq('id', id);
       if (error) throw error;
-      return { comercio_id };
+      return { id };
     },
-    onSuccess: ({ comercio_id }: any) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['minhas-recompensas'] });
       queryClient.invalidateQueries({ queryKey: ['rewards'] });
       toast.success('Recompensa excluída com sucesso!');

@@ -32,7 +32,7 @@ export function GamificationDialog({
   const handleSubmit = async (data: any) => {
     try {
       if (isEditing && gamification) {
-        await updateGamification.mutateAsync({ id: gamification.id, data });
+        await updateGamification.mutateAsync({ id: gamification.id, ...data });
       } else {
         await createGamification.mutateAsync(data);
       }

@@ -19,7 +19,7 @@ export function RewardDialog({ open, onOpenChange, editingReward }: RewardDialog
       if (editingReward) {
         await updateReward.mutateAsync({
           id: editingReward.id,
-          data,
+          ...data,
         });
       } else {
         await createReward.mutateAsync(data);

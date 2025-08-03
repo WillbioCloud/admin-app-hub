@@ -44,7 +44,7 @@ export default function GamificacoesPage() {
   };
 
   const handleDelete = (id: string) => {
-    deleteGamification.mutate(id);
+    deleteGamification.mutate({ id });
   };
 
   const getStatusBadge = (status: string | null) => {

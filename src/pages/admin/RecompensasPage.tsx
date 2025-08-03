@@ -34,7 +34,7 @@ export default function RecompensasPage() {
 
   const confirmDelete = async () => {
     if (rewardToDelete) {
-      await deleteReward.mutateAsync(rewardToDelete);
+      await deleteReward.mutateAsync({ id: rewardToDelete });
       setDeleteDialogOpen(false);
       setRewardToDelete(null);
     }

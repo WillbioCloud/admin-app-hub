@@ -17,10 +17,28 @@ export interface PointOfInterest {
   y_coord?: number;
 }
 
-export interface ComercioWithLocation extends Comercio {
-  latitude?: number;
-  longitude?: number;
-  image_url?: string;
+export interface ComercioWithLocation {
+  id: string;
+  nome: string;
+  categoria: string | null;
+  descricao: string | null;
+  logo_url: string | null;
+  capa_url: string | null;
+  galeria_urls: string[] | null;
+  whatsapp: string | null;
+  instagram: string | null;
+  servicos: string[] | null;
+  layout_template: string | null;
+  primary_color: string | null;
+  horario_func: any;
+  ativo: boolean | null;
+  status?: string | null;
+  created_at: string;
+  updated_at: string;
+  image_url: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  loteamento_id?: string | null;
 }
 
 // Hook para buscar pontos de interesse
@@ -58,7 +76,7 @@ export const useComerciasWithLocation = () => {
         throw error;
       }
       
-      return data as ComercioWithLocation[];
+      return data;
     },
   });
 };

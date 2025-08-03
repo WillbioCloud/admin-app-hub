@@ -64,8 +64,8 @@ const PerfilPage = () => {
         descricao: meuComercio.descricao || '',
         whatsapp: meuComercio.whatsapp || '',
         instagram: meuComercio.instagram || '',
-        endereco: meuComercio.endereco || '',
-        horario_func: meuComercio.horario_func || '',
+        endereco: (meuComercio as any).endereco || '',
+        horario_func: String(meuComercio.horario_func || ''),
       });
       setServicos(meuComercio.servicos || []);
       setLogoPreview(meuComercio.logo_url);

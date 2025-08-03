@@ -3,19 +3,29 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-// A interface continua se chamando Gamificacao para consistência no app
-export interface Gamificacao {
+// Interface atualizada para coincidir com a estrutura da tabela missions
+export interface Gamification {
   id: string;
-  nome: string;
-  descricao: string;
-  tipo_meta: 'checkin' | 'compra';
-  meta: number;
-  pontos: number;
-  ativo: boolean;
+  title: string;
+  description: string | null;
+  type: string;
+  completion_data: string;
+  xp_reward: number;
+  coin_reward: number;
+  is_active: boolean;
+  is_unique: boolean;
+  loteamento_id: string | null;
+  location_type: string | null;
   created_at: string;
-  updated_at: string;
+  created_by: string | null;
+  approved_at: string | null;
+  approved_by: string | null;
+  status: string;
   comercio_id?: string;
 }
+
+// Alias para manter compatibilidade
+export type Gamificacao = Gamification;
 
 // --- HOOKS PARA COMERCIANTES ---
 export const useMinhasGamificacoes = (comercioId: string | undefined) => {
@@ -23,7 +33,6 @@ export const useMinhasGamificacoes = (comercioId: string | undefined) => {
     queryKey: ['minhas-gamificacoes', comercioId],
     queryFn: async () => {
       if (!comercioId) return [];
-      // APONTANDO PARA A TABELA 'missions'
       const { data, error } = await supabase
         .from('missions')
         .select('*')
@@ -31,59 +40,80 @@ export const useMinhasGamificacoes = (comercioId: string | undefined) => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Gamificacao[];
+      return data || [];
     },
     enabled: !!comercioId,
+  });
+};
+
+export const useGamifications = () => {
+  return useQuery({
+    queryKey: ['gamifications'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('missions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
   });
 };
 
 export const useCreateGamificacao = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (novaGamificacao: Omit<Gamificacao, 'id' | 'created_at' | 'updated_at'>) => {
-      // APONTANDO PARA A TABELA 'missions'
+    mutationFn: async (novaGamificacao: Omit<Gamification, 'id' | 'created_at' | 'approved_at' | 'approved_by'>) => {
       const { data, error } = await supabase.from('missions').insert(novaGamificacao).select().single();
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['minhas-gamificacoes', data.comercio_id] });
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['minhas-gamificacoes'] });
+      queryClient.invalidateQueries({ queryKey: ['gamifications'] });
       toast.success('Gamificação (Missão) criada com sucesso!');
     },
-    onError: (err) => toast.error(`Erro: ${err.message}`)
+    onError: (err: any) => toast.error(`Erro: ${err.message}`)
   });
 };
+
+export const useCreateGamification = useCreateGamificacao;
 
 export const useUpdateGamificacao = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updateData }: Partial<Gamificacao> & { id: string }) => {
-      // APONTANDO PARA A TABELA 'missions'
+    mutationFn: async ({ id, ...updateData }: Partial<Gamification> & { id: string }) => {
       const { data, error } = await supabase.from('missions').update(updateData).eq('id', id).select().single();
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['minhas-gamificacoes', data.comercio_id] });
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['minhas-gamificacoes'] });
+      queryClient.invalidateQueries({ queryKey: ['gamifications'] });
       toast.success('Gamificação (Missão) atualizada com sucesso!');
     },
-    onError: (err) => toast.error(`Erro: ${err.message}`)
+    onError: (err: any) => toast.error(`Erro: ${err.message}`)
   });
 };
+
+export const useUpdateGamification = useUpdateGamificacao;
 
 export const useDeleteGamificacao = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, comercio_id }: { id: string, comercio_id?: string }) => {
-       // APONTANDO PARA A TABELA 'missions'
       const { error } = await supabase.from('missions').delete().eq('id', id);
       if (error) throw error;
       return { comercio_id };
     },
-    onSuccess: ({ comercio_id }) => {
-      queryClient.invalidateQueries({ queryKey: ['minhas-gamificacoes', comercio_id] });
+    onSuccess: ({ comercio_id }: any) => {
+      queryClient.invalidateQueries({ queryKey: ['minhas-gamificacoes'] });
+      queryClient.invalidateQueries({ queryKey: ['gamifications'] });
       toast.success('Gamificação (Missão) excluída com sucesso!');
     },
-    onError: (err) => toast.error(`Erro: ${err.message}`)
+    onError: (err: any) => toast.error(`Erro: ${err.message}`)
   });
 };
+
+export const useDeleteGamification = useDeleteGamificacao;

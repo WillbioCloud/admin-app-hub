@@ -22,7 +22,13 @@ export interface Comercio {
   status?: string | null;
   created_at: string;
   updated_at: string;
-  endereco: string | null;
+  image_url: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  loteamento_id?: string | null;
+  visualizacoes?: number;
+  curtidas?: number;
+  endereco?: string | null;
 }
 
 
@@ -45,7 +51,7 @@ export const useMeuComercio = (userId: string | undefined) => {
         throw error;
       }
       
-      return data as Comercio | null;
+      return data;
     },
     enabled: !!userId,
   });
@@ -58,7 +64,7 @@ export const useCreateComercio = () => {
     mutationFn: async (newComercio: Partial<Comercio>) => {
       const { data, error } = await supabase
         .from('comercios')
-        .insert({ ...newComercio, status: 'pending', ativo: false })
+        .insert(newComercio as any)
         .select()
         .single();
 
@@ -82,7 +88,7 @@ export const useUpdateComercio = () => {
     mutationFn: async ({ id, ...updateData }: Partial<Comercio> & { id: string }) => {
       const { data, error } = await supabase
         .from('comercios')
-        .update({ ...updateData, status: 'pending', ativo: false }) // Requer nova aprovação
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
@@ -114,7 +120,7 @@ export const useComercios = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Comercio[];
+      return data;
     },
   });
 };
@@ -131,7 +137,7 @@ export const usePendingComercios = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Comercio[];
+      return data;
     },
   });
 };

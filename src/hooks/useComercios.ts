@@ -142,60 +142,62 @@ export const usePendingComercios = () => {
   });
 };
 
-// Hook para aprovar comércio (para admin)
+// Hook para APROVAR um comércio (CORRIGIDO)
 export const useApproveComercio = () => {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { data, error } = await supabase
-        .from('comercios')
-        .update({ ativo: true, status: 'approved' })
-        .eq('id', id)
-        .select()
-        .maybeSingle();
+  return useMutation(
+    async (id: string) => {
+      // A mudança acontece aqui.
+      // Removemos o retorno de 'data' e o erro é tratado de forma mais direta.
+      const { error } = await supabase
+        .from("comercios")
+        .update({ ativo: true, status: "approved" })
+        .eq("id", id);
 
-      if (error) throw error;
-      if (!data) throw new Error('Comércio não encontrado');
-      return data;
+      if (error) {
+        // Lança o erro para ser capturado pelo onError do useMutation
+        throw new Error(error.message);
+      }
+      // Não retornamos nada, pois a operação foi um sucesso.
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['comercios'] });
-      queryClient.invalidateQueries({ queryKey: ['comercios-pending'] });
-      queryClient.invalidateQueries({ queryKey: ['meu-comercio', data.user_id] });
-      toast.success('Comércio aprovado com sucesso!');
-    },
-    onError: (error) => {
-      toast.error(`Erro ao aprovar: ${error.message}`);
-    },
-  });
+    {
+      onSuccess: () => {
+        // Invalida a lista de pendentes para que ela seja recarregada na tela.
+        queryClient.invalidateQueries(["comercios-pending"]);
+        toast.success("Comércio aprovado com sucesso!");
+      },
+      onError: (error: Error) => {
+        // Exibe a mensagem de erro que vem do banco de dados.
+        toast.error(`Erro ao aprovar: ${error.message}`);
+      },
+    }
+  );
 };
 
-// Hook para rejeitar comércio (para admin)
+// Hook para REJEITAR um comércio (CORRIGIDO)
 export const useRejectComercio = () => {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { data, error } = await supabase
-        .from('comercios')
-        .update({ ativo: false, status: 'rejected' })
-        .eq('id', id)
-        .select()
-        .maybeSingle();
+  return useMutation(
+    async (id: string) => {
+      const { error } = await supabase
+        .from("comercios")
+        .update({ ativo: false, status: "rejected" })
+        .eq("id", id);
 
-      if (error) throw error;
-      if (!data) throw new Error('Comércio não encontrado');
-      return data;
+      if (error) {
+        throw new Error(error.message);
+      }
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['comercios'] });
-      queryClient.invalidateQueries({ queryKey: ['comercios-pending'] });
-      queryClient.invalidateQueries({ queryKey: ['meu-comercio', data.user_id] });
-      toast.error('Comércio rejeitado');
-    },
-    onError: (error) => {
-      toast.error(`Erro ao rejeitar: ${error.message}`);
-    },
-  });
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(["comercios-pending"]);
+        toast.success("Comércio rejeitado com sucesso.");
+      },
+      onError: (error: Error) => {
+        toast.error(`Erro ao rejeitar: ${error.message}`);
+      },
+    }
+  );
 };
 
 // Hook para deletar comércio (para admin)

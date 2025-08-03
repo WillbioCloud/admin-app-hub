@@ -31,6 +31,37 @@ const ComercianteDashboard = () => {
     return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
+  // Status alert for pending/rejected businesses
+  const renderStatusAlert = () => {
+    if (!meuComercio) return null;
+    
+    if (meuComercio.status === 'pending') {
+      return (
+        <Alert className="border-orange-200 bg-orange-50 mb-6">
+          <Loader2 className="h-4 w-4 text-orange-600 animate-spin" />
+          <AlertTitle className="text-orange-800">Aguardando Aprovação</AlertTitle>
+          <AlertDescription className="text-orange-700">
+            Seu comércio foi enviado para análise e está aguardando aprovação do administrador.
+          </AlertDescription>
+        </Alert>
+      );
+    }
+    
+    if (meuComercio.status === 'rejected') {
+      return (
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Comércio Rejeitado</AlertTitle>
+          <AlertDescription>
+            Seu comércio foi rejeitado. Acesse o Perfil para fazer as alterações necessárias.
+          </AlertDescription>
+        </Alert>
+      );
+    }
+    
+    return null;
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -40,12 +71,14 @@ const ComercianteDashboard = () => {
         </p>
       </div>
 
+      {renderStatusAlert()}
+
       {!meuComercio && !isLoading && (
-         <Alert variant="destructive">
+         <Alert>
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Nenhum comércio encontrado!</AlertTitle>
+          <AlertTitle>Nenhum comércio cadastrado</AlertTitle>
           <AlertDescription>
-            Você ainda não cadastrou um comércio. Por favor, vá para a página "Meu Comércio" para começar.
+            Você ainda não criou o perfil do seu comércio. Acesse a aba Perfil para começar.
           </AlertDescription>
         </Alert>
       )}

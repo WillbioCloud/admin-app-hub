@@ -82,25 +82,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('AuthProvider: Carregando perfil para:', supabaseUser.email);
       
       // Query unificada para evitar múltiplas chamadas
-      const [adminResult, profileResult] = await Promise.allSettled([
-        supabase.from('admin_profiles').select('*').eq('id', supabaseUser.id).single(),
-        supabase.from('profiles').select('*').eq('id', supabaseUser.id).single()
+      const [profileResult, adminResult] = await Promise.allSettled([
+        supabase.from('profiles').select('*').eq('id', supabaseUser.id).single(),
+        supabase.from('admin_profiles').select('*').eq('id', supabaseUser.id).single()
       ]);
 
-      // Verificar se é admin
-      if (adminResult.status === 'fulfilled' && adminResult.value.data) {
-        console.log('AuthProvider: Perfil admin encontrado');
-        const adminProfile = adminResult.value.data;
-        setUser({
-          id: supabaseUser.id,
-          email: supabaseUser.email || '',
-          role: 'admin',
-          name: adminProfile.full_name || supabaseUser.email || 'Admin',
-        });
-        return;
-      }
-
-      // Verificar se é perfil mobile
+      // Verificar primeiro se é perfil mobile (prioridade)
       if (profileResult.status === 'fulfilled' && profileResult.value.data) {
         console.log('AuthProvider: Perfil mobile encontrado');
         const profile = profileResult.value.data;
@@ -110,6 +97,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: supabaseUser.email || '',
           role: role,
           name: profile.full_name || supabaseUser.email || 'Usuário',
+        });
+        return;
+      }
+
+      // Verificar se é admin apenas se não há perfil mobile
+      if (adminResult.status === 'fulfilled' && adminResult.value.data) {
+        console.log('AuthProvider: Perfil admin encontrado');
+        const adminProfile = adminResult.value.data;
+        setUser({
+          id: supabaseUser.id,
+          email: supabaseUser.email || '',
+          role: 'admin',
+          name: adminProfile.full_name || supabaseUser.email || 'Admin',
         });
         return;
       }

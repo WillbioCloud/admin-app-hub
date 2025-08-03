@@ -145,40 +145,32 @@ export const usePendingComercios = () => {
 // Hook para APROVAR um comércio (CORRIGIDO)
 export const useApproveComercio = () => {
   const queryClient = useQueryClient();
-  return useMutation(
-    async (id: string) => {
-      // A mudança acontece aqui.
-      // Removemos o retorno de 'data' e o erro é tratado de forma mais direta.
+  return useMutation({
+    mutationFn: async (id: string) => {
       const { error } = await supabase
         .from("comercios")
         .update({ ativo: true, status: "approved" })
         .eq("id", id);
 
       if (error) {
-        // Lança o erro para ser capturado pelo onError do useMutation
         throw new Error(error.message);
       }
-      // Não retornamos nada, pois a operação foi um sucesso.
     },
-    {
-      onSuccess: () => {
-        // Invalida a lista de pendentes para que ela seja recarregada na tela.
-        queryClient.invalidateQueries(["comercios-pending"]);
-        toast.success("Comércio aprovado com sucesso!");
-      },
-      onError: (error: Error) => {
-        // Exibe a mensagem de erro que vem do banco de dados.
-        toast.error(`Erro ao aprovar: ${error.message}`);
-      },
-    }
-  );
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["comercios-pending"] });
+      toast.success("Comércio aprovado com sucesso!");
+    },
+    onError: (error: Error) => {
+      toast.error(`Erro ao aprovar: ${error.message}`);
+    },
+  });
 };
 
 // Hook para REJEITAR um comércio (CORRIGIDO)
 export const useRejectComercio = () => {
   const queryClient = useQueryClient();
-  return useMutation(
-    async (id: string) => {
+  return useMutation({
+    mutationFn: async (id: string) => {
       const { error } = await supabase
         .from("comercios")
         .update({ ativo: false, status: "rejected" })
@@ -188,16 +180,14 @@ export const useRejectComercio = () => {
         throw new Error(error.message);
       }
     },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(["comercios-pending"]);
-        toast.success("Comércio rejeitado com sucesso.");
-      },
-      onError: (error: Error) => {
-        toast.error(`Erro ao rejeitar: ${error.message}`);
-      },
-    }
-  );
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["comercios-pending"] });
+      toast.success("Comércio rejeitado com sucesso.");
+    },
+    onError: (error: Error) => {
+      toast.error(`Erro ao rejeitar: ${error.message}`);
+    },
+  });
 };
 
 // Hook para deletar comércio (para admin)

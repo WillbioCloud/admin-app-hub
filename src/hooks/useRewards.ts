@@ -24,9 +24,9 @@ export type Recompensa = Reward;
 
 // --- HOOKS PARA COMERCIANTES ---
 export const useMinhasRecompensas = (comercioId: string | undefined) => {
-  return useQuery<any[]>({
+  return useQuery({
     queryKey: ['minhas-recompensas', comercioId],
-    queryFn: async () => {
+    queryFn: async (): Promise<any[]> => {
       if (!comercioId) return [];
       const { data, error } = await supabase
         .from('rewards')

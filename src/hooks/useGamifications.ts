@@ -29,9 +29,9 @@ export type Gamificacao = Gamification;
 
 // --- HOOKS PARA COMERCIANTES ---
 export const useMinhasGamificacoes = (comercioId: string | undefined) => {
-  return useQuery<any[]>({
+  return useQuery({
     queryKey: ['minhas-gamificacoes', comercioId],
-    queryFn: async () => {
+    queryFn: async (): Promise<any[]> => {
       if (!comercioId) return [];
       const { data, error } = await supabase
         .from('missions')

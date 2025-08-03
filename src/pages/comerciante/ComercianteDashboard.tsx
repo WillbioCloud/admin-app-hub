@@ -68,7 +68,7 @@ const ComercianteDashboard = () => {
             <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{meuComercio?.visualizacoes ?? 0}</div>
+            <div className="text-2xl font-bold">{(meuComercio as any)?.visualizacoes ?? 0}</div>
             <p className="text-xs text-muted-foreground">Total de visualizações do seu perfil</p>
           </CardContent>
         </Card>
@@ -79,7 +79,7 @@ const ComercianteDashboard = () => {
             <Heart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{meuComercio?.curtidas ?? 0}</div>
+            <div className="text-2xl font-bold">{(meuComercio as any)?.curtidas ?? 0}</div>
             <p className="text-xs text-muted-foreground">Total de curtidas recebidas</p>
           </CardContent>
         </Card>

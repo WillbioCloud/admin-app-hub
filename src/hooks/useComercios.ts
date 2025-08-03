@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-// A interface foi mantida para consistência com o restante do projeto.
+// Interface que representa a estrutura de um Comércio
 export interface Comercio {
   id: string;
   user_id: string;
@@ -101,11 +101,9 @@ export const useApproveComercio = () => {
       return data;
     },
     onSuccess: (data) => {
-      // Invalida as queries para que as listas sejam atualizadas na tela.
       queryClient.invalidateQueries({ queryKey: ['comercios'] });
       queryClient.invalidateQueries({ queryKey: ['comercios-pending'] });
       toast.success("Comércio aprovado com sucesso!");
-      // Envia notificação após o sucesso.
       createNotification(data.user_id, "Seu comércio foi aprovado!", `Parabéns, ${data.nome} agora está ativo na plataforma.`);
     },
     onError: (error: Error) => toast.error(error.message)
@@ -161,109 +159,82 @@ export const useUpdateComercioStatus = () => {
     });
 };
 
+// --- HOOKS PARA O PAINEL DO COMERCIANTE ---
 
-// --- HOOKS EXISTENTES PARA O PAINEL ADMIN ---
-
-// Hook para buscar todos os comércios (para admin)
-export const useComercios = () => {
+/**
+ * Hook para buscar os dados do comércio do usuário logado.
+ */
+export const useMeuComercio = (userId: string | undefined) => {
   return useQuery({
-    queryKey: ['comercios'],
+    queryKey: ['meu-comercio', userId],
     queryFn: async () => {
+      if (!userId) return null;
       const { data, error } = await supabase
         .from('comercios')
         .select('*')
-        .order('created_at', { ascending: false });
+        .eq('user_id', userId)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
+        console.error('Erro ao buscar meu comércio:', error);
+        throw error;
+      }
+      
+      return data as Comercio | null;
+    },
+    enabled: !!userId,
+  });
+};
+
+/**
+ * Hook para o comerciante criar um novo comércio.
+ */
+export const useCreateComercio = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (newComercio: Partial<Comercio>) => {
+      const { data, error } = await supabase
+        .from('comercios')
+        .insert({ ...newComercio, status: 'pending', ativo: false })
+        .select()
+        .single();
 
       if (error) throw error;
       return data;
     },
-  });
-};
-
-// Hook para buscar comércios pendentes (para admin)
-export const usePendingComercios = () => {
-  return useQuery({
-    queryKey: ['comercios-pending'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('comercios')
-        .select('*')
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data;
-    },
-  });
-};
-
-// Hook para APROVAR um comércio (CORRIGIDO)
-export const useApproveComercio = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("comercios")
-        .update({ ativo: true, status: "approved" })
-        .eq("id", id);
-
-      if (error) {
-        throw new Error(error.message);
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["comercios-pending"] });
-      toast.success("Comércio aprovado com sucesso!");
-    },
-    onError: (error: Error) => {
-      toast.error(`Erro ao aprovar: ${error.message}`);
-    },
-  });
-};
-
-// Hook para REJEITAR um comércio (CORRIGIDO)
-export const useRejectComercio = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("comercios")
-        .update({ ativo: false, status: "rejected" })
-        .eq("id", id);
-
-      if (error) {
-        throw new Error(error.message);
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["comercios-pending"] });
-      toast.success("Comércio rejeitado com sucesso.");
-    },
-    onError: (error: Error) => {
-      toast.error(`Erro ao rejeitar: ${error.message}`);
-    },
-  });
-};
-
-// Hook para deletar comércio (para admin)
-export const useDeleteComercio = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('comercios')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['comercios'] });
-      queryClient.invalidateQueries({ queryKey: ['comercios-pending'] });
-      toast.success('Comércio excluído com sucesso!');
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['meu-comercio', data.user_id] });
+      toast.success('Comércio enviado para aprovação!');
     },
     onError: (error) => {
-      toast.error(`Erro ao excluir: ${error.message}`);
+      toast.error(`Erro ao criar comércio: ${error.message}`);
+    }
+  });
+};
+
+/**
+ * Hook para o comerciante atualizar seu comércio.
+ */
+export const useUpdateComercio = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updateData }: Partial<Comercio> & { id: string }) => {
+      const { data, error } = await supabase
+        .from('comercios')
+        .update({ ...updateData, status: 'pending', ativo: false }) // Sempre requer nova aprovação
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
     },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['meu-comercio', data.user_id] });
+      toast.success('Alterações enviadas para aprovação!');
+    },
+    onError: (error) => {
+      toast.error(`Erro ao atualizar: ${error.message}`);
+    }
   });
 };

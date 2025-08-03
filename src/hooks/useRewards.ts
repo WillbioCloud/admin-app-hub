@@ -1,130 +1,86 @@
+// src/hooks/useRewards.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-export interface Reward {
+export interface Recompensa {
   id: string;
-  title: string;
-  description: string | null;
-  coin_cost: number;
-  image_url: string | null;
-  is_active: boolean;
-  stock: number | null;
-  mission_id_unlock: string | null;
-  mission_unlock_id: string | null;
+  nome: string;
+  descricao: string;
+  pontos_necessarios: number;
+  ativo: boolean;
   created_at: string;
-  created_by?: string | null;
-  creator_info?: {
-    full_name: string;
-    user_type: string;
-  } | null;
+  updated_at: string;
+  comercio_id?: string;
 }
 
-export const useRewards = () => {
+// --- HOOKS PARA COMERCIANTES ---
+export const useMinhasRecompensas = (comercioId: string | undefined) => {
   return useQuery({
-    queryKey: ['rewards'],
+    queryKey: ['minhas-recompensas', comercioId],
     queryFn: async () => {
+      if (!comercioId) return [];
+      // APONTANDO PARA A TABELA 'rewards'
       const { data, error } = await supabase
         .from('rewards')
         .select('*')
+        .eq('comercio_id', comercioId)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching rewards:', error);
-        throw error;
-      }
-      
-      return data as Reward[];
+      if (error) throw error;
+      return data as Recompensa[];
     },
+    enabled: !!comercioId,
   });
 };
 
-export const useCreateReward = () => {
+export const useCreateRecompensa = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async (data: Omit<Reward, 'id' | 'created_at'>) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      const { data: result, error } = await supabase
-        .from('rewards')
-        .insert([{
-          ...data,
-          created_by: user?.id
-        }])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error creating reward:', error);
-        throw error;
-      }
-
-      return result;
+    mutationFn: async (novaRecompensa: Omit<Recompensa, 'id' | 'created_at' | 'updated_at'>) => {
+      // APONTANDO PARA A TABELA 'rewards'
+      const { data, error } = await supabase.from('rewards').insert(novaRecompensa).select().single();
+      if (error) throw error;
+      return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rewards'] });
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['minhas-recompensas', data.comercio_id] });
       toast.success('Recompensa criada com sucesso!');
     },
-    onError: (error) => {
-      console.error('Error creating reward:', error);
-      toast.error('Erro ao criar recompensa');
-    },
+    onError: (err) => toast.error(`Erro: ${err.message}`)
   });
 };
 
-export const useUpdateReward = () => {
+export const useUpdateRecompensa = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<Reward> }) => {
-      const { data: result, error } = await supabase
-        .from('rewards')
-        .update(data)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error updating reward:', error);
-        throw error;
-      }
-
-      return result;
+    mutationFn: async ({ id, ...updateData }: Partial<Recompensa> & { id: string }) => {
+       // APONTANDO PARA A TABELA 'rewards'
+      const { data, error } = await supabase.from('rewards').update(updateData).eq('id', id).select().single();
+      if (error) throw error;
+      return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rewards'] });
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['minhas-recompensas', data.comercio_id] });
       toast.success('Recompensa atualizada com sucesso!');
     },
-    onError: (error) => {
-      console.error('Error updating reward:', error);
-      toast.error('Erro ao atualizar recompensa');
-    },
+    onError: (err) => toast.error(`Erro: ${err.message}`)
   });
 };
 
-export const useDeleteReward = () => {
+export const useDeleteRecompensa = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('rewards')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        console.error('Error deleting reward:', error);
-        throw error;
-      }
+    mutationFn: async ({ id, comercio_id }: { id: string, comercio_id?: string }) => {
+       // APONTANDO PARA A TABELA 'rewards'
+      const { error } = await supabase.from('rewards').delete().eq('id', id);
+      if (error) throw error;
+      return { comercio_id };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rewards'] });
+    onSuccess: ({ comercio_id }) => {
+      queryClient.invalidateQueries({ queryKey: ['minhas-recompensas', comercio_id] });
       toast.success('Recompensa excluída com sucesso!');
     },
-    onError: (error) => {
-      console.error('Error deleting reward:', error);
-      toast.error('Erro ao excluir recompensa');
-    },
+    onError: (err) => toast.error(`Erro: ${err.message}`)
   });
 };

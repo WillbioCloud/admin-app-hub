@@ -24,7 +24,7 @@ export type Recompensa = Reward;
 
 // --- HOOKS PARA COMERCIANTES ---
 export const useMinhasRecompensas = (comercioId: string | undefined) => {
-  return useQuery({
+  return useQuery<any[]>({
     queryKey: ['minhas-recompensas', comercioId],
     queryFn: async () => {
       if (!comercioId) return [];

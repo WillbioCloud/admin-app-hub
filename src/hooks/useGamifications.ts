@@ -29,7 +29,7 @@ export type Gamificacao = Gamification;
 
 // --- HOOKS PARA COMERCIANTES ---
 export const useMinhasGamificacoes = (comercioId: string | undefined) => {
-  return useQuery({
+  return useQuery<any[]>({
     queryKey: ['minhas-gamificacoes', comercioId],
     queryFn: async () => {
       if (!comercioId) return [];

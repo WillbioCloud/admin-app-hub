@@ -128,7 +128,9 @@ export type Database = {
           capa_url: string | null
           categoria: string | null
           created_at: string | null
+          curtidas: number | null
           descricao: string | null
+          endereco: string | null
           galeria_urls: string[] | null
           horario_func: Json | null
           id: string
@@ -144,6 +146,7 @@ export type Database = {
           status: string | null
           updated_at: string | null
           user_id: string
+          visualizacoes: number | null
           whatsapp: string | null
         }
         Insert: {
@@ -151,7 +154,9 @@ export type Database = {
           capa_url?: string | null
           categoria?: string | null
           created_at?: string | null
+          curtidas?: number | null
           descricao?: string | null
+          endereco?: string | null
           galeria_urls?: string[] | null
           horario_func?: Json | null
           id?: string
@@ -167,6 +172,7 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
           user_id: string
+          visualizacoes?: number | null
           whatsapp?: string | null
         }
         Update: {
@@ -174,7 +180,9 @@ export type Database = {
           capa_url?: string | null
           categoria?: string | null
           created_at?: string | null
+          curtidas?: number | null
           descricao?: string | null
+          endereco?: string | null
           galeria_urls?: string[] | null
           horario_func?: Json | null
           id?: string
@@ -190,6 +198,7 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
           user_id?: string
+          visualizacoes?: number | null
           whatsapp?: string | null
         }
         Relationships: []
@@ -258,6 +267,53 @@ export type Database = {
           type?: string
         }
         Relationships: []
+      }
+      gamificacoes: {
+        Row: {
+          ativo: boolean | null
+          comercio_id: string | null
+          created_at: string | null
+          descricao: string | null
+          id: string
+          meta: number
+          nome: string
+          pontos: number
+          tipo_meta: string
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          comercio_id?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          meta?: number
+          nome: string
+          pontos?: number
+          tipo_meta: string
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          comercio_id?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          meta?: number
+          nome?: string
+          pontos?: number
+          tipo_meta?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gamificacoes_comercio_id_fkey"
+            columns: ["comercio_id"]
+            isOneToOne: false
+            referencedRelation: "comercios"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       health_alerts: {
         Row: {
@@ -476,6 +532,7 @@ export type Database = {
           approved_at: string | null
           approved_by: string | null
           coin_reward: number
+          comercio_id: string | null
           completion_data: string
           created_at: string
           created_by: string | null
@@ -495,6 +552,7 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           coin_reward?: number
+          comercio_id?: string | null
           completion_data: string
           created_at?: string
           created_by?: string | null
@@ -514,6 +572,7 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           coin_reward?: number
+          comercio_id?: string | null
           completion_data?: string
           created_at?: string
           created_by?: string | null
@@ -530,6 +589,13 @@ export type Database = {
           xp_reward?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "missions_comercio_id_fkey"
+            columns: ["comercio_id"]
+            isOneToOne: false
+            referencedRelation: "comercios"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "missions_loteamento_id_fkey"
             columns: ["loteamento_id"]
@@ -799,9 +865,51 @@ export type Database = {
         }
         Relationships: []
       }
+      recompensas: {
+        Row: {
+          ativo: boolean | null
+          comercio_id: string | null
+          created_at: string | null
+          descricao: string | null
+          id: string
+          nome: string
+          pontos_necessarios: number
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          comercio_id?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome: string
+          pontos_necessarios?: number
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          comercio_id?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+          pontos_necessarios?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recompensas_comercio_id_fkey"
+            columns: ["comercio_id"]
+            isOneToOne: false
+            referencedRelation: "comercios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rewards: {
         Row: {
           coin_cost: number
+          comercio_id: string | null
           created_at: string
           created_by: string | null
           description: string | null
@@ -815,6 +923,7 @@ export type Database = {
         }
         Insert: {
           coin_cost: number
+          comercio_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -828,6 +937,7 @@ export type Database = {
         }
         Update: {
           coin_cost?: number
+          comercio_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -840,6 +950,13 @@ export type Database = {
           title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "rewards_comercio_id_fkey"
+            columns: ["comercio_id"]
+            isOneToOne: false
+            referencedRelation: "comercios"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "rewards_mission_id_unlock_fkey"
             columns: ["mission_id_unlock"]

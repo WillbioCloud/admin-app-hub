@@ -81,53 +81,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
         console.log('AuthProvider: Carregando perfil para:', supabaseUser.email);
 
-        const [profileResult, adminResult] = await Promise.allSettled([
-            supabase.from('profiles').select('*').eq('id', supabaseUser.id).single(),
-            supabase.from('admin_profiles').select('*').eq('id', supabaseUser.id).single()
-        ]);
+        // Busca perfis nas duas tabelas simultaneamente
+        const { data: adminProfile, error: adminError } = await supabase
+            .from('admin_profiles')
+            .select('id, full_name, user_type')
+            .eq('id', supabaseUser.id)
+            .single();
 
-        // Prioridade 1: Verificar se é um administrador.
-        if (adminResult.status === 'fulfilled' && adminResult.value.data) {
-            console.log('AuthProvider: Perfil de administrador encontrado.');
-            const adminProfile = adminResult.value.data;
+        // Prioridade 1: Perfil do painel web (admin ou comerciante)
+        if (adminProfile) {
+            console.log('AuthProvider: Perfil do painel web encontrado:', adminProfile.user_type);
             setUser({
                 id: supabaseUser.id,
                 email: supabaseUser.email || '',
-                role: 'admin', // Definido diretamente como 'admin'
-                name: adminProfile.full_name || supabaseUser.email || 'Admin',
-            });
-            return; // Encerra a função aqui, pois a role de admin foi confirmada.
-        }
-
-        // Prioridade 2: Verificar se é um comerciante.
-        if (profileResult.status === 'fulfilled' && profileResult.value.data) {
-            console.log('AuthProvider: Perfil de comerciante encontrado.');
-            const profile = profileResult.value.data;
-            setUser({
-                id: supabaseUser.id,
-                email: supabaseUser.email || '',
-                role: 'comerciante', // Definido diretamente como 'comerciante'
-                name: profile.full_name || supabaseUser.email || 'Usuário',
-                // comercioId: profile.comercio_id, // Exemplo se você precisar do ID do comércio
+                // CORREÇÃO: Lê a role diretamente da coluna user_type
+                role: adminProfile.user_type as UserRole, 
+                name: adminProfile.full_name || supabaseUser.email || 'Usuário Web',
             });
             return;
         }
 
-        // Fallback: Se não encontrar perfil em nenhuma das tabelas.
-        console.warn('AuthProvider: Nenhum perfil encontrado para o usuário, usando fallback.');
+        // Prioridade 2: Perfil do app mobile (sempre comerciante/cliente)
+        const { data: mobileProfile, error: mobileError } = await supabase
+            .from('profiles')
+            .select('id, full_name, user_type')
+            .eq('id', supabaseUser.id)
+            .single();
+
+        if (mobileProfile) {
+            console.log('AuthProvider: Perfil de comerciante (mobile) encontrado.');
+            setUser({
+                id: supabaseUser.id,
+                email: supabaseUser.email || '',
+                role: 'comerciante', // Perfis da tabela 'profiles' são sempre 'comerciante' neste contexto
+                name: mobileProfile.full_name || supabaseUser.email || 'Comerciante',
+            });
+            return;
+        }
+
+        // Fallback: Se não encontrar perfil em nenhuma das tabelas
+        console.warn('AuthProvider: Nenhum perfil encontrado. Usando fallback.');
         setUser({
             id: supabaseUser.id,
             email: supabaseUser.email || '',
-            role: 'comerciante', // Ou outra role padrão que faça sentido
+            role: 'comerciante', // Role padrão segura
             name: supabaseUser.email || 'Usuário',
         });
 
     } catch (error) {
         console.error('AuthProvider: Erro ao carregar perfil:', error);
+        // Fallback em caso de erro na busca
         setUser({
             id: supabaseUser.id,
             email: supabaseUser.email || '',
-            role: 'comerciante', // Fallback em caso de erro
+            role: 'comerciante',
             name: supabaseUser.email || 'Usuário',
         });
     }

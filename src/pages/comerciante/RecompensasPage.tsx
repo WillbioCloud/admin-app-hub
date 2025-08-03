@@ -5,8 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Plus, Edit, Trash2, Gift, Coins, Package } from 'lucide-react';
-import { useRewards, useDeleteReward, Reward } from '@/hooks/useRewards';
+import { useMinhasRecompensas, useDeleteReward, Reward } from '@/hooks/useRewards';
 import { RewardDialog } from '@/components/rewards/RewardDialog';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function RecompensasPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -14,7 +15,8 @@ export default function RecompensasPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rewardToDelete, setRewardToDelete] = useState<string | null>(null);
 
-  const { data: rewards, isLoading, error } = useRewards();
+  const { user } = useAuth();
+  const { data: rewards, isLoading, error } = useMinhasRecompensas(user?.id);
   const deleteReward = useDeleteReward();
 
   const handleCreate = () => {

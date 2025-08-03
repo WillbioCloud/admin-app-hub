@@ -30,7 +30,7 @@ export const useMinhasRecompensas = (comercioId: string | undefined) => {
       const { data, error } = await supabase
         .from('rewards')
         .select('*')
-        .eq('comercio_id', comercioId)
+        .eq('created_by', comercioId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

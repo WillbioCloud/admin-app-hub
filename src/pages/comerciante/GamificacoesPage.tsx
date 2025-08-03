@@ -24,13 +24,15 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { GamificationDialog } from '@/components/gamification/GamificationDialog';
-import { useGamifications, useDeleteGamification, Gamification } from '@/hooks/useGamifications';
+import { useMinhasGamificacoes, useDeleteGamification, Gamification } from '@/hooks/useGamifications';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function GamificacoesPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingGamification, setEditingGamification] = useState<Gamification | null>(null);
 
-  const { data: gamifications = [], isLoading, error } = useGamifications();
+  const { user } = useAuth();
+  const { data: gamifications = [], isLoading, error } = useMinhasGamificacoes(user?.id);
   const deleteGamification = useDeleteGamification();
 
   const handleCreate = () => {

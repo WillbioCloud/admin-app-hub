@@ -79,61 +79,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadUserProfile = async (supabaseUser: SupabaseUser) => {
     try {
-      console.log('AuthProvider: Carregando perfil para:', supabaseUser.email);
-      
-      // Query unificada para evitar múltiplas chamadas
-      const [profileResult, adminResult] = await Promise.allSettled([
-        supabase.from('profiles').select('*').eq('id', supabaseUser.id).single(),
-        supabase.from('admin_profiles').select('*').eq('id', supabaseUser.id).single()
-      ]);
+        console.log('AuthProvider: Carregando perfil para:', supabaseUser.email);
 
-      // Verificar primeiro se é perfil mobile (prioridade)
-      if (profileResult.status === 'fulfilled' && profileResult.value.data) {
-        console.log('AuthProvider: Perfil mobile encontrado');
-        const profile = profileResult.value.data;
-        const role = profile.user_type === 'admin' ? 'admin' : 'comerciante';
+        const [profileResult, adminResult] = await Promise.allSettled([
+            supabase.from('profiles').select('*').eq('id', supabaseUser.id).single(),
+            supabase.from('admin_profiles').select('*').eq('id', supabaseUser.id).single()
+        ]);
+
+        // Prioridade 1: Verificar se é um administrador.
+        if (adminResult.status === 'fulfilled' && adminResult.value.data) {
+            console.log('AuthProvider: Perfil de administrador encontrado.');
+            const adminProfile = adminResult.value.data;
+            setUser({
+                id: supabaseUser.id,
+                email: supabaseUser.email || '',
+                role: 'admin', // Definido diretamente como 'admin'
+                name: adminProfile.full_name || supabaseUser.email || 'Admin',
+            });
+            return; // Encerra a função aqui, pois a role de admin foi confirmada.
+        }
+
+        // Prioridade 2: Verificar se é um comerciante.
+        if (profileResult.status === 'fulfilled' && profileResult.value.data) {
+            console.log('AuthProvider: Perfil de comerciante encontrado.');
+            const profile = profileResult.value.data;
+            setUser({
+                id: supabaseUser.id,
+                email: supabaseUser.email || '',
+                role: 'comerciante', // Definido diretamente como 'comerciante'
+                name: profile.full_name || supabaseUser.email || 'Usuário',
+                // comercioId: profile.comercio_id, // Exemplo se você precisar do ID do comércio
+            });
+            return;
+        }
+
+        // Fallback: Se não encontrar perfil em nenhuma das tabelas.
+        console.warn('AuthProvider: Nenhum perfil encontrado para o usuário, usando fallback.');
         setUser({
-          id: supabaseUser.id,
-          email: supabaseUser.email || '',
-          role: role,
-          name: profile.full_name || supabaseUser.email || 'Usuário',
+            id: supabaseUser.id,
+            email: supabaseUser.email || '',
+            role: 'comerciante', // Ou outra role padrão que faça sentido
+            name: supabaseUser.email || 'Usuário',
         });
-        return;
-      }
 
-      // Verificar se é admin apenas se não há perfil mobile
-      if (adminResult.status === 'fulfilled' && adminResult.value.data) {
-        console.log('AuthProvider: Perfil admin encontrado');
-        const adminProfile = adminResult.value.data;
-        setUser({
-          id: supabaseUser.id,
-          email: supabaseUser.email || '',
-          role: 'admin',
-          name: adminProfile.full_name || supabaseUser.email || 'Admin',
-        });
-        return;
-      }
-
-      // Fallback: criar usuário básico
-      console.log('AuthProvider: Nenhum perfil encontrado, criando usuário básico');
-      setUser({
-        id: supabaseUser.id,
-        email: supabaseUser.email || '',
-        role: 'comerciante',
-        name: supabaseUser.email || 'Usuário',
-      });
-      
     } catch (error) {
-      console.error('AuthProvider: Erro ao carregar perfil:', error);
-      // Fallback em caso de erro
-      setUser({
-        id: supabaseUser.id,
-        email: supabaseUser.email || '',
-        role: 'comerciante',
-        name: supabaseUser.email || 'Usuário',
-      });
+        console.error('AuthProvider: Erro ao carregar perfil:', error);
+        setUser({
+            id: supabaseUser.id,
+            email: supabaseUser.email || '',
+            role: 'comerciante', // Fallback em caso de erro
+            name: supabaseUser.email || 'Usuário',
+        });
     }
-  };
+};
 
   const authFunction = async (email: string, password: string): Promise<boolean> => {
     console.log('AuthProvider: Tentando login para:', email);

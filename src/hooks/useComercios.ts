@@ -151,9 +151,11 @@ export const useApproveComercio = () => {
         .from('comercios')
         .update({ ativo: true, status: 'approved' })
         .eq('id', id)
-        .select().single();
+        .select()
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) throw new Error('Comércio não encontrado');
       return data;
     },
     onSuccess: (data) => {
@@ -177,9 +179,11 @@ export const useRejectComercio = () => {
         .from('comercios')
         .update({ ativo: false, status: 'rejected' })
         .eq('id', id)
-        .select().single();
+        .select()
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) throw new Error('Comércio não encontrado');
       return data;
     },
     onSuccess: (data) => {

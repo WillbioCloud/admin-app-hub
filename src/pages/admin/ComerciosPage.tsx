@@ -153,7 +153,15 @@ const ComerciosPage = () => {
                       <Button 
                         size="sm" 
                         variant={comercio.ativo ? "destructive" : "default"} 
-                        onClick={() => comercio.ativo ? rejectComercio.mutate(comercio.id) : approveComercio.mutate(comercio.id)} 
+                        onClick={() => {
+                          if (comercio.ativo) {
+                            // Inativar comercio
+                            rejectComercio.mutate(comercio.id);
+                          } else {
+                            // Ativar comercio
+                            handleApprove(comercio);
+                          }
+                        }} 
                         className="hover:shadow-lg transition-shadow"
                       >
                         <XCircle className="h-4 w-4 mr-1" />

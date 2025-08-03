@@ -1060,6 +1060,15 @@ export type Database = {
       }
     }
     Views: {
+      creator_info: {
+        Row: {
+          full_name: string | null
+          id: string | null
+          profile_type: string | null
+          user_type: string | null
+        }
+        Relationships: []
+      }
       leaderboard: {
         Row: {
           avatar_url: string | null
@@ -1112,13 +1121,6 @@ export type Database = {
       get_admin_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
-      }
-      get_creator_info: {
-        Args: { user_id: string }
-        Returns: {
-          full_name: string
-          user_type: string
-        }[]
       }
       get_user_role: {
         Args: Record<PropertyKey, never> | { user_id?: string }

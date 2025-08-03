@@ -20,6 +20,10 @@ export interface Gamification {
   approved_by: string | null;
   approved_at: string | null;
   created_at: string;
+  creator_info?: {
+    full_name: string;
+    user_type: string;
+  } | null;
 }
 
 export const useGamifications = () => {

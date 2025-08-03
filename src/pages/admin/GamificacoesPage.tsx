@@ -185,6 +185,7 @@ export default function GamificacoesPage() {
                 <TableHead>Título</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Recompensas</TableHead>
+                <TableHead>Criado por</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Local</TableHead>
                 <TableHead>Ações</TableHead>
@@ -210,6 +211,12 @@ export default function GamificacoesPage() {
                     <div className="text-sm">
                       <div>{gamification.xp_reward} XP</div>
                       <div>{gamification.coin_reward} Moedas</div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      <div className="font-medium">{gamification.created_by ? 'Usuário logado' : 'Sistema'}</div>
+                      <div className="text-muted-foreground">ID: {gamification.created_by || 'N/A'}</div>
                     </div>
                   </TableCell>
                   <TableCell>

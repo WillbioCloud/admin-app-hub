@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { CodeGenerator } from './CodeGenerator';
+import { RewardFormWithGamification } from '@/components/rewards/RewardFormWithGamification';
 
 const gamificationSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
@@ -74,13 +75,15 @@ export function GamificationForm({
 
   const watchedType = form.watch('type');
 
-  const handleSubmit = (data: GamificationFormData) => {
-    onSubmit(data);
+  const handleSubmit = async (rewardData?: any) => {
+    const gamificationData = form.getValues();
+    await onSubmit(gamificationData);
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+    <div className="space-y-6">
+      <Form {...form}>
+        <div className="space-y-4">
         <FormField
           control={form.control}
           name="title"
@@ -278,15 +281,14 @@ export function GamificationForm({
           />
         </div>
 
-        <div className="flex justify-end space-x-2 pt-4">
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancelar
-          </Button>
-          <Button type="submit">
-            {isEditing ? 'Atualizar' : 'Criar'} Gamificação
-          </Button>
         </div>
-      </form>
-    </Form>
+      </Form>
+
+      <RewardFormWithGamification
+        onSubmit={handleSubmit}
+        onCancel={onCancel}
+        isEditing={isEditing}
+      />
+    </div>
   );
 }

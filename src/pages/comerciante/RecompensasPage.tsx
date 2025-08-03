@@ -122,13 +122,14 @@ export default function RecompensasPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Imagem</TableHead>
-                <TableHead>Título</TableHead>
-                <TableHead>Descrição</TableHead>
-                <TableHead>Custo</TableHead>
-                <TableHead>Estoque</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Ações</TableHead>
+              <TableHead>Imagem</TableHead>
+              <TableHead>Título</TableHead>
+              <TableHead>Descrição</TableHead>
+              <TableHead>Custo</TableHead>
+              <TableHead>Estoque</TableHead>
+              <TableHead>Criado por</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -159,6 +160,12 @@ export default function RecompensasPage() {
                   </TableCell>
                   <TableCell>
                     {reward.stock ? reward.stock : 'Ilimitado'}
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      <div className="font-medium">{reward.created_by ? 'Usuário logado' : 'Sistema'}</div>
+                      <div className="text-muted-foreground">ID: {reward.created_by || 'N/A'}</div>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Badge variant={reward.is_active ? 'default' : 'secondary'}>

@@ -5,13 +5,19 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Store, CheckCircle, XCircle, Trash2 } from 'lucide-react';
+import { Search, Store, CheckCircle, XCircle, Trash2, Plus, Eye } from 'lucide-react';
 import { useComercios, useApproveComercio, useRejectComercio, useDeleteComercio } from '@/hooks/useComercios';
 import { useCreateNotification } from '@/hooks/useNotifications';
+import { ComercioDialog } from '@/components/admin/ComercioDialog';
+import { LayoutPreview } from '@/components/comerciante/LayoutPreview';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const ComerciosPage = () => {
   const [busca, setBusca] = useState('');
   const [filtroStatus, setFiltroStatus] = useState<string>('todos');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [selectedComercio, setSelectedComercio] = useState<any>(null);
 
   const { data: comercios = [], isLoading, error } = useComercios();
   const approveComercio = useApproveComercio();
@@ -49,6 +55,10 @@ const ComerciosPage = () => {
             Gerencie todos os estabelecimentos cadastrados
           </p>
         </div>
+        <Button onClick={() => setIsDialogOpen(true)} className="hover:shadow-lg transition-shadow">
+          <Plus className="h-4 w-4 mr-2" />
+          Novo Comércio
+        </Button>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
@@ -100,6 +110,7 @@ const ComerciosPage = () => {
               <TableRow>
                 <TableHead>Nome</TableHead>
                 <TableHead>Categoria</TableHead>
+                <TableHead>Layout</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Ações</TableHead>
               </TableRow>
@@ -110,12 +121,29 @@ const ComerciosPage = () => {
                   <TableCell className="font-medium">{comercio.nome}</TableCell>
                   <TableCell>{comercio.categoria || 'N/A'}</TableCell>
                   <TableCell>
+                    <Badge variant="outline">
+                      {comercio.layout_template === 'moderno' ? 'Moderno' : 'Clássico'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
                     <Badge variant={comercio.ativo ? 'default' : 'destructive'}>
                       {comercio.ativo ? 'Ativo' : 'Inativo'}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => {
+                          setSelectedComercio(comercio);
+                          setPreviewDialogOpen(true);
+                        }}
+                        className="hover:shadow-lg transition-shadow"
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        Visualizar
+                      </Button>
                       {!comercio.ativo && (
                         <Button size="sm" onClick={() => handleApprove(comercio)} className="hover:shadow-lg transition-shadow">
                           <CheckCircle className="h-4 w-4 mr-1" />
@@ -143,6 +171,28 @@ const ComerciosPage = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <ComercioDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onSuccess={() => {
+          window.location.reload();
+        }}
+      />
+
+      <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Visualização do Layout - {selectedComercio?.nome}</DialogTitle>
+          </DialogHeader>
+          {selectedComercio && (
+            <LayoutPreview
+              layout={selectedComercio.layout_template || 'moderno'}
+              primaryColor={selectedComercio.primary_color || '#3B82F6'}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

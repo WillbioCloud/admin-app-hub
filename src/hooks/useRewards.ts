@@ -13,6 +13,11 @@ export interface Reward {
   mission_id_unlock: string | null;
   mission_unlock_id: string | null;
   created_at: string;
+  created_by?: string | null;
+  creator_info?: {
+    full_name: string;
+    user_type: string;
+  } | null;
 }
 
 export const useRewards = () => {
@@ -39,9 +44,14 @@ export const useCreateReward = () => {
 
   return useMutation({
     mutationFn: async (data: Omit<Reward, 'id' | 'created_at'>) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const { data: result, error } = await supabase
         .from('rewards')
-        .insert([data])
+        .insert([{
+          ...data,
+          created_by: user?.id
+        }])
         .select()
         .single();
 

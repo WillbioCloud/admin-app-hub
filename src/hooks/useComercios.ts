@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// ... (Interface Comercio permanece a mesma)
 export interface Comercio {
   id: string;
   user_id: string;
@@ -21,12 +22,7 @@ export interface Comercio {
   status?: string | null;
   created_at: string;
   updated_at: string;
-  endereco?: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
-  visualizacoes?: number;
-  curtidas?: number;
-  image_url?: string | null;
+  endereco: string | null;
 }
 
 

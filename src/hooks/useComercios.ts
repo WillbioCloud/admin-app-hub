@@ -49,6 +49,23 @@ export const usePendingComercios = () => {
   });
 };
 
+// Hook para buscar comércios que aparecem no app (aprovados e ativos)
+export const useComerciosAprovados = () => {
+  return useQuery({
+    queryKey: ['comercios-aprovados'],
+    queryFn: async (): Promise<Comercio[]> => {
+      const { data, error } = await supabase
+        .from('comercios')
+        .select('*')
+        .eq('status', 'approved')
+        .eq('ativo', true)
+        .order('created_at', { ascending: false });
+      if (error) throw new Error(error.message);
+      return data;
+    },
+  });
+};
+
 /**
  * Função auxiliar para criar notificação diretamente na tabela.
  */

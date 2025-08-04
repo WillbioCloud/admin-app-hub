@@ -51,6 +51,8 @@ const PersonalizacaoPage = () => {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [capaFile, setCapaFile] = useState<File | null>(null);
   const [capaPreview, setCapaPreview] = useState<string | null>(null);
+  const [galeriaFiles, setGaleriaFiles] = useState<File[]>([]);
+  const [galeriaPreviews, setGaleriaPreviews] = useState<string[]>([]);
 
   const form = useForm<FormData>({
     resolver: zodResolver(comercioSchema),
@@ -78,11 +80,18 @@ const PersonalizacaoPage = () => {
         whatsapp: meuComercio.whatsapp || '',
         instagram: meuComercio.instagram || '',
         endereco: (meuComercio as any).endereco || '',
-        horario_func: String(meuComercio.horario_func || ''),
+        horario_func: typeof meuComercio.horario_func === 'object' 
+          ? (meuComercio.horario_func as any).display_text || '' 
+          : String(meuComercio.horario_func || ''),
       });
       setServicos(meuComercio.servicos || []);
       setLogoPreview(meuComercio.logo_url);
       setCapaPreview(meuComercio.capa_url);
+      
+      // Carregar galeria existente
+      if (meuComercio.galeria_urls && meuComercio.galeria_urls.length > 0) {
+        setGaleriaPreviews(meuComercio.galeria_urls);
+      }
     }
   }, [meuComercio, form]);
 
@@ -132,15 +141,35 @@ const PersonalizacaoPage = () => {
     }
 
     try {
-      const payload: Partial<Comercio> = { ...data, servicos };
+      // Formatar horário_func como objeto para compatibilidade com React Native
+      const horarioFormatado = data.horario_func ? {
+        display_text: data.horario_func
+      } : null;
 
+      const payload: Partial<Comercio> = { 
+        ...data, 
+        servicos,
+        horario_func: horarioFormatado as any
+      };
+
+      // Upload das imagens
       if (logoFile) payload.logo_url = await uploadImage(logoFile, 'logo');
       if (capaFile) payload.capa_url = await uploadImage(capaFile, 'capa');
+      
+      // Upload da galeria
+      if (galeriaFiles.length > 0) {
+        const galeriaUrls = await Promise.all(
+          galeriaFiles.map((file, index) => uploadImage(file, `galeria-${index}`))
+        );
+        payload.galeria_urls = [...galeriaPreviews.filter(url => url.startsWith('http')), ...galeriaUrls];
+      }
 
       if (meuComercio) {
         await updateComercio.mutateAsync({ ...payload, id: meuComercio.id });
+        toast.success('Comércio atualizado e enviado para aprovação!');
       } else {
         await createComercio.mutateAsync({ ...payload, user_id: user.id });
+        toast.success('Comércio criado e enviado para aprovação!');
       }
       refetch();
 
@@ -166,6 +195,22 @@ const PersonalizacaoPage = () => {
       setFile(file);
       setPreview(URL.createObjectURL(file));
     }
+  };
+
+  const handleGaleriaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setGaleriaFiles([...galeriaFiles, ...files]);
+      const newPreviews = files.map(file => URL.createObjectURL(file));
+      setGaleriaPreviews([...galeriaPreviews, ...newPreviews]);
+    }
+  };
+
+  const removerImagemGaleria = (index: number) => {
+    const newFiles = galeriaFiles.filter((_, i) => i !== index);
+    const newPreviews = galeriaPreviews.filter((_, i) => i !== index);
+    setGaleriaFiles(newFiles);
+    setGaleriaPreviews(newPreviews);
   };
   
   const renderStatusCard = () => {
@@ -333,10 +378,64 @@ const PersonalizacaoPage = () => {
                             {capaPreview ? <img src={capaPreview} alt="Preview" className="h-full w-full object-cover"/> : <Upload className="h-8 w-8 text-muted-foreground" />}
                         </label>
                     </FormItem>
-                </CardContent>
-              </Card>
+                 </CardContent>
+               </Card>
 
-              {/* SEÇÃO DE CONTATO E LOCAL */}
+               {/* SEÇÃO DE GALERIA */}
+               <Card>
+                 <CardHeader>
+                   <CardTitle>Galeria de Imagens</CardTitle>
+                   <CardDescription>Adicione até 10 imagens para mostrar seu negócio (aparece no app)</CardDescription>
+                 </CardHeader>
+                 <CardContent>
+                   <FormItem>
+                     <FormLabel>Adicionar Imagens à Galeria</FormLabel>
+                     <FormControl>
+                       <Input 
+                         type="file" 
+                         multiple 
+                         accept="image/*"
+                         onChange={handleGaleriaChange} 
+                         className="hidden" 
+                         id="galeria-upload" 
+                       />
+                     </FormControl>
+                     <label htmlFor="galeria-upload" className="cursor-pointer border-2 border-dashed rounded-md w-full h-32 flex items-center justify-center">
+                       <div className="text-center">
+                         <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                         <p className="text-sm text-muted-foreground">Clique para adicionar imagens</p>
+                       </div>
+                     </label>
+                   </FormItem>
+                   
+                   {/* Preview da Galeria */}
+                   {galeriaPreviews.length > 0 && (
+                     <div className="mt-4">
+                       <h4 className="text-sm font-medium mb-2">Imagens na Galeria ({galeriaPreviews.length})</h4>
+                       <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
+                         {galeriaPreviews.map((preview, index) => (
+                           <div key={index} className="relative group">
+                             <img 
+                               src={preview} 
+                               alt={`Galeria ${index + 1}`} 
+                               className="w-full h-24 object-cover rounded border"
+                             />
+                             <button
+                               type="button"
+                               onClick={() => removerImagemGaleria(index)}
+                               className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                             >
+                               <X className="h-3 w-3" />
+                             </button>
+                           </div>
+                         ))}
+                       </div>
+                     </div>
+                   )}
+                 </CardContent>
+               </Card>
+
+               {/* SEÇÃO DE CONTATO E LOCAL */}
               <Card>
                 <CardHeader>
                   <CardTitle>Contato e Localização</CardTitle>

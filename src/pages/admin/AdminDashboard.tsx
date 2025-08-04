@@ -101,7 +101,7 @@ const AdminDashboard = () => {
             Atualizar Painel
           </Button>
           <Badge 
-            variant={isConnected ? "default" : "destructive"} 
+            variant={isConnected ? "success" : "warning"} 
             className="flex items-center gap-2 px-4 py-2 text-sm"
           >
             {isConnected ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
@@ -113,7 +113,7 @@ const AdminDashboard = () => {
       {/* Stats Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, index) => (
-          <Card key={index} className={`relative overflow-hidden bg-gradient-to-br ${stat.gradient} border-0 shadow-lg hover:shadow-xl transition-all duration-300`}>
+          <Card key={index} className="card-metric group hover:scale-[1.02]">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="space-y-1">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -123,15 +123,16 @@ const AdminDashboard = () => {
                   <span className="text-3xl font-bold text-foreground">
                     {stat.value}
                   </span>
-                  <span className={`text-sm font-medium ${
-                    stat.trend.startsWith('+') ? 'text-green-600' : 'text-red-600'
-                  }`}>
+                  <Badge 
+                    variant={stat.trend.startsWith('+') ? 'success' : 'warning'}
+                    className="text-xs"
+                  >
                     {stat.trend}
-                  </span>
+                  </Badge>
                 </div>
               </div>
-              <div className="p-3 bg-background/50 rounded-lg">
-                <stat.icon className="h-6 w-6 text-foreground" />
+              <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
+                <stat.icon className="h-6 w-6 text-primary" />
               </div>
             </CardHeader>
             <CardContent>
@@ -150,7 +151,7 @@ const AdminDashboard = () => {
 
         {/* Status Section - 1 column */}
         <div className="space-y-6">
-          <Card className="shadow-lg border-0">
+          <Card className="card-modern">
             <CardHeader>
               <CardTitle className="text-xl">Status do Sistema</CardTitle>
               <CardDescription>
@@ -159,83 +160,106 @@ const AdminDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 dark:bg-green-950/20">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-success/10 border border-success/20">
                   <span className="text-sm font-medium">Sistema</span>
-                  <span className="text-sm font-bold text-green-600 flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <Badge variant="success" className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
                     Online
-                  </span>
+                  </Badge>
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-background">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
                   <span className="text-sm">Total de Usuários</span>
-                  <span className="text-sm font-medium">{totalUsers.toLocaleString()}</span>
+                  <span className="text-sm font-semibold">{totalUsers.toLocaleString()}</span>
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-background">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
                   <span className="text-sm">Comércios Ativos</span>
-                  <span className="text-sm font-medium">{comerciosAtivos.toLocaleString()}</span>
+                  <span className="text-sm font-semibold">{comerciosAtivos.toLocaleString()}</span>
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-background">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
                   <span className="text-sm">Tempo Real</span>
-                  <span className={`text-sm font-medium flex items-center gap-2 ${isConnected ? 'text-green-600' : 'text-red-600'}`}>
-                    <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  <Badge 
+                    variant={isConnected ? 'success' : 'warning'} 
+                    className="flex items-center gap-2"
+                  >
+                    <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-success animate-pulse' : 'bg-warning'}`}></div>
                     {isConnected ? 'Conectado' : 'Desconectado'}
-                  </span>
+                  </Badge>
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-background">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
                   <span className="text-sm">Versão</span>
-                  <span className="text-sm font-medium">v1.2.3</span>
+                  <Badge variant="info">v1.2.3</Badge>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Quick Actions */}
-          <Card className="shadow-lg border-0">
+          <Card className="card-modern">
             <CardHeader>
               <CardTitle className="text-xl">Ações Rápidas</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <button 
+                <Button
+                  variant="outline"
                   onClick={() => navigate('/admin/comercios')}
-                  className="w-full p-3 text-left rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-3"
+                  className="w-full justify-start h-auto p-4 text-left hover:scale-[1.02] transition-all"
                 >
-                  <Store className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium text-sm">Aprovar comércios pendentes</p>
-                    <p className="text-xs text-muted-foreground">3 aguardando aprovação</p>
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <Store className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">Aprovar comércios pendentes</p>
+                      <p className="text-xs text-muted-foreground">3 aguardando aprovação</p>
+                    </div>
                   </div>
-                </button>
-                <button 
+                </Button>
+                <Button
+                  variant="outline"
                   onClick={() => navigate('/admin/relatorios')}
-                  className="w-full p-3 text-left rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-3"
+                  className="w-full justify-start h-auto p-4 text-left hover:scale-[1.02] transition-all"
                 >
-                  <BarChart3 className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium text-sm">Revisar relatórios</p>
-                    <p className="text-xs text-muted-foreground">Dados atualizados</p>
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <BarChart3 className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">Revisar relatórios</p>
+                      <p className="text-xs text-muted-foreground">Dados atualizados</p>
+                    </div>
                   </div>
-                </button>
-                <button 
+                </Button>
+                <Button
+                  variant="outline"
                   onClick={() => navigate('/admin/notificacoes')}
-                  className="w-full p-3 text-left rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-3"
+                  className="w-full justify-start h-auto p-4 text-left hover:scale-[1.02] transition-all"
                 >
-                  <MessageSquare className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium text-sm">Gerenciar notificações</p>
-                    <p className="text-xs text-muted-foreground">2 novas mensagens</p>
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <MessageSquare className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">Gerenciar notificações</p>
+                      <p className="text-xs text-muted-foreground">2 novas mensagens</p>
+                    </div>
                   </div>
-                </button>
-                <button 
+                </Button>
+                <Button
+                  variant="outline"
                   onClick={() => navigate('/admin/usuarios')}
-                  className="w-full p-3 text-left rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-3"
+                  className="w-full justify-start h-auto p-4 text-left hover:scale-[1.02] transition-all"
                 >
-                  <UserCheck className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium text-sm">Gerenciar usuários</p>
-                    <p className="text-xs text-muted-foreground">Ver todos os usuários</p>
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <UserCheck className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">Gerenciar usuários</p>
+                      <p className="text-xs text-muted-foreground">Ver todos os usuários</p>
+                    </div>
                   </div>
-                </button>
+                </Button>
               </div>
             </CardContent>
           </Card>

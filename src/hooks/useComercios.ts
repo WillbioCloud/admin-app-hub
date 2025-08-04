@@ -50,19 +50,22 @@ export const usePendingComercios = () => {
 };
 
 /**
- * Função auxiliar que agora chama a função segura do banco de dados (RPC).
+ * Função auxiliar para criar notificação diretamente na tabela.
  */
-const createNotificationRpc = async (userId: string, title: string, message: string) => {
+const createNotification = async (userId: string, title: string, message: string) => {
     try {
-        const { error } = await supabase.rpc('create_notification_for_user', {
-            target_user_id: userId,
-            notification_title: title,
-            notification_message: message
+        const { error } = await supabase.from('notifications').insert({
+            user_id: userId,
+            title,
+            message,
+            type: 'novo_comercio'
         });
-        if (error) throw error; // Lança o erro para o catch
+        if (error) {
+            console.error("Erro ao criar notificação:", error.message);
+            toast.warning("Ação realizada, mas falha ao enviar notificação.");
+        }
     } catch (err: any) {
-        console.error("RPC Error:", err.message);
-        toast.error("Falha ao enviar notificação: Permissão negada ou função não encontrada no DB.");
+        console.error("Erro inesperado:", err.message);
     }
 }
 
@@ -70,7 +73,7 @@ export const useApproveComercio = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (comercio: Comercio) => {
-      const { error } = await supabase.from('comercios').update({ status: 'approved', ativo: true }).eq('id', comercio.id);
+      const { error } = await supabase.from('comercios').update({ ativo: true }).eq('id', comercio.id);
       if (error) throw new Error(`Falha ao aprovar: ${error.message}`);
       return comercio; 
     },
@@ -78,7 +81,7 @@ export const useApproveComercio = () => {
       queryClient.invalidateQueries({ queryKey: ['comercios'] });
       queryClient.invalidateQueries({ queryKey: ['comercios-pending'] });
       toast.success("Comércio aprovado com sucesso!");
-      createNotificationRpc(data.user_id, "Seu comércio foi aprovado!", `Parabéns, ${data.nome} agora está ativo na plataforma.`);
+      createNotification(data.user_id, "Seu comércio foi aprovado!", `Parabéns, ${data.nome} agora está ativo na plataforma.`);
     },
     onError: (error: Error) => toast.error(error.message)
   });
@@ -88,7 +91,7 @@ export const useRejectComercio = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (comercio: Comercio) => {
-      const { error } = await supabase.from('comercios').update({ status: 'rejected', ativo: false }).eq('id', comercio.id);
+      const { error } = await supabase.from('comercios').update({ ativo: false }).eq('id', comercio.id);
       if (error) throw new Error(`Falha ao rejeitar: ${error.message}`);
       return comercio;
     },
@@ -96,7 +99,7 @@ export const useRejectComercio = () => {
       queryClient.invalidateQueries({ queryKey: ['comercios'] });
       queryClient.invalidateQueries({ queryKey: ['comercios-pending'] });
       toast.info("Comércio rejeitado.");
-      createNotificationRpc(data.user_id, "Seu comércio precisa de ajustes", `O seu comércio ${data.nome} foi revisado. Por favor, verifique-o no seu painel.`);
+      createNotification(data.user_id, "Seu comércio precisa de ajustes", `O seu comércio ${data.nome} foi revisado. Por favor, verifique-o no seu painel.`);
     },
     onError: (error: Error) => toast.error(error.message)
   });
@@ -139,7 +142,7 @@ export const useCreateComercio = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (newComercio: Partial<Comercio>) => {
-      const { data, error } = await supabase.from('comercios').insert({ ...newComercio, status: 'pending', ativo: false }).select().single();
+      const { data, error } = await supabase.from('comercios').insert(newComercio as any).select().single();
       if (error) throw error;
       return data;
     },
@@ -157,7 +160,7 @@ export const useUpdateComercio = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...updateData }: Partial<Comercio> & { id: string }) => {
-      const { data, error } = await supabase.from('comercios').update({ ...updateData, status: 'pending', ativo: false }).eq('id', id).select().single();
+      const { data, error } = await supabase.from('comercios').update(updateData as any).eq('id', id).select().single();
       if (error) throw error;
       return data;
     },

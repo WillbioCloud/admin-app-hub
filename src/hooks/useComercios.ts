@@ -73,7 +73,7 @@ export const useApproveComercio = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (comercio: Comercio) => {
-      const { error } = await supabase.from('comercios').update({ ativo: true }).eq('id', comercio.id);
+      const { error } = await supabase.from('comercios').update({ ativo: true, status: 'approved' }).eq('id', comercio.id);
       if (error) throw new Error(`Falha ao aprovar: ${error.message}`);
       return comercio; 
     },
@@ -91,7 +91,7 @@ export const useRejectComercio = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (comercio: Comercio) => {
-      const { error } = await supabase.from('comercios').update({ ativo: false }).eq('id', comercio.id);
+      const { error } = await supabase.from('comercios').update({ ativo: false, status: 'rejected' }).eq('id', comercio.id);
       if (error) throw new Error(`Falha ao rejeitar: ${error.message}`);
       return comercio;
     },
@@ -142,7 +142,8 @@ export const useCreateComercio = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (newComercio: Partial<Comercio>) => {
-      const { data, error } = await supabase.from('comercios').insert(newComercio as any).select().single();
+      const comercioData = { ...newComercio, status: 'pending', ativo: false };
+      const { data, error } = await supabase.from('comercios').insert(comercioData as any).select().single();
       if (error) throw error;
       return data;
     },
@@ -160,7 +161,8 @@ export const useUpdateComercio = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...updateData }: Partial<Comercio> & { id: string }) => {
-      const { data, error } = await supabase.from('comercios').update(updateData as any).eq('id', id).select().single();
+      const comercioData = { ...updateData, status: 'pending', ativo: false };
+      const { data, error } = await supabase.from('comercios').update(comercioData as any).eq('id', id).select().single();
       if (error) throw error;
       return data;
     },

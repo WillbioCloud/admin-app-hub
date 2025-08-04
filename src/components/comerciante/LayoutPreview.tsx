@@ -22,6 +22,7 @@ import {
   Plus
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LayoutPreviewProps {
   layout: 'moderno' | 'classico';
@@ -38,12 +39,14 @@ interface LayoutPreviewProps {
     logo_url?: string;
     galeria_urls?: string[];
   };
+  onUpdateComercio?: (updates: any) => void;
 }
 
-export const LayoutPreview = ({ layout, primaryColor, comercioData }: LayoutPreviewProps) => {
+export const LayoutPreview = ({ layout, primaryColor, comercioData, onUpdateComercio }: LayoutPreviewProps) => {
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isEditingServices, setIsEditingServices] = useState(false);
   const [newService, setNewService] = useState('');
+  const [uploading, setUploading] = useState<string | null>(null);
   const [commerceData, setCommerceData] = useState({
     name: comercioData?.nome || 'Nome do seu comércio',
     description: comercioData?.descricao || 'Descrição do seu comércio aparecerá aqui.',
@@ -90,8 +93,63 @@ export const LayoutPreview = ({ layout, primaryColor, comercioData }: LayoutPrev
     setIsEditing(null);
   };
 
-  const handleImageUpload = () => {
-    toast.info('Funcionalidade de upload de imagem será implementada em breve');
+  const handleImageUpload = async (type: 'logo' | 'capa' | 'galeria', index?: number) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    
+    input.onchange = async (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (!file || !comercioData) return;
+
+      const uploadKey = `${type}${index !== undefined ? `-${index}` : ''}`;
+      setUploading(uploadKey);
+
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `comercios/${comercioData.nome}/${type}/${fileName}`;
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('comercios')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('comercios')
+          .getPublicUrl(filePath);
+
+        // Atualizar os dados do comércio
+        let updates: any = {};
+        if (type === 'logo') {
+          updates.logo_url = publicUrl;
+        } else if (type === 'capa') {
+          updates.capa_url = publicUrl;
+        } else if (type === 'galeria') {
+          const currentGaleria = comercioData.galeria_urls || [];
+          if (index !== undefined && index < currentGaleria.length) {
+            currentGaleria[index] = publicUrl;
+          } else {
+            currentGaleria.push(publicUrl);
+          }
+          updates.galeria_urls = currentGaleria;
+        }
+
+        if (onUpdateComercio) {
+          onUpdateComercio(updates);
+        }
+
+        toast.success('Imagem enviada com sucesso!');
+      } catch (error) {
+        console.error('Erro no upload:', error);
+        toast.error('Erro ao enviar imagem');
+      } finally {
+        setUploading(null);
+      }
+    };
+
+    input.click();
   };
 
   const handleAddService = () => {
@@ -214,9 +272,14 @@ export const LayoutPreview = ({ layout, primaryColor, comercioData }: LayoutPrev
               size="sm"
               variant="secondary"
               className="absolute top-2 right-2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 z-10"
-              onClick={handleImageUpload}
+              onClick={() => handleImageUpload('capa')}
+              disabled={uploading === 'capa'}
             >
-              <Upload className="h-4 w-4" />
+              {uploading === 'capa' ? (
+                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+              ) : (
+                <Upload className="h-4 w-4" />
+              )}
             </Button>
             
             {/* Header Controls */}
@@ -268,17 +331,30 @@ export const LayoutPreview = ({ layout, primaryColor, comercioData }: LayoutPrev
               <h3 className="font-bold text-lg mb-3">Galeria</h3>
               <div className="flex space-x-3 overflow-x-auto">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex-shrink-0 w-20 h-20 bg-gray-200 rounded-lg relative group">
-                    <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-500">
-                      Img {i}
-                    </div>
+                  <div key={i} className="flex-shrink-0 w-20 h-20 bg-gray-200 rounded-lg relative group overflow-hidden">
+                    {comercioData?.galeria_urls?.[i - 1] ? (
+                      <img 
+                        src={comercioData.galeria_urls[i - 1]} 
+                        alt={`Galeria ${i}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-500">
+                        Img {i}
+                      </div>
+                    )}
                     <Button
                       size="sm"
                       variant="secondary"
                       className="absolute -top-1 -right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
-                      onClick={handleImageUpload}
+                      onClick={() => handleImageUpload('galeria', i - 1)}
+                      disabled={uploading === `galeria-${i - 1}`}
                     >
-                      <Upload className="h-3 w-3" />
+                      {uploading === `galeria-${i - 1}` ? (
+                        <div className="animate-spin h-3 w-3 border border-white border-t-transparent rounded-full" />
+                      ) : (
+                        <Upload className="h-3 w-3" />
+                      )}
                     </Button>
                   </div>
                 ))}
@@ -359,16 +435,29 @@ export const LayoutPreview = ({ layout, primaryColor, comercioData }: LayoutPrev
           {/* Header centralizado */}
           <div className="text-center p-6 bg-white border-b">
             <div className="relative inline-block group">
-              <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <span className="text-xs text-gray-500">Logo</span>
+              <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden">
+                {comercioData?.logo_url ? (
+                  <img 
+                    src={comercioData.logo_url} 
+                    alt="Logo"
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  <span className="text-xs text-gray-500">Logo</span>
+                )}
               </div>
               <Button
                 size="sm"
                 variant="secondary"
                 className="absolute top-0 right-0 h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
-                onClick={handleImageUpload}
+                onClick={() => handleImageUpload('logo')}
+                disabled={uploading === 'logo'}
               >
-                <Upload className="h-3 w-3" />
+                {uploading === 'logo' ? (
+                  <div className="animate-spin h-3 w-3 border border-white border-t-transparent rounded-full" />
+                ) : (
+                  <Upload className="h-3 w-3" />
+                )}
               </Button>
             </div>
             <h1 className="text-2xl font-bold mb-2">
@@ -462,17 +551,30 @@ export const LayoutPreview = ({ layout, primaryColor, comercioData }: LayoutPrev
               <h3 className="font-semibold mb-3">Galeria</h3>
               <div className="flex space-x-2 overflow-x-auto">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="flex-shrink-0 w-32 h-32 bg-gray-200 rounded relative group">
-                    <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-500">
-                      Imagem {i}
-                    </div>
+                  <div key={i} className="flex-shrink-0 w-32 h-32 bg-gray-200 rounded relative group overflow-hidden">
+                    {comercioData?.galeria_urls?.[i - 1] ? (
+                      <img 
+                        src={comercioData.galeria_urls[i - 1]} 
+                        alt={`Galeria ${i}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-500">
+                        Imagem {i}
+                      </div>
+                    )}
                     <Button
                       size="sm"
                       variant="secondary"
                       className="absolute -top-1 -right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
-                      onClick={handleImageUpload}
+                      onClick={() => handleImageUpload('galeria', i - 1)}
+                      disabled={uploading === `galeria-${i - 1}`}
                     >
-                      <Upload className="h-3 w-3" />
+                      {uploading === `galeria-${i - 1}` ? (
+                        <div className="animate-spin h-3 w-3 border border-white border-t-transparent rounded-full" />
+                      ) : (
+                        <Upload className="h-3 w-3" />
+                      )}
                     </Button>
                   </div>
                 ))}

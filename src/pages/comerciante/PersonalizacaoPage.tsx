@@ -11,11 +11,12 @@ import { ColorSelector } from '@/components/comerciante/ColorSelector';
 import { Clock, MapPin, Phone, Instagram, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMeuComercio, useUpdateComercio } from '@/hooks/useComercios';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const PersonalizacaoPage = () => {
   const { user } = useAuth();
-  const { data: meuComercio, isLoading } = useMeuComercio(user?.id);
+  const { data: meuComercio, isLoading, refetch } = useMeuComercio(user?.id);
   const updateComercio = useUpdateComercio();
   
   const [selectedLayout, setSelectedLayout] = useState<'moderno' | 'classico'>('moderno');
@@ -157,6 +158,25 @@ const PersonalizacaoPage = () => {
                 layout={selectedLayout}
                 primaryColor={selectedColor}
                 comercioData={meuComercio}
+                onUpdateComercio={async (updates) => {
+                  if (meuComercio?.id) {
+                    try {
+                      const { error } = await supabase
+                        .from('comercios')
+                        .update(updates)
+                        .eq('id', meuComercio.id);
+                      
+                      if (error) throw error;
+                      
+                      // Revalidar dados
+                      refetch();
+                      toast.success('Dados atualizados com sucesso!');
+                    } catch (error) {
+                      console.error('Erro ao atualizar:', error);
+                      toast.error('Erro ao atualizar dados');
+                    }
+                  }
+                }}
               />
             </CardContent>
           </Card>

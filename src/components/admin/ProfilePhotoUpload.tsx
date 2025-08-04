@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Camera, Upload, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProfilePhotoUploadProps {
   currentPhoto?: string;
@@ -26,15 +27,26 @@ export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
     setIsUploading(true);
     
     try {
-      // Simular upload (você pode implementar upload real para Supabase Storage)
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Para demonstração, usar URL de placeholder
-      const newPhotoUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${userName}`;
-      setPhotoUrl(newPhotoUrl);
-      onPhotoChange(newPhotoUrl);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${userName}/${fileName}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      setPhotoUrl(publicUrl);
+      onPhotoChange(publicUrl);
     } catch (error) {
-      console.error('Erro ao fazer upload:', error);
+      console.error('Erro no upload:', error);
     } finally {
       setIsUploading(false);
     }

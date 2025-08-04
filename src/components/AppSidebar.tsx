@@ -5,6 +5,7 @@ import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGrou
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import fbzLogo from '@/assets/fbz-logo.png';
 export function AppSidebar() {
   const {
@@ -45,6 +46,12 @@ export function AppSidebar() {
     url: user?.role === 'admin' ? '/admin/perfil' : '/dashboard/perfil',
     icon: User,
     color: 'text-pink-500'
+  }, {
+    title: 'Meu Perfil',
+    url: '/dashboard/meu-perfil',
+    icon: Settings,
+    color: 'text-gray-500',
+    comercianteOnly: true
   }];
   const appItems = [{
     title: 'Gamificações',
@@ -169,14 +176,8 @@ export function AppSidebar() {
           
 
           {/* Theme Toggle */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sun className="h-4 w-4 text-gray-500" />
-              <div className="w-10 h-5 bg-gray-200 dark:bg-gray-700 rounded-full relative cursor-pointer" onClick={() => setIsDark(!isDark)}>
-                <div className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-transform ${isDark ? 'translate-x-5' : 'translate-x-0.5'}`} />
-              </div>
-              <Moon className="h-4 w-4 text-gray-500" />
-            </div>
+          <div className="flex items-center justify-center">
+            <ThemeToggle />
           </div>
         </div>
       </SidebarContent>

@@ -143,8 +143,8 @@ export function ComerciosPage() {
                       <TableCell className="text-muted-foreground">
                         <div className="flex items-center gap-2">
                           <User className="h-4 w-4" />
-                          {/* Acessando o nome do perfil do usuário */}
-                          {comercio.admin_profiles?.full_name || 'Não disponível'}
+                          {/* Mostrando o nome do criador do comércio */}
+                          {comercio.profiles?.full_name || comercio.admin_profiles?.full_name || 'Não disponível'}
                         </div>
                       </TableCell>
                       <TableCell>{comercio.categoria || 'N/A'}</TableCell>

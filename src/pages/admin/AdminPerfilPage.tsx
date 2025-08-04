@@ -12,28 +12,28 @@ import { useNavigate } from 'react-router-dom';
 import { ProfilePhotoUpload } from '@/components/admin/ProfilePhotoUpload';
 import { SecurityDialog } from '@/components/admin/SecurityDialog';
 import { useReports } from '@/hooks/useReports';
-
 interface AdminFormData {
   nome: string;
   email: string;
   bio: string;
   telefone: string;
 }
-
 const AdminPerfilPage = () => {
-  const { user, logout } = useAuth();
+  const {
+    user,
+    logout
+  } = useAuth();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState('');
-  
-  // Buscar estatísticas reais
-  const { 
-    totalUsers, 
-    totalComercios, 
-    comerciosAtivos, 
-    totalMissoes 
-  } = useReports();
 
+  // Buscar estatísticas reais
+  const {
+    totalUsers,
+    totalComercios,
+    comerciosAtivos,
+    totalMissoes
+  } = useReports();
   const form = useForm<AdminFormData>({
     defaultValues: {
       nome: 'Administrador do App',
@@ -42,20 +42,16 @@ const AdminPerfilPage = () => {
       telefone: '(11) 98765-4321'
     }
   });
-
   const onSubmit = (data: AdminFormData) => {
     console.log('Dados do perfil admin:', data);
     setIsEditing(false);
     alert('Perfil atualizado com sucesso!');
   };
-
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Perfil do Administrador</h2>
@@ -101,7 +97,10 @@ const AdminPerfilPage = () => {
             <div>
               <CardTitle className="text-sm font-medium text-muted-foreground">Último Login</CardTitle>
               <div className="text-3xl font-bold text-foreground mt-2">Hoje</div>
-              <p className="text-sm text-muted-foreground mt-1">{new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+              <p className="text-sm text-muted-foreground mt-1">{new Date().toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit'
+              })}</p>
             </div>
             <div className="p-3 bg-background/50 rounded-lg">
               <Calendar className="h-6 w-6 text-foreground" />
@@ -111,122 +110,9 @@ const AdminPerfilPage = () => {
       </div>
 
       {/* Upload de Foto de Perfil */}
-      <ProfilePhotoUpload
-        currentPhoto={profilePhoto}
-        onPhotoChange={setProfilePhoto}
-        userName={form.getValues('nome')}
-      />
+      <ProfilePhotoUpload currentPhoto={profilePhoto} onPhotoChange={setProfilePhoto} userName={form.getValues('nome')} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            Informações Pessoais
-            <Button 
-              variant={isEditing ? "outline" : "default"} 
-              onClick={() => setIsEditing(!isEditing)}
-            >
-              {isEditing ? 'Cancelar' : 'Editar'}
-            </Button>
-          </CardTitle>
-          <CardDescription>
-            Suas informações básicas de perfil
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="nome"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome Completo</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          disabled={!isEditing}
-                          className={!isEditing ? "bg-gray-50" : ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          type="email"
-                          disabled={!isEditing}
-                          className={!isEditing ? "bg-gray-50" : ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="telefone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Telefone</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          disabled={!isEditing}
-                          className={!isEditing ? "bg-gray-50" : ""}
-                          placeholder="(00) 00000-0000"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="bio"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Biografia</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        disabled={!isEditing}
-                        className={!isEditing ? "bg-gray-50" : ""}
-                        placeholder="Conte um pouco sobre você..."
-                        rows={3}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {isEditing && (
-                <div className="flex justify-end space-x-2 pt-4">
-                  <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>
-                    Cancelar
-                  </Button>
-                  <Button type="submit">
-                    Salvar Alterações
-                  </Button>
-                </div>
-              )}
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+      
 
       <Card>
         <CardHeader>
@@ -241,15 +127,10 @@ const AdminPerfilPage = () => {
               <h4 className="font-medium">Alterar Senha</h4>
               <p className="text-sm text-muted-foreground">Atualize sua senha regularmente para manter a segurança</p>
             </div>
-            <SecurityDialog
-              type="password"
-              trigger={
-                <Button variant="outline" className="flex items-center gap-2">
+            <SecurityDialog type="password" trigger={<Button variant="outline" className="flex items-center gap-2">
                   <Settings className="h-4 w-4" />
                   Alterar Senha
-                </Button>
-              }
-            />
+                </Button>} />
           </div>
 
           <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -257,15 +138,10 @@ const AdminPerfilPage = () => {
               <h4 className="font-medium">Autenticação de Dois Fatores</h4>
               <p className="text-sm text-muted-foreground">Adicione uma camada extra de segurança à sua conta</p>
             </div>
-            <SecurityDialog
-              type="2fa"
-              trigger={
-                <Button variant="outline" className="flex items-center gap-2">
+            <SecurityDialog type="2fa" trigger={<Button variant="outline" className="flex items-center gap-2">
                   <Shield className="h-4 w-4" />
                   Configurar 2FA
-                </Button>
-              }
-            />
+                </Button>} />
           </div>
 
           <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -273,15 +149,10 @@ const AdminPerfilPage = () => {
               <h4 className="font-medium">Sessões Ativas</h4>
               <p className="text-sm text-muted-foreground">Veja e gerencie dispositivos conectados</p>
             </div>
-            <SecurityDialog
-              type="sessions"
-              trigger={
-                <Button variant="outline" className="flex items-center gap-2">
+            <SecurityDialog type="sessions" trigger={<Button variant="outline" className="flex items-center gap-2">
                   <Eye className="h-4 w-4" />
                   Ver Sessões
-                </Button>
-              }
-            />
+                </Button>} />
           </div>
 
           <div className="flex items-center justify-between p-4 border rounded-lg bg-red-50 border-red-200">
@@ -329,8 +200,6 @@ const AdminPerfilPage = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 };
-
 export default AdminPerfilPage;

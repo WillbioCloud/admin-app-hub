@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { 
   MapPin, 
   Clock, 
@@ -15,8 +17,11 @@ import {
   Upload,
   ArrowLeft,
   Share2,
-  Info
+  Info,
+  X,
+  Plus
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface LayoutPreviewProps {
   layout: 'moderno' | 'classico';
@@ -25,6 +30,8 @@ interface LayoutPreviewProps {
 
 export const LayoutPreview = ({ layout, primaryColor }: LayoutPreviewProps) => {
   const [isEditing, setIsEditing] = useState<string | null>(null);
+  const [isEditingServices, setIsEditingServices] = useState(false);
+  const [newService, setNewService] = useState('');
   const [commerceData, setCommerceData] = useState({
     name: 'Loja do João',
     description: 'O melhor da culinária regional com ingredientes frescos e sabor autêntico.',
@@ -45,6 +52,75 @@ export const LayoutPreview = ({ layout, primaryColor }: LayoutPreviewProps) => {
     setCommerceData(prev => ({ ...prev, [field]: value }));
     setIsEditing(null);
   };
+
+  const handleImageUpload = () => {
+    toast.info('Funcionalidade de upload de imagem será implementada em breve');
+  };
+
+  const handleAddService = () => {
+    if (newService.trim()) {
+      setCommerceData(prev => ({
+        ...prev,
+        services: [...prev.services, newService.trim()]
+      }));
+      setNewService('');
+      toast.success('Serviço adicionado!');
+    }
+  };
+
+  const handleRemoveService = (index: number) => {
+    setCommerceData(prev => ({
+      ...prev,
+      services: prev.services.filter((_, i) => i !== index)
+    }));
+    toast.success('Serviço removido!');
+  };
+
+  const ServiceEditor = () => (
+    <Dialog open={isEditingServices} onOpenChange={setIsEditingServices}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Editar Serviços</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="new-service">Adicionar novo serviço</Label>
+            <div className="flex space-x-2">
+              <Input
+                id="new-service"
+                value={newService}
+                onChange={(e) => setNewService(e.target.value)}
+                placeholder="Digite o nome do serviço"
+                onKeyPress={(e) => e.key === 'Enter' && handleAddService()}
+              />
+              <Button onClick={handleAddService} size="sm">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label>Serviços atuais</Label>
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {commerceData.services.map((service, index) => (
+                <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                  <span className="text-sm">{service}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveService(index)}
+                    className="h-6 w-6 p-0"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 
   const EditableField = ({ field, value, multiline = false }: { field: string; value: string; multiline?: boolean }) => {
     if (isEditing === field) {
@@ -86,7 +162,8 @@ export const LayoutPreview = ({ layout, primaryColor }: LayoutPreviewProps) => {
 
   if (layout === 'moderno') {
     return (
-      <div className="max-w-sm mx-auto">
+      <div className="max-w-md mx-auto scale-110">
+        <ServiceEditor />
         <div className="bg-white rounded-xl shadow-2xl overflow-hidden border">
           {/* Header do celular */}
           <div className="bg-gray-900 text-white text-center py-1 text-xs">
@@ -100,6 +177,7 @@ export const LayoutPreview = ({ layout, primaryColor }: LayoutPreviewProps) => {
               size="sm"
               variant="secondary"
               className="absolute top-2 right-2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 z-10"
+              onClick={handleImageUpload}
             >
               <Upload className="h-4 w-4" />
             </Button>
@@ -161,6 +239,7 @@ export const LayoutPreview = ({ layout, primaryColor }: LayoutPreviewProps) => {
                       size="sm"
                       variant="secondary"
                       className="absolute -top-1 -right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                      onClick={handleImageUpload}
                     >
                       <Upload className="h-3 w-3" />
                     </Button>
@@ -189,8 +268,18 @@ export const LayoutPreview = ({ layout, primaryColor }: LayoutPreviewProps) => {
             </div>
 
             {/* Serviços */}
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <h3 className="font-bold text-lg mb-3" style={{ color: primaryColor }}>Serviços</h3>
+            <div className="bg-gray-50 p-3 rounded-lg group">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-bold text-lg" style={{ color: primaryColor }}>Serviços</h3>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                  onClick={() => setIsEditingServices(true)}
+                >
+                  <Edit2 className="h-3 w-3" />
+                </Button>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {commerceData.services.map((service, index) => (
                   <Badge key={index} className="bg-blue-100 text-blue-700 text-xs">
@@ -215,7 +304,8 @@ export const LayoutPreview = ({ layout, primaryColor }: LayoutPreviewProps) => {
 
   // Layout Clássico
   return (
-    <div className="max-w-sm mx-auto">
+    <div className="max-w-md mx-auto scale-110">
+      <ServiceEditor />
       <div className="bg-white rounded-xl shadow-2xl overflow-hidden border">
         {/* Header do celular */}
         <div className="bg-gray-900 text-white text-center py-1 text-xs">
@@ -239,6 +329,7 @@ export const LayoutPreview = ({ layout, primaryColor }: LayoutPreviewProps) => {
                 size="sm"
                 variant="secondary"
                 className="absolute top-0 right-0 h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                onClick={handleImageUpload}
               >
                 <Upload className="h-3 w-3" />
               </Button>
@@ -308,8 +399,18 @@ export const LayoutPreview = ({ layout, primaryColor }: LayoutPreviewProps) => {
             </Button>
 
             {/* Serviços */}
-            <div>
-              <h3 className="font-semibold mb-3 text-center">Serviços Oferecidos</h3>
+            <div className="group">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-center flex-1">Serviços Oferecidos</h3>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                  onClick={() => setIsEditingServices(true)}
+                >
+                  <Edit2 className="h-3 w-3" />
+                </Button>
+              </div>
               <div className="grid grid-cols-3 gap-2">
                 {commerceData.services.map((service, index) => (
                   <div key={index} className="text-center p-3 border rounded">
@@ -332,6 +433,7 @@ export const LayoutPreview = ({ layout, primaryColor }: LayoutPreviewProps) => {
                       size="sm"
                       variant="secondary"
                       className="absolute -top-1 -right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                      onClick={handleImageUpload}
                     >
                       <Upload className="h-3 w-3" />
                     </Button>

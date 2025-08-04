@@ -268,53 +268,6 @@ export type Database = {
         }
         Relationships: []
       }
-      gamificacoes: {
-        Row: {
-          ativo: boolean | null
-          comercio_id: string | null
-          created_at: string | null
-          descricao: string | null
-          id: string
-          meta: number
-          nome: string
-          pontos: number
-          tipo_meta: string
-          updated_at: string | null
-        }
-        Insert: {
-          ativo?: boolean | null
-          comercio_id?: string | null
-          created_at?: string | null
-          descricao?: string | null
-          id?: string
-          meta?: number
-          nome: string
-          pontos?: number
-          tipo_meta: string
-          updated_at?: string | null
-        }
-        Update: {
-          ativo?: boolean | null
-          comercio_id?: string | null
-          created_at?: string | null
-          descricao?: string | null
-          id?: string
-          meta?: number
-          nome?: string
-          pontos?: number
-          tipo_meta?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "gamificacoes_comercio_id_fkey"
-            columns: ["comercio_id"]
-            isOneToOne: false
-            referencedRelation: "comercios"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       health_alerts: {
         Row: {
           created_at: string
@@ -1235,7 +1188,19 @@ export type Database = {
             }
         Returns: undefined
       }
+      create_notification_for_user: {
+        Args: {
+          target_user_id: string
+          notification_title: string
+          notification_message: string
+        }
+        Returns: undefined
+      }
       get_admin_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      get_current_user_admin_role: {
         Args: Record<PropertyKey, never>
         Returns: string
       }

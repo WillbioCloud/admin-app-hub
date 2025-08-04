@@ -75,8 +75,7 @@ const App = () => (
 
             {/* Rotas de Comerciante (Protegidas pelo DashboardLayout) */}
             <Route path="/dashboard" element={<DashboardLayout><ComercianteDashboard /></DashboardLayout>} />
-            <Route path="/dashboard/perfil" element={<DashboardLayout><PerfilPage /></DashboardLayout>} />
-            <Route path="/dashboard/meu-perfil" element={<DashboardLayout><ComerciantePerfilPage /></DashboardLayout>} />
+            <Route path="/dashboard/perfil" element={<DashboardLayout><ComerciantePerfilPage /></DashboardLayout>} />
             <Route path="/dashboard/personalizacao" element={<DashboardLayout><PersonalizacaoPage /></DashboardLayout>} />
             <Route path="/dashboard/configuracoes" element={<DashboardLayout><ConfiguracoesPage /></DashboardLayout>} />
             <Route path="/dashboard/gamificacoes" element={<DashboardLayout><ComercianteGamificacoesPage /></DashboardLayout>} />

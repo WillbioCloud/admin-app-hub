@@ -46,12 +46,6 @@ export function AppSidebar() {
     url: user?.role === 'admin' ? '/admin/perfil' : '/dashboard/perfil',
     icon: User,
     color: 'text-pink-500'
-  }, {
-    title: 'Meu Perfil',
-    url: '/dashboard/meu-perfil',
-    icon: Settings,
-    color: 'text-gray-500',
-    comercianteOnly: true
   }];
   const appItems = [{
     title: 'Gamificações',

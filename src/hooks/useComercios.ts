@@ -54,14 +54,24 @@ export const usePendingComercios = () => {
  */
 const createNotification = async (userId: string, title: string, message: string) => {
     try {
-        const { error } = await supabase.from('notifications').insert({
+        // Notificação específica para o comerciante
+        const { error: userError } = await supabase.from('notifications').insert({
             user_id: userId,
             title,
             message,
             type: 'novo_comercio'
         });
-        if (error) {
-            console.error("Erro ao criar notificação:", error.message);
+        
+        // Notificação global para todos os usuários do app
+        const { error: globalError } = await supabase.from('notifications').insert({
+            user_id: null, // null = notificação global para todos
+            title: "Novo comércio disponível!",
+            message: "Um novo comércio foi adicionado à plataforma. Confira!",
+            type: 'novo_comercio'
+        });
+        
+        if (userError || globalError) {
+            console.error("Erro ao criar notificação:", userError?.message || globalError?.message);
             toast.warning("Ação realizada, mas falha ao enviar notificação.");
         }
     } catch (err: any) {

@@ -110,7 +110,12 @@ const AdminPerfilPage = () => {
       </div>
 
       {/* Upload de Foto de Perfil */}
-      <ProfilePhotoUpload currentPhoto={profilePhoto} onPhotoChange={setProfilePhoto} userName={form.getValues('nome')} />
+      <ProfilePhotoUpload 
+        currentPhoto={user?.avatarUrl || profilePhoto} 
+        onPhotoChange={setProfilePhoto} 
+        userName={user?.name || form.getValues('nome')} 
+        userId={user?.id || ''} 
+      />
 
       
 

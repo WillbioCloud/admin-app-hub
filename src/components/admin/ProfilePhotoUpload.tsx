@@ -5,18 +5,22 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Camera, Upload, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ProfilePhotoUploadProps {
   currentPhoto?: string;
   onPhotoChange: (photoUrl: string) => void;
   userName: string;
+  userId: string;
 }
 
 export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
   currentPhoto,
   onPhotoChange,
-  userName
+  userName,
+  userId
 }) => {
+  const { user } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
   const [photoUrl, setPhotoUrl] = useState(currentPhoto || '');
 
@@ -43,8 +47,25 @@ export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
         .from('avatars')
         .getPublicUrl(filePath);
 
+      // Atualizar o avatar_url no banco de dados baseado no tipo de usuário
+      if (user?.role === 'admin') {
+        await supabase
+          .from('admin_profiles')
+          .update({ avatar_url: publicUrl })
+          .eq('id', userId);
+      } else {
+        // Para comerciantes, atualizar na tabela profiles
+        await supabase
+          .from('profiles')
+          .update({ avatar_url: publicUrl })
+          .eq('id', userId);
+      }
+
       setPhotoUrl(publicUrl);
       onPhotoChange(publicUrl);
+      
+      // Recarregar a página para atualizar o contexto de auth
+      window.location.reload();
     } catch (error) {
       console.error('Erro no upload:', error);
     } finally {

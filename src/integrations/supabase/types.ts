@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       admin_profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string | null
           full_name: string | null
           id: string
@@ -24,6 +25,7 @@ export type Database = {
           user_type: Database["public"]["Enums"]["admin_user_role"]
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string | null
           full_name?: string | null
           id: string
@@ -32,6 +34,7 @@ export type Database = {
           user_type?: Database["public"]["Enums"]["admin_user_role"]
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string | null
           full_name?: string | null
           id?: string

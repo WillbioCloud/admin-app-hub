@@ -11,6 +11,7 @@ export interface User {
   role: UserRole;
   name: string;
   comercioId?: string;
+  avatarUrl?: string;
 }
 
 interface AuthContextType {
@@ -84,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Busca perfis nas duas tabelas simultaneamente
         const { data: adminProfile, error: adminError } = await supabase
             .from('admin_profiles')
-            .select('id, full_name, user_type')
+            .select('id, full_name, user_type, avatar_url')
             .eq('id', supabaseUser.id)
             .single();
 
@@ -97,6 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 // CORREÇÃO: Lê a role diretamente da coluna user_type
                 role: adminProfile.user_type as UserRole, 
                 name: adminProfile.full_name || supabaseUser.email || 'Usuário Web',
+                avatarUrl: adminProfile.avatar_url,
             });
             return;
         }
@@ -104,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Prioridade 2: Perfil do app mobile (sempre comerciante/cliente)
         const { data: mobileProfile, error: mobileError } = await supabase
             .from('profiles')
-            .select('id, full_name, user_type')
+            .select('id, full_name, user_type, avatar_url')
             .eq('id', supabaseUser.id)
             .single();
 
@@ -115,6 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 email: supabaseUser.email || '',
                 role: 'comerciante', // Perfis da tabela 'profiles' são sempre 'comerciante' neste contexto
                 name: mobileProfile.full_name || supabaseUser.email || 'Comerciante',
+                avatarUrl: mobileProfile.avatar_url,
             });
             return;
         }

@@ -39,7 +39,7 @@ const ComerciantePerfilPage = () => {
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16">
-                <AvatarImage src={(user as any)?.avatar_url} alt={user?.name} />
+                <AvatarImage src={user?.avatarUrl} alt={user?.name} />
                 <AvatarFallback className="text-lg">
                   {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'}
                 </AvatarFallback>
@@ -71,9 +71,10 @@ const ComerciantePerfilPage = () => {
         {/* Upload de Foto */}
         <div className="space-y-6">
           <ProfilePhotoUpload
-            currentPhoto={(user as any)?.avatar_url}
+            currentPhoto={user?.avatarUrl}
             onPhotoChange={handlePhotoChange}
             userName={user?.name || 'Usuário'}
+            userId={user?.id || ''}
           />
           
           {/* Configurações da Conta */}

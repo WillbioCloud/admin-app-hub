@@ -59,7 +59,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <ThemeToggle />
               <div className="flex items-center gap-3">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={(user as any)?.avatar_url} alt={user.name} />
+                  <AvatarImage src={user?.avatarUrl} alt={user.name} />
                   <AvatarFallback className="text-xs">
                     {user.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'}
                   </AvatarFallback>

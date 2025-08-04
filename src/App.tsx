@@ -28,7 +28,6 @@ import MapaPage from "./pages/admin/MapaPage";
 
 // Comerciante Pages
 import ComercianteDashboard from "./pages/comerciante/ComercianteDashboard";
-import PerfilPage from "./pages/comerciante/PerfilPage";
 import PersonalizacaoPage from "./pages/comerciante/PersonalizacaoPage";
 import ConfiguracoesPage from "./pages/comerciante/ConfiguracoesPage";
 import ComercianteGamificacoesPage from "./pages/comerciante/GamificacoesPage";

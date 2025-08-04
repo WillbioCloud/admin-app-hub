@@ -4,8 +4,10 @@ import { Navigate } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { LogOut } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -54,13 +56,22 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-foreground">
-                  {user.name}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {isAdmin() ? 'Administrador' : 'Comerciante'}
-                </p>
+              <ThemeToggle />
+              <div className="flex items-center gap-3">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={(user as any).avatar_url} alt={user.name} />
+                  <AvatarFallback className="text-xs">
+                    {user.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-foreground">
+                    {user.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {isAdmin() ? 'Administrador' : 'Comerciante'}
+                  </p>
+                </div>
               </div>
               <Button 
                 variant="outline" 

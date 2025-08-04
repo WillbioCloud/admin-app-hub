@@ -26,23 +26,60 @@ import { toast } from 'sonner';
 interface LayoutPreviewProps {
   layout: 'moderno' | 'classico';
   primaryColor: string;
+  comercioData?: {
+    nome: string;
+    descricao?: string;
+    categoria?: string;
+    whatsapp?: string;
+    instagram?: string;
+    endereco?: string;
+    horario_func?: any;
+    servicos?: string[];
+    logo_url?: string;
+    galeria_urls?: string[];
+  };
 }
 
-export const LayoutPreview = ({ layout, primaryColor }: LayoutPreviewProps) => {
+export const LayoutPreview = ({ layout, primaryColor, comercioData }: LayoutPreviewProps) => {
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isEditingServices, setIsEditingServices] = useState(false);
   const [newService, setNewService] = useState('');
   const [commerceData, setCommerceData] = useState({
-    name: 'Loja do João',
-    description: 'O melhor da culinária regional com ingredientes frescos e sabor autêntico.',
-    category: 'Alimentação',
-    whatsapp: '(11) 99999-9999',
-    instagram: '@lojadojoao',
-    address: 'Rua das Flores, 123 - Centro',
-    hours: 'Seg-Sex: 8h-18h | Sáb: 8h-14h',
-    services: ['Delivery', 'Balcão', 'Cartão'],
+    name: comercioData?.nome || 'Nome do seu comércio',
+    description: comercioData?.descricao || 'Descrição do seu comércio aparecerá aqui.',
+    category: comercioData?.categoria || 'Categoria',
+    whatsapp: comercioData?.whatsapp || 'Seu WhatsApp',
+    instagram: comercioData?.instagram || 'Seu Instagram',
+    address: comercioData?.endereco || 'Seu endereço',
+    hours: typeof comercioData?.horario_func === 'string' 
+      ? comercioData.horario_func 
+      : comercioData?.horario_func 
+        ? JSON.stringify(comercioData.horario_func)
+        : 'Horário de funcionamento',
+    services: comercioData?.servicos || ['Serviço 1', 'Serviço 2'],
     rating: '4.8'
   });
+
+  // Update commerce data when comercioData prop changes
+  React.useEffect(() => {
+    if (comercioData) {
+      setCommerceData({
+        name: comercioData.nome || 'Nome do seu comércio',
+        description: comercioData.descricao || 'Descrição do seu comércio aparecerá aqui.',
+        category: comercioData.categoria || 'Categoria',
+        whatsapp: comercioData.whatsapp || 'Seu WhatsApp',
+        instagram: comercioData.instagram || 'Seu Instagram',
+        address: comercioData.endereco || 'Seu endereço',
+        hours: typeof comercioData.horario_func === 'string' 
+          ? comercioData.horario_func 
+          : comercioData.horario_func 
+            ? JSON.stringify(comercioData.horario_func)
+            : 'Horário de funcionamento',
+        services: comercioData.servicos || ['Serviço 1', 'Serviço 2'],
+        rating: '4.8'
+      });
+    }
+  }, [comercioData]);
 
   const handleEdit = (field: string) => {
     setIsEditing(field);

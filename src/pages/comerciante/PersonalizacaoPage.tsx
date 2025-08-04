@@ -156,6 +156,7 @@ const PersonalizacaoPage = () => {
               <LayoutPreview 
                 layout={selectedLayout}
                 primaryColor={selectedColor}
+                comercioData={meuComercio}
               />
             </CardContent>
           </Card>

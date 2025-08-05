@@ -67,28 +67,76 @@ export const useComerciosAprovados = () => {
 };
 
 /**
- * Função auxiliar para criar notificação diretamente na tabela.
+ * Função auxiliar para verificar se é a primeira aprovação ou uma atualização.
  */
-const createNotification = async (userId: string, title: string, message: string) => {
+const checkIfFirstApproval = async (comercioId: string): Promise<boolean> => {
+    try {
+        // Verifica se já houve aprovação anterior consultando o histórico
+        const { data: comercio } = await supabase
+            .from('comercios')
+            .select('created_at, updated_at')
+            .eq('id', comercioId)
+            .single();
+            
+        if (!comercio) return true;
+        
+        // Se created_at e updated_at são muito próximos (menos de 1 minuto de diferença),
+        // provavelmente é a primeira aprovação
+        const createdTime = new Date(comercio.created_at).getTime();
+        const updatedTime = new Date(comercio.updated_at).getTime();
+        const diffInMinutes = (updatedTime - createdTime) / (1000 * 60);
+        
+        return diffInMinutes < 1;
+    } catch {
+        return true; // Em caso de erro, assume primeira aprovação
+    }
+}
+
+/**
+ * Função auxiliar para criar notificação de novo comércio (primeira aprovação).
+ */
+const createNewCommerceNotification = async (userId: string, comercioNome: string) => {
     try {
         // Notificação específica para o comerciante
         const { error: userError } = await supabase.from('notifications').insert({
             user_id: userId,
-            title,
-            message,
-            type: 'novo_comercio'
+            title: "Seu comércio foi aprovado!",
+            message: `Parabéns! ${comercioNome} agora está ativo na plataforma.`,
+            type: 'app_update'
         });
         
         // Notificação global para todos os usuários do app
         const { error: globalError } = await supabase.from('notifications').insert({
             user_id: null, // null = notificação global para todos
             title: "Novo comércio disponível!",
-            message: "Um novo comércio foi adicionado à plataforma. Confira!",
+            message: `${comercioNome} foi adicionado à plataforma. Confira!`,
             type: 'novo_comercio'
         });
         
         if (userError || globalError) {
-            console.error("Erro ao criar notificação:", userError?.message || globalError?.message);
+            console.error("Erro ao criar notificação de novo comércio:", userError?.message || globalError?.message);
+            toast.warning("Ação realizada, mas falha ao enviar notificação.");
+        }
+    } catch (err: any) {
+        console.error("Erro inesperado:", err.message);
+    }
+}
+
+/**
+ * Função auxiliar para criar notificação de atualização de comércio.
+ */
+const createUpdateCommerceNotification = async (userId: string, comercioNome: string) => {
+    try {
+        // Notificação apenas para o comerciante
+        const { error: userError } = await supabase.from('notifications').insert({
+            user_id: userId,
+            title: "Alterações aprovadas!",
+            message: `As alterações do ${comercioNome} foram aprovadas e já estão visíveis no aplicativo.`,
+            type: 'app_update'
+        });
+        
+        if (userError) {
+            console.error("Erro ao criar notificação de atualização:", userError.message);
             toast.warning("Ação realizada, mas falha ao enviar notificação.");
         }
     } catch (err: any) {
@@ -104,11 +152,19 @@ export const useApproveComercio = () => {
       if (error) throw new Error(`Falha ao aprovar: ${error.message}`);
       return comercio; 
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ['comercios'] });
       queryClient.invalidateQueries({ queryKey: ['comercios-pending'] });
       toast.success("Comércio aprovado com sucesso!");
-      createNotification(data.user_id, "Seu comércio foi aprovado!", `Parabéns, ${data.nome} agora está ativo na plataforma.`);
+      
+      // Verifica se é primeira aprovação ou atualização
+      const isFirstApproval = await checkIfFirstApproval(data.id);
+      
+      if (isFirstApproval) {
+        await createNewCommerceNotification(data.user_id, data.nome);
+      } else {
+        await createUpdateCommerceNotification(data.user_id, data.nome);
+      }
     },
     onError: (error: Error) => toast.error(error.message)
   });
@@ -122,11 +178,22 @@ export const useRejectComercio = () => {
       if (error) throw new Error(`Falha ao rejeitar: ${error.message}`);
       return comercio;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ['comercios'] });
       queryClient.invalidateQueries({ queryKey: ['comercios-pending'] });
       toast.info("Comércio rejeitado.");
-      createNotification(data.user_id, "Seu comércio precisa de ajustes", `O seu comércio ${data.nome} foi revisado. Por favor, verifique-o no seu painel.`);
+      
+      // Notifica o comerciante sobre a rejeição
+      try {
+        await supabase.from('notifications').insert({
+          user_id: data.user_id,
+          title: "Seu comércio precisa de ajustes",
+          message: `O seu comércio ${data.nome} foi revisado e precisa de algumas correções. Verifique seu painel para mais detalhes.`,
+          type: 'app_update'
+        });
+      } catch (error) {
+        console.error('Erro ao enviar notificação de rejeição:', error);
+      }
     },
     onError: (error: Error) => toast.error(error.message)
   });

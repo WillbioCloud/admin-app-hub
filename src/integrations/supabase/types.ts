@@ -1197,8 +1197,8 @@ export type Database = {
           full_name: string | null
           id: string | null
           level: number | null
-          points: number | null
           position: number | null
+          xp: number | null
         }
         Relationships: []
       }

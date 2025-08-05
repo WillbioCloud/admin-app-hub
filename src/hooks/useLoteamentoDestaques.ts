@@ -2,13 +2,22 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-export interface LoteamentoDestaque {
+export interface LoteamentoComDestaque {
   id: string;
-  loteamento_id: string;
-  nome: string;
-  ativo: boolean;
-  created_at: string;
-  updated_at: string;
+  name: string;
+  city: string;
+  description: string;
+  image_url: string;
+  logo_url: string;
+  features: string[];
+  total_lots: number;
+  available_lots: number;
+  is_selling: boolean;
+  has_transport: boolean;
+  stages: any;
+  main_video_url: string;
+  logo: string;
+  ativo_destaque: boolean; // Se tem destaque ativo
 }
 
 export interface CreateLoteamentoDestaqueData {
@@ -24,15 +33,31 @@ export interface UpdateLoteamentoDestaqueData {
 
 export const useLoteamentoDestaques = () => {
   return useQuery({
-    queryKey: ['loteamento-destaques'],
+    queryKey: ['loteamentos-com-destaques'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('loteamento_destaques')
+      // Buscar todos os loteamentos
+      const { data: loteamentos, error: loteamentosError } = await supabase
+        .from('loteamentos')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('name');
 
-      if (error) throw error;
-      return data as LoteamentoDestaque[];
+      if (loteamentosError) throw loteamentosError;
+
+      // Buscar quais têm destaque ativo
+      const { data: destaques, error: destaquesError } = await supabase
+        .from('loteamento_destaques')
+        .select('loteamento_id, ativo')
+        .eq('ativo', true);
+
+      if (destaquesError) throw destaquesError;
+
+      // Combinar dados
+      const loteamentosComDestaque = loteamentos?.map(loteamento => ({
+        ...loteamento,
+        ativo_destaque: destaques?.some(d => d.loteamento_id === loteamento.id) || false
+      })) || [];
+
+      return loteamentosComDestaque as LoteamentoComDestaque[];
     },
   });
 };
@@ -137,19 +162,33 @@ export const useToggleLoteamentoDestaque = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, ativo }: { id: string; ativo: boolean }) => {
-      const { data: result, error } = await supabase
-        .from('loteamento_destaques')
-        .update({ ativo })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return result;
+    mutationFn: async ({ loteamento_id, ativo }: { loteamento_id: string; ativo: boolean }) => {
+      if (ativo) {
+        // Ativar destaque - inserir ou atualizar
+        const { data, error } = await supabase
+          .from('loteamento_destaques')
+          .upsert({ 
+            loteamento_id, 
+            nome: loteamento_id, // Temporário, pode ajustar depois
+            ativo: true 
+          })
+          .select()
+          .single();
+        
+        if (error) throw error;
+        return data;
+      } else {
+        // Desativar destaque
+        const { error } = await supabase
+          .from('loteamento_destaques')
+          .update({ ativo: false })
+          .eq('loteamento_id', loteamento_id);
+        
+        if (error) throw error;
+      }
     },
     onSuccess: (_, { ativo }) => {
-      queryClient.invalidateQueries({ queryKey: ['loteamento-destaques'] });
+      queryClient.invalidateQueries({ queryKey: ['loteamentos-com-destaques'] });
       toast({
         title: "Sucesso",
         description: `Destaque ${ativo ? 'ativado' : 'desativado'} com sucesso!`,

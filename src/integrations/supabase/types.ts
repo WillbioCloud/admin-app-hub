@@ -206,6 +206,24 @@ export type Database = {
         }
         Relationships: []
       }
+      comment_likes: {
+        Row: {
+          comment_id: number
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: number
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: number
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       court_bookings: {
         Row: {
           booking_date: string
@@ -570,6 +588,7 @@ export type Database = {
           likes: number | null
           published_at: string
           title: string
+          views: number | null
         }
         Insert: {
           comments?: number | null
@@ -579,6 +598,7 @@ export type Database = {
           likes?: number | null
           published_at?: string
           title: string
+          views?: number | null
         }
         Update: {
           comments?: number | null
@@ -588,6 +608,7 @@ export type Database = {
           likes?: number | null
           published_at?: string
           title?: string
+          views?: number | null
         }
         Relationships: []
       }
@@ -622,22 +643,7 @@ export type Database = {
           type?: Database["public"]["Enums"]["notification_type"]
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "leaderboard"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       nutrition_queries: {
         Row: {
@@ -707,63 +713,141 @@ export type Database = {
           },
         ]
       }
+      post_comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: number
+          parent_comment_id: number | null
+          post_id: number | null
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: never
+          parent_comment_id?: number | null
+          post_id?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: never
+          parent_comment_id?: number | null
+          post_id?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "post_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "post_comments_user_id_fkey1"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      post_likes: {
+        Row: {
+          created_at: string
+          post_id: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          post_id: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          post_id?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "news_feed"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: number
+          image_url: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: never
+          image_url?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: never
+          image_url?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_user_id_fkey1"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
-          coins: number
           created_at: string | null
-          email: string | null
           full_name: string | null
-          id: string
-          is_approved: boolean
-          level: number
-          phone: string | null
-          points: number
-          realtor_code: string | null
-          realtor_level: number
-          realtor_points: number
           updated_at: string | null
-          user_status: string
-          user_type: Database["public"]["Enums"]["user_role"]
-          xp: number | null
+          user_id: string
         }
         Insert: {
           avatar_url?: string | null
-          coins?: number
           created_at?: string | null
-          email?: string | null
           full_name?: string | null
-          id: string
-          is_approved?: boolean
-          level?: number
-          phone?: string | null
-          points?: number
-          realtor_code?: string | null
-          realtor_level?: number
-          realtor_points?: number
           updated_at?: string | null
-          user_status?: string
-          user_type?: Database["public"]["Enums"]["user_role"]
-          xp?: number | null
+          user_id: string
         }
         Update: {
           avatar_url?: string | null
-          coins?: number
           created_at?: string | null
-          email?: string | null
           full_name?: string | null
-          id?: string
-          is_approved?: boolean
-          level?: number
-          phone?: string | null
-          points?: number
-          realtor_code?: string | null
-          realtor_level?: number
-          realtor_points?: number
           updated_at?: string | null
-          user_status?: string
-          user_type?: Database["public"]["Enums"]["user_role"]
-          xp?: number | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1071,22 +1155,7 @@ export type Database = {
           quadra?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_user"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "leaderboard"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_user"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_rewards: {
         Row: {
@@ -1115,57 +1184,11 @@ export type Database = {
             referencedRelation: "rewards"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "user_rewards_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "leaderboard"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_rewards_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
     }
     Views: {
-      creator_info: {
-        Row: {
-          full_name: string | null
-          id: string | null
-          profile_type: string | null
-          user_type: string | null
-        }
-        Relationships: []
-      }
-      leaderboard: {
-        Row: {
-          avatar_url: string | null
-          full_name: string | null
-          id: string | null
-          level: number | null
-          xp: number | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          full_name?: string | null
-          id?: string | null
-          level?: number | null
-          xp?: number | null
-        }
-        Update: {
-          avatar_url?: string | null
-          full_name?: string | null
-          id?: string | null
-          level?: number | null
-          xp?: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       check_and_apply_level_up: {
@@ -1207,9 +1230,31 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_news_feed_with_likes: {
+        Args: { p_user_id: string }
+        Returns: {
+          id: number
+          title: string
+          description: string
+          image_url: string
+          published_at: string
+          likes: number
+          comments: number
+          views: number
+          is_liked_by_user: boolean
+        }[]
+      }
       get_user_role: {
         Args: Record<PropertyKey, never> | { user_id?: string }
         Returns: string
+      }
+      increment_comment_like: {
+        Args: { comment_id_to_update: number }
+        Returns: undefined
+      }
+      increment_view: {
+        Args: { post_id_to_update: number }
+        Returns: undefined
       }
       perform_health_info_cleanup: {
         Args: Record<PropertyKey, never>
@@ -1218,6 +1263,14 @@ export type Database = {
       purchase_reward: {
         Args: { p_reward_id: string }
         Returns: Json
+      }
+      toggle_like_comment: {
+        Args: { comment_id_to_update: number }
+        Returns: undefined
+      }
+      toggle_like_post: {
+        Args: { post_id_to_update: number }
+        Returns: undefined
       }
     }
     Enums: {

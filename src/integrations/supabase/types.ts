@@ -373,6 +373,45 @@ export type Database = {
         }
         Relationships: []
       }
+      leaderboard: {
+        Row: {
+          avatar_url: string | null
+          coins: number | null
+          created_at: string | null
+          full_name: string | null
+          id: string
+          level: number | null
+          points: number | null
+          position: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          coins?: number | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          level?: number | null
+          points?: number | null
+          position?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          coins?: number | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          level?: number | null
+          points?: number | null
+          position?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       loteamento_media: {
         Row: {
           caption: string | null
@@ -1272,6 +1311,10 @@ export type Database = {
       }
       toggle_like_post: {
         Args: { post_id_to_update: number }
+        Returns: undefined
+      }
+      update_leaderboard: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
     }

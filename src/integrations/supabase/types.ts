@@ -753,20 +753,6 @@ export type Database = {
             referencedRelation: "posts"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "post_comments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "post_comments_user_id_fkey1"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       post_likes: {
@@ -817,37 +803,53 @@ export type Database = {
           image_url?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "posts_user_id_fkey1"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {
           avatar_url: string | null
+          coins: number | null
           created_at: string | null
           full_name: string | null
+          id: string
+          is_approved: boolean | null
+          level: number | null
+          phone: string | null
+          points: number | null
+          realtor_level: string | null
           updated_at: string | null
-          user_id: string
+          user_status: string | null
+          user_type: string | null
         }
         Insert: {
           avatar_url?: string | null
+          coins?: number | null
           created_at?: string | null
           full_name?: string | null
+          id: string
+          is_approved?: boolean | null
+          level?: number | null
+          phone?: string | null
+          points?: number | null
+          realtor_level?: string | null
           updated_at?: string | null
-          user_id: string
+          user_status?: string | null
+          user_type?: string | null
         }
         Update: {
           avatar_url?: string | null
+          coins?: number | null
           created_at?: string | null
           full_name?: string | null
+          id?: string
+          is_approved?: boolean | null
+          level?: number | null
+          phone?: string | null
+          points?: number | null
+          realtor_level?: string | null
           updated_at?: string | null
-          user_id?: string
+          user_status?: string | null
+          user_type?: string | null
         }
         Relationships: []
       }

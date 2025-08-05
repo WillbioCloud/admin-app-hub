@@ -25,7 +25,7 @@ import AprovacoesPage from "./pages/admin/AprovacoesPage";
 import AdminPerfilPage from "./pages/admin/AdminPerfilPage";
 import AdminRecompensasPage from "./pages/admin/RecompensasPage";
 import MapaPage from "./pages/admin/MapaPage";
-import DestaquesPage from "./pages/admin/DestaquesPage";
+import LoteamentosPage from "./pages/admin/LoteamentosPage";
 
 // Comerciante Pages
 import ComercianteDashboard from "./pages/comerciante/ComercianteDashboard";
@@ -72,7 +72,7 @@ const App = () => (
             <Route path="/admin/perfil" element={<DashboardLayout><AdminPerfilPage /></DashboardLayout>} />
             <Route path="/admin/recompensas" element={<DashboardLayout><AdminRecompensasPage /></DashboardLayout>} />
             <Route path="/admin/mapa" element={<DashboardLayout><MapaPage /></DashboardLayout>} />
-            <Route path="/admin/destaques" element={<DashboardLayout><DestaquesPage /></DashboardLayout>} />
+            <Route path="/admin/loteamentos" element={<DashboardLayout><LoteamentosPage /></DashboardLayout>} />
 
             {/* Rotas de Comerciante (Protegidas pelo DashboardLayout) */}
             <Route path="/dashboard" element={<DashboardLayout><ComercianteDashboard /></DashboardLayout>} />

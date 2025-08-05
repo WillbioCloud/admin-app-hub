@@ -168,7 +168,7 @@ export function LoteamentoDialog({
                     <FormControl>
                       <Input 
                         type="number" 
-                        {...field} 
+                        value={field.value || ''}
                         onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                       />
                     </FormControl>
@@ -186,7 +186,7 @@ export function LoteamentoDialog({
                     <FormControl>
                       <Input 
                         type="number" 
-                        {...field} 
+                        value={field.value || ''}
                         onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                       />
                     </FormControl>

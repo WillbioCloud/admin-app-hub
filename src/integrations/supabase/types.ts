@@ -373,45 +373,6 @@ export type Database = {
         }
         Relationships: []
       }
-      leaderboard: {
-        Row: {
-          avatar_url: string | null
-          coins: number | null
-          created_at: string | null
-          full_name: string | null
-          id: string
-          level: number | null
-          points: number | null
-          position: number | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          avatar_url?: string | null
-          coins?: number | null
-          created_at?: string | null
-          full_name?: string | null
-          id?: string
-          level?: number | null
-          points?: number | null
-          position?: number | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          avatar_url?: string | null
-          coins?: number | null
-          created_at?: string | null
-          full_name?: string | null
-          id?: string
-          level?: number | null
-          points?: number | null
-          position?: number | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       loteamento_media: {
         Row: {
           caption: string | null
@@ -1229,7 +1190,18 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      leaderboard: {
+        Row: {
+          avatar_url: string | null
+          coins: number | null
+          full_name: string | null
+          id: string | null
+          level: number | null
+          points: number | null
+          position: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       check_and_apply_level_up: {

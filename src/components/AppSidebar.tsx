@@ -1,4 +1,4 @@
-import { Home, Users, FileText, Bell, Store, Settings, Palette, User, GamepadIcon, Newspaper, Search, Menu, Sun, Moon, Gift, MapPin } from 'lucide-react';
+import { Home, Users, FileText, Bell, Store, Settings, Palette, User, GamepadIcon, Newspaper, Search, Menu, Sun, Moon, Gift, MapPin, Sparkles } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useState } from 'react';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
@@ -80,6 +80,12 @@ export function AppSidebar() {
     url: '/admin/relatorios',
     icon: FileText,
     color: 'text-teal-500',
+    adminOnly: true
+  }, {
+    title: 'Destaques',
+    url: '/admin/destaques',
+    icon: Sparkles,
+    color: 'text-pink-500',
     adminOnly: true
   }, {
     title: 'Personalização',

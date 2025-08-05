@@ -79,13 +79,34 @@ export const useUsuarios = () => {
         throw profileError;
       }
 
-      // Usar o email já disponível na tabela profiles ou buscar via edge function
-      const usersWithEmails = profiles?.map(user => ({
-        ...user,
-        email: user.email || 'Email não disponível'
-      })) || [];
+      // Usar edge function para buscar emails reais para usuários mobile também
+      try {
+        const { data: emailData, error: emailError } = await supabase.functions.invoke('get-user-emails', {
+          body: { userIds: profiles?.map(p => p.id) || [] }
+        });
 
-      return usersWithEmails;
+        if (emailError) {
+          console.warn('Erro ao buscar emails reais para mobile, usando dados sem email:', emailError);
+          return profiles?.map(user => ({
+            ...user,
+            email: 'Email não disponível'
+          })) || [];
+        }
+
+        // Juntar dados dos perfis mobile com emails reais
+        const usersWithEmails = profiles?.map(user => ({
+          ...user,
+          email: emailData?.find((e: any) => e.id === user.id)?.email || 'Email não disponível'
+        })) || [];
+
+        return usersWithEmails;
+      } catch (error) {
+        console.warn('Edge function não disponível para mobile, retornando dados sem email:', error);
+        return profiles?.map(user => ({
+          ...user,
+          email: 'Email não disponível'
+        })) || [];
+      }
     }
   });
 

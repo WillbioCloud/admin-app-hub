@@ -82,46 +82,49 @@ export type Database = {
           created_at: string | null
           destination: string
           id: number
-          interval: string | null
-          itinerary: string | null
-          line_id: string
+          ida: string | null
+          line_code: string
           line_name: string
-          loteamento_id: string | null
-          phone: string | null
-          point: string | null
+          point_a: string
+          point_b: string
           status: string | null
-          times_weekday: string[] | null
-          times_weekend: string[] | null
+          times_saturday: string | null
+          times_sunday: string | null
+          times_weekdays: string | null
+          updated_at: string | null
+          volta: string | null
         }
         Insert: {
           created_at?: string | null
           destination: string
-          id?: number
-          interval?: string | null
-          itinerary?: string | null
-          line_id: string
+          id?: never
+          ida?: string | null
+          line_code: string
           line_name: string
-          loteamento_id?: string | null
-          phone?: string | null
-          point?: string | null
+          point_a: string
+          point_b: string
           status?: string | null
-          times_weekday?: string[] | null
-          times_weekend?: string[] | null
+          times_saturday?: string | null
+          times_sunday?: string | null
+          times_weekdays?: string | null
+          updated_at?: string | null
+          volta?: string | null
         }
         Update: {
           created_at?: string | null
           destination?: string
-          id?: number
-          interval?: string | null
-          itinerary?: string | null
-          line_id?: string
+          id?: never
+          ida?: string | null
+          line_code?: string
           line_name?: string
-          loteamento_id?: string | null
-          phone?: string | null
-          point?: string | null
+          point_a?: string
+          point_b?: string
           status?: string | null
-          times_weekday?: string[] | null
-          times_weekend?: string[] | null
+          times_saturday?: string | null
+          times_sunday?: string | null
+          times_weekdays?: string | null
+          updated_at?: string | null
+          volta?: string | null
         }
         Relationships: []
       }
@@ -716,27 +719,30 @@ export type Database = {
       post_comments: {
         Row: {
           content: string
-          created_at: string | null
+          created_at: string
           id: number
+          likes: number
           parent_comment_id: number | null
-          post_id: number | null
-          user_id: string | null
+          post_id: number
+          user_id: string
         }
         Insert: {
           content: string
-          created_at?: string | null
-          id?: never
+          created_at?: string
+          id?: number
+          likes?: number
           parent_comment_id?: number | null
-          post_id?: number | null
-          user_id?: string | null
+          post_id: number
+          user_id: string
         }
         Update: {
           content?: string
-          created_at?: string | null
-          id?: never
+          created_at?: string
+          id?: number
+          likes?: number
           parent_comment_id?: number | null
-          post_id?: number | null
-          user_id?: string | null
+          post_id?: number
+          user_id?: string
         }
         Relationships: [
           {
@@ -750,7 +756,21 @@ export type Database = {
             foreignKeyName: "post_comments_post_id_fkey"
             columns: ["post_id"]
             isOneToOne: false
-            referencedRelation: "posts"
+            referencedRelation: "news_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1263,6 +1283,10 @@ export type Database = {
       }
       increment_comment_like: {
         Args: { comment_id_to_update: number }
+        Returns: undefined
+      }
+      increment_like: {
+        Args: { post_id_to_update: number }
         Returns: undefined
       }
       increment_view: {

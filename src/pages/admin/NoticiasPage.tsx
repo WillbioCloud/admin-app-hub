@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { Plus, Edit, Trash2, Newspaper, Heart, MessageCircle, Video, Image, User, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,6 +36,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNewsFeed, useCreateNews, useUpdateNews, useDeleteNews, NewsItem } from '@/hooks/useNewsFeed';
 import { useCreateNotification } from '@/hooks/useNotifications';
+import FileUpload from '@/components/admin/FileUpload';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -92,6 +94,17 @@ export default function NoticiasPage() {
     e.preventDefault();
     
     if (!formData.title.trim()) return;
+    
+    // Validar se os campos obrigatórios de mídia estão preenchidos
+    if (formData.media_type === 'IMAGE' && !formData.image_url.trim()) {
+      toast.error('Selecione uma imagem para o post');
+      return;
+    }
+    
+    if (formData.media_type === 'VIDEO' && !formData.video_url.trim()) {
+      toast.error('Selecione um vídeo para o post');
+      return;
+    }
 
     try {
       if (editingNews) {
@@ -450,45 +463,46 @@ export default function NoticiasPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="author_avatar_url">Avatar do Autor (URL)</Label>
-              <Input
-                id="author_avatar_url"
-                value={formData.author_avatar_url}
-                onChange={(e) => setFormData(prev => ({ ...prev, author_avatar_url: e.target.value }))}
-                placeholder="https://exemplo.com/avatar.jpg"
-                type="url"
+              <Label htmlFor="author_avatar_url">Avatar do Autor</Label>
+              <FileUpload
+                onFileUploaded={(url) => setFormData(prev => ({ ...prev, author_avatar_url: url }))}
+                acceptedTypes={['image/jpeg', 'image/png', 'image/webp']}
+                bucketId="author-avatars"
+                maxSize={10485760} // 10MB
+                label=""
+                description="Imagem do avatar do autor (opcional)"
+                showBackgroundRemoval={true}
+                currentValue={formData.author_avatar_url}
               />
             </div>
             
             {formData.media_type === 'IMAGE' ? (
               <div className="space-y-2">
-                <Label htmlFor="image_url">URL da Imagem *</Label>
-                <Input
-                  id="image_url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                  placeholder="https://exemplo.com/imagem.jpg"
-                  type="url"
-                  required={formData.media_type === 'IMAGE'}
+                <Label>Imagem do Post *</Label>
+                <FileUpload
+                  onFileUploaded={(url) => setFormData(prev => ({ ...prev, image_url: url }))}
+                  acceptedTypes={['image/jpeg', 'image/png', 'image/webp']}
+                  bucketId="news-media"
+                  maxSize={52428800} // 50MB
+                  label=""
+                  description="Imagem que será exibida no feed (obrigatória para posts de imagem)"
+                  showBackgroundRemoval={false}
+                  currentValue={formData.image_url}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Imagem será exibida no feed. Recomendado: 1080x1080px ou proporção 16:9
-                </p>
               </div>
             ) : (
               <div className="space-y-2">
-                <Label htmlFor="video_url">URL do Vídeo *</Label>
-                <Input
-                  id="video_url"
-                  value={formData.video_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
-                  placeholder="https://exemplo.com/video.mp4"
-                  type="url"
-                  required={formData.media_type === 'VIDEO'}
+                <Label>Vídeo do Post *</Label>
+                <FileUpload
+                  onFileUploaded={(url) => setFormData(prev => ({ ...prev, video_url: url }))}
+                  acceptedTypes={['video/mp4', 'video/mov', 'video/avi']}
+                  bucketId="news-media"
+                  maxSize={52428800} // 50MB
+                  label=""
+                  description="Vídeo que será reproduzido no feed (obrigatório para posts de vídeo)"
+                  showBackgroundRemoval={false}
+                  currentValue={formData.video_url}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Vídeo será reproduzido automaticamente no feed. Formatos: MP4, MOV
-                </p>
               </div>
             )}
 

@@ -7,8 +7,14 @@ export interface NewsItem {
   title: string;
   description: string | null;
   image_url: string | null;
+  video_url?: string | null;
+  media_type?: 'IMAGE' | 'VIDEO';
+  author_name?: string | null;
+  author_avatar_url?: string | null;
+  location?: string | null;
   likes: number | null;
   comments: number | null;
+  views?: number | null;
   published_at: string;
 }
 

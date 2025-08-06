@@ -611,33 +611,48 @@ export type Database = {
       }
       news_feed: {
         Row: {
+          author_avatar_url: string | null
+          author_name: string | null
           comments: number | null
           description: string | null
           id: number
           image_url: string | null
           likes: number | null
+          location: string | null
+          media_type: string | null
           published_at: string
           title: string
+          video_url: string | null
           views: number | null
         }
         Insert: {
+          author_avatar_url?: string | null
+          author_name?: string | null
           comments?: number | null
           description?: string | null
           id?: never
           image_url?: string | null
           likes?: number | null
+          location?: string | null
+          media_type?: string | null
           published_at?: string
           title: string
+          video_url?: string | null
           views?: number | null
         }
         Update: {
+          author_avatar_url?: string | null
+          author_name?: string | null
           comments?: number | null
           description?: string | null
           id?: never
           image_url?: string | null
           likes?: number | null
+          location?: string | null
+          media_type?: string | null
           published_at?: string
           title?: string
+          video_url?: string | null
           views?: number | null
         }
         Relationships: []
@@ -824,6 +839,46 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "news_feed"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_views: {
+        Row: {
+          created_at: string
+          post_id: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          post_id: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          post_id?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_views_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "news_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_views_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_views_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1314,6 +1369,14 @@ export type Database = {
       }
       increment_like: {
         Args: { post_id_to_update: number }
+        Returns: undefined
+      }
+      increment_post_comments_count: {
+        Args: { p_post_id: number }
+        Returns: undefined
+      }
+      increment_post_view: {
+        Args: { p_post_id: number }
         Returns: undefined
       }
       increment_view: {

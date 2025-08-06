@@ -269,10 +269,13 @@ export default function NoticiasPage() {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <div className="relative">
-                        {newsItem.media_type === 'VIDEO' ? (
-                          <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <Video className="h-6 w-6 text-gray-500" />
-                          </div>
+                        {newsItem.media_type === 'VIDEO' && newsItem.video_url ? (
+                          <video 
+                            src={newsItem.video_url} 
+                            className="w-16 h-16 rounded-lg object-cover"
+                            muted
+                            preload="metadata"
+                          />
                         ) : newsItem.image_url ? (
                           <img 
                             src={newsItem.image_url} 

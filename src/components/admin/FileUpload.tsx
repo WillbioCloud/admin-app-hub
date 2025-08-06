@@ -168,17 +168,18 @@ export default function FileUpload({
         <p className="text-xs text-muted-foreground">{description}</p>
       )}
       
-      {previewUrl ? (
+          {previewUrl ? (
         <div className="relative">
           <div className="border rounded-lg p-4 bg-muted/50">
-            {previewUrl.includes('.mp4') || previewUrl.includes('.mov') || previewUrl.includes('.avi') ? (
-              <div className="flex items-center gap-3">
-                <Video className="h-8 w-8 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">Vídeo carregado</p>
-                  <p className="text-xs text-muted-foreground">Clique para visualizar</p>
-                </div>
-              </div>
+            {previewUrl.includes('.mp4') || previewUrl.includes('.mov') || previewUrl.includes('.avi') || previewUrl.includes('video') ? (
+              <video 
+                src={previewUrl} 
+                controls 
+                className="max-w-full h-32 object-contain rounded"
+                style={{ maxHeight: '200px' }}
+              >
+                Seu navegador não suporta o elemento de vídeo.
+              </video>
             ) : (
               <img 
                 src={previewUrl} 

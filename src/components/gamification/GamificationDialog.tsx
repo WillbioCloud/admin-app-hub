@@ -29,12 +29,12 @@ export function GamificationDialog({
   const createGamification = useCreateGamification();
   const updateGamification = useUpdateGamification();
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: any, rewardId?: string) => {
     try {
       if (isEditing && gamification) {
         await updateGamification.mutateAsync({ id: gamification.id, ...data });
       } else {
-        await createGamification.mutateAsync(data);
+        await createGamification.mutateAsync({ gamificationData: data, rewardId });
       }
       onSubmit();
       onOpenChange(false);
@@ -79,6 +79,7 @@ export function GamificationDialog({
           onCancel={handleCancel}
           isEditing={isEditing}
           userRole={userRole}
+          missionId={gamification?.id}
         />
       </DialogContent>
     </Dialog>

@@ -30,7 +30,7 @@ const rewardSchema = z.object({
 type RewardFormData = z.infer<typeof rewardSchema>;
 
 interface RewardFormWithGamificationProps {
-  onSubmit: (rewardData: RewardFormData) => Promise<void>;
+  onSubmit: (rewardData: RewardFormData, rewardId?: string) => Promise<void>;
   onCancel: () => void;
   defaultValues?: Partial<RewardFormData>;
   isEditing?: boolean;
@@ -42,7 +42,7 @@ export function RewardFormWithGamification({
   defaultValues,
   isEditing = false,
 }: RewardFormWithGamificationProps) {
-  const [createReward, setCreateReward] = useState(false);
+  const [createReward, setCreateReward] = useState(!!defaultValues);
   const [uploading, setUploading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
@@ -113,7 +113,7 @@ export function RewardFormWithGamification({
         return;
       }
 
-      const { error } = await supabase
+      const { data: rewardData, error } = await supabase
         .from('rewards')
         .insert({
           title: data.title,
@@ -123,12 +123,14 @@ export function RewardFormWithGamification({
           is_active: data.is_active,
           image_url,
           created_by: user.id,
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
       toast.success('Recompensa criada com sucesso!');
-      await onSubmit(data);
+      await onSubmit(data, rewardData.id);
     } catch (error) {
       console.error('Erro ao criar recompensa:', error);
       toast.error('Erro ao criar recompensa');

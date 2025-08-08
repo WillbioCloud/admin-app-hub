@@ -63,10 +63,29 @@ export const useGamifications = () => {
 export const useCreateGamificacao = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (novaGamificacao: any) => {
-      const { data, error } = await supabase.from('missions').insert(novaGamificacao).select().single();
-      if (error) throw error;
-      return data;
+    mutationFn: async ({ gamificationData, rewardId }: { gamificationData: any, rewardId?: string }) => {
+      const { data: missionData, error: missionError } = await supabase
+        .from('missions')
+        .insert(gamificationData)
+        .select()
+        .single();
+      
+      if (missionError) throw missionError;
+
+      // Se uma recompensa foi criada junto, associa ela à missão
+      if (rewardId && missionData) {
+        const { error: updateError } = await supabase
+          .from('rewards')
+          .update({ mission_unlock_id: missionData.id })
+          .eq('id', rewardId);
+        
+        if (updateError) {
+          console.error('Erro ao associar recompensa à missão:', updateError);
+          // Não falha completamente, apenas registra o erro
+        }
+      }
+
+      return missionData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['minhas-gamificacoes'] });
@@ -166,5 +185,23 @@ export const useRejectGamification = () => {
       toast.success('Missão rejeitada com sucesso!');
     },
     onError: (err: any) => toast.error(`Erro: ${err.message}`)
+  });
+};
+
+export const useMissionReward = (missionId: string | undefined) => {
+  return useQuery({
+    queryKey: ['mission-reward', missionId],
+    queryFn: async () => {
+      if (!missionId) return null;
+      const { data, error } = await supabase
+        .from('rewards')
+        .select('*')
+        .eq('mission_unlock_id', missionId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows returned
+      return data || null;
+    },
+    enabled: !!missionId,
   });
 };

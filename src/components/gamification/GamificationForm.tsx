@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/select';
 import { CodeGenerator } from './CodeGenerator';
 import { RewardFormWithGamification } from '@/components/rewards/RewardFormWithGamification';
+import { useMissionReward } from '@/hooks/useGamifications';
 
 const gamificationSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
@@ -43,10 +44,11 @@ type GamificationFormData = z.infer<typeof gamificationSchema>;
 
 interface GamificationFormProps {
   defaultValues?: Partial<GamificationFormData>;
-  onSubmit: (data: GamificationFormData) => void;
+  onSubmit: (data: GamificationFormData, rewardId?: string) => void;
   onCancel: () => void;
   isEditing?: boolean;
   userRole?: 'admin' | 'comerciante';
+  missionId?: string;
 }
 
 export function GamificationForm({
@@ -54,8 +56,10 @@ export function GamificationForm({
   onSubmit,
   onCancel,
   isEditing = false,
-  userRole = 'comerciante'
+  userRole = 'comerciante',
+  missionId
 }: GamificationFormProps) {
+  const { data: existingReward } = useMissionReward(missionId);
   const form = useForm<GamificationFormData>({
     resolver: zodResolver(gamificationSchema),
     defaultValues: {
@@ -75,9 +79,9 @@ export function GamificationForm({
 
   const watchedType = form.watch('type');
 
-  const handleSubmit = async (rewardData?: any) => {
+  const handleSubmit = async (rewardData?: any, rewardId?: string) => {
     const gamificationData = form.getValues();
-    await onSubmit(gamificationData);
+    await onSubmit(gamificationData, rewardId);
   };
 
   return (
@@ -288,6 +292,13 @@ export function GamificationForm({
         onSubmit={handleSubmit}
         onCancel={onCancel}
         isEditing={isEditing}
+        defaultValues={existingReward ? {
+          title: existingReward.title,
+          description: existingReward.description || '',
+          coin_cost: existingReward.coin_cost,
+          stock: existingReward.stock || 1,
+          is_active: existingReward.is_active,
+        } : undefined}
       />
     </div>
   );

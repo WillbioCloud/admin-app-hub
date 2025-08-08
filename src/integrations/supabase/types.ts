@@ -918,6 +918,7 @@ export type Database = {
           is_approved: boolean | null
           level: number | null
           phone: string | null
+          push_token: string | null
           realtor_level: string | null
           updated_at: string | null
           user_status: string | null
@@ -934,6 +935,7 @@ export type Database = {
           is_approved?: boolean | null
           level?: number | null
           phone?: string | null
+          push_token?: string | null
           realtor_level?: string | null
           updated_at?: string | null
           user_status?: string | null
@@ -950,6 +952,7 @@ export type Database = {
           is_approved?: boolean | null
           level?: number | null
           phone?: string | null
+          push_token?: string | null
           realtor_level?: string | null
           updated_at?: string | null
           user_status?: string | null

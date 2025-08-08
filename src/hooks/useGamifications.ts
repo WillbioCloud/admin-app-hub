@@ -116,3 +116,55 @@ export const useDeleteGamificacao = () => {
 };
 
 export const useDeleteGamification = useDeleteGamificacao;
+
+export const useApproveGamification = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id }: { id: string }) => {
+      const { data, error } = await supabase
+        .from('missions')
+        .update({ 
+          status: 'approved',
+          approved_at: new Date().toISOString(),
+          approved_by: (await supabase.auth.getUser()).data.user?.id 
+        })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['minhas-gamificacoes'] });
+      queryClient.invalidateQueries({ queryKey: ['gamifications'] });
+      toast.success('Missão aprovada com sucesso!');
+    },
+    onError: (err: any) => toast.error(`Erro: ${err.message}`)
+  });
+};
+
+export const useRejectGamification = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id }: { id: string }) => {
+      const { data, error } = await supabase
+        .from('missions')
+        .update({ 
+          status: 'rejected',
+          approved_at: new Date().toISOString(),
+          approved_by: (await supabase.auth.getUser()).data.user?.id 
+        })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['minhas-gamificacoes'] });
+      queryClient.invalidateQueries({ queryKey: ['gamifications'] });
+      toast.success('Missão rejeitada com sucesso!');
+    },
+    onError: (err: any) => toast.error(`Erro: ${err.message}`)
+  });
+};

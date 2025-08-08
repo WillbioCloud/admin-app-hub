@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/dialog';
 import { GamificationDialog } from '@/components/gamification/GamificationDialog';
 import { QRCodeViewer } from '@/components/gamification/QRCodeViewer';
-import { useGamifications, useDeleteGamification, Gamification } from '@/hooks/useGamifications';
+import { useGamifications, useDeleteGamification, useApproveGamification, useRejectGamification, Gamification } from '@/hooks/useGamifications';
 import { useCreateNotification } from '@/hooks/useNotifications';
 
 export default function GamificacoesPage() {
@@ -43,9 +43,8 @@ export default function GamificacoesPage() {
 
   const { data: gamifications = [], isLoading, error } = useGamifications();
   const deleteGamification = useDeleteGamification();
-  // These hooks need to be implemented in useGamifications
-  // const approveGamification = useApproveGamification();
-  // const rejectGamification = useRejectGamification();
+  const approveGamification = useApproveGamification();
+  const rejectGamification = useRejectGamification();
   const createNotification = useCreateNotification();
 
   const handleCreate = () => {
@@ -64,8 +63,8 @@ export default function GamificacoesPage() {
 
   const handleApprove = async (gamification: Gamification) => {
     try {
-      // TODO: Implement approve functionality
-      console.log('Approve gamification:', gamification.id);
+      // Aprovar a missão
+      await approveGamification.mutateAsync({ id: gamification.id });
       
       // Criar notificação para o app
       await createNotification.mutateAsync({
@@ -80,9 +79,12 @@ export default function GamificacoesPage() {
     }
   };
 
-  const handleReject = (id: string) => {
-    // TODO: Implement reject functionality
-    console.log('Reject gamification:', id);
+  const handleReject = async (id: string) => {
+    try {
+      await rejectGamification.mutateAsync({ id });
+    } catch (error) {
+      console.error('Erro ao rejeitar gamificação:', error);
+    }
   };
 
   const handleViewQRCode = (gamification: Gamification) => {

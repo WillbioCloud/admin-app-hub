@@ -913,45 +913,48 @@ export type Database = {
           coins: number | null
           created_at: string | null
           full_name: string | null
+          has_completed_onboarding: boolean
           id: string
           is_approved: boolean | null
           level: number | null
           phone: string | null
-          points: number | null
           realtor_level: string | null
           updated_at: string | null
           user_status: string | null
           user_type: string | null
+          xp: number | null
         }
         Insert: {
           avatar_url?: string | null
           coins?: number | null
           created_at?: string | null
           full_name?: string | null
+          has_completed_onboarding?: boolean
           id: string
           is_approved?: boolean | null
           level?: number | null
           phone?: string | null
-          points?: number | null
           realtor_level?: string | null
           updated_at?: string | null
           user_status?: string | null
           user_type?: string | null
+          xp?: number | null
         }
         Update: {
           avatar_url?: string | null
           coins?: number | null
           created_at?: string | null
           full_name?: string | null
+          has_completed_onboarding?: boolean
           id?: string
           is_approved?: boolean | null
           level?: number | null
           phone?: string | null
-          points?: number | null
           realtor_level?: string | null
           updated_at?: string | null
           user_status?: string | null
           user_type?: string | null
+          xp?: number | null
         }
         Relationships: []
       }
@@ -1234,6 +1237,45 @@ export type Database = {
           },
         ]
       }
+      user_notification_reads: {
+        Row: {
+          created_at: string | null
+          id: string
+          notification_id: string
+          read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          notification_id: string
+          read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          notification_id?: string
+          read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_notification_reads_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_notification_reads_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications_with_read_status"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_properties: {
         Row: {
           acquired_at: string
@@ -1304,6 +1346,21 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications_with_read_status: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          is_read: boolean | null
+          is_read_by_user: boolean | null
+          message: string | null
+          metadata: Json | null
+          read_at_by_user: string | null
+          title: string | null
+          type: Database["public"]["Enums"]["notification_type"] | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       check_and_apply_level_up: {
@@ -1352,10 +1409,14 @@ export type Database = {
           title: string
           description: string
           image_url: string
+          video_url: string
+          media_type: string
           published_at: string
           likes: number
           comments: number
           views: number
+          author_name: string
+          author_avatar_url: string
           is_liked_by_user: boolean
         }[]
       }
@@ -1381,6 +1442,10 @@ export type Database = {
       }
       increment_view: {
         Args: { post_id_to_update: number }
+        Returns: undefined
+      }
+      mark_notification_as_read_for_user: {
+        Args: { p_notification_id: string }
         Returns: undefined
       }
       perform_health_info_cleanup: {

@@ -1267,13 +1267,6 @@ export type Database = {
             referencedRelation: "notifications"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "user_notification_reads_notification_id_fkey"
-            columns: ["notification_id"]
-            isOneToOne: false
-            referencedRelation: "notifications_with_read_status"
-            referencedColumns: ["id"]
-          },
         ]
       }
       user_properties: {
@@ -1346,21 +1339,6 @@ export type Database = {
         }
         Relationships: []
       }
-      notifications_with_read_status: {
-        Row: {
-          created_at: string | null
-          id: string | null
-          is_read: boolean | null
-          is_read_by_user: boolean | null
-          message: string | null
-          metadata: Json | null
-          read_at_by_user: string | null
-          title: string | null
-          type: Database["public"]["Enums"]["notification_type"] | null
-          user_id: string | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
       check_and_apply_level_up: {
@@ -1418,6 +1396,20 @@ export type Database = {
           author_name: string
           author_avatar_url: string
           is_liked_by_user: boolean
+        }[]
+      }
+      get_notifications_with_read_status: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          title: string
+          message: string
+          type: Database["public"]["Enums"]["notification_type"]
+          metadata: Json
+          user_id: string
+          created_at: string
+          is_read_by_user: boolean
+          read_at_by_user: string
         }[]
       }
       get_user_role: {

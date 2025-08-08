@@ -94,7 +94,7 @@ export default function NotificacoesPage() {
     );
   }
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadCount = notifications.filter(n => !n.is_read_by_user).length;
   const recentNotifications = notifications.filter(n => {
     const date = new Date(n.created_at);
     const now = new Date();
@@ -179,9 +179,9 @@ export default function NotificacoesPage() {
             </TableHeader>
             <TableBody>
               {notifications.map((notification) => (
-                <TableRow key={notification.id} className={!notification.is_read ? 'bg-blue-50/50' : ''}>
+                <TableRow key={notification.id} className={!notification.is_read_by_user ? 'bg-blue-50/50' : ''}>
                   <TableCell>
-                    {notification.is_read ? (
+                    {notification.is_read_by_user ? (
                       <CheckCircle className="h-4 w-4 text-green-500" />
                     ) : (
                       <div className="h-2 w-2 bg-red-500 rounded-full" />

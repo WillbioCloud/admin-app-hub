@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Loader2, Store, CheckCircle, XCircle, Plus, Eye, Trash2, User } from 'lucide-react';
-import { useComercios, useUpdateComercioAtivoStatus } from '@/hooks/useComercios';
+import { useComercios, useUpdateComercioAtivoStatus, Comercio } from '@/hooks/useComercios';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ComercioPreviewDialog } from '@/components/admin/ComercioPreviewDialog';
 
 /**
  * ComerciosPage Unificada (Versão Final)
@@ -21,11 +22,19 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 export function ComerciosPage() {
   const { data: comercios = [], isLoading, isError, error } = useComercios();
   const updateStatusMutation = useUpdateComercioAtivoStatus();
+  const [selectedComercio, setSelectedComercio] = useState<Comercio | null>(null);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
 
   // Função para ativar/inativar a visibilidade do comércio.
   const handleVisibilityToggle = (id: string, currentStatus: boolean | null) => {
     if (currentStatus === null) return;
     updateStatusMutation.mutate({ id, newStatus: !currentStatus });
+  };
+
+  // Função para visualizar o comércio
+  const handleViewComercio = (comercio: Comercio) => {
+    setSelectedComercio(comercio);
+    setPreviewDialogOpen(true);
   };
 
   // Funções para estilizar o badge de status de aprovação.
@@ -180,14 +189,14 @@ export function ComerciosPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex gap-2 justify-end">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button size="sm" variant="outline" onClick={() => alert(`Visualizar comércio: ${comercio.nome}`)}>
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>Visualizar perfil</p></TooltipContent>
-                          </Tooltip>
+                           <Tooltip>
+                             <TooltipTrigger asChild>
+                               <Button size="sm" variant="outline" onClick={() => handleViewComercio(comercio)}>
+                                 <Eye className="h-4 w-4" />
+                               </Button>
+                             </TooltipTrigger>
+                             <TooltipContent><p>Visualizar perfil</p></TooltipContent>
+                           </Tooltip>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button size="sm" variant="outline" onClick={() => alert(`Excluir comércio: ${comercio.nome}`)} className="hover:bg-red-100 hover:text-red-600">
@@ -205,6 +214,13 @@ export function ComerciosPage() {
             </Table>
           </CardContent>
         </Card>
+
+        {/* Dialog de Preview do Comércio */}
+        <ComercioPreviewDialog 
+          comercio={selectedComercio}
+          open={previewDialogOpen}
+          onOpenChange={setPreviewDialogOpen}
+        />
       </div>
     </TooltipProvider>
   );

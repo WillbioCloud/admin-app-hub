@@ -18,6 +18,8 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
   signIn: (email: string, password: string) => Promise<boolean>;
+  signInWithOAuth: (provider: 'google' | 'facebook' | 'apple') => Promise<void>;
+  signUp: (email: string, password: string, userData?: any) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
   isAdmin: () => boolean;
@@ -165,6 +167,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signInWithOAuth = async (provider: 'google' | 'facebook' | 'apple'): Promise<void> => {
+    console.log('AuthProvider: Tentando login OAuth com:', provider);
+    
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/`,
+          queryParams: {
+            app_context: 'admin_web'
+          }
+        }
+      });
+
+      if (error) {
+        console.error('AuthProvider: Erro de login OAuth:', error.message);
+        throw error;
+      }
+    } catch (error) {
+      console.error('AuthProvider: Exceção durante login OAuth:', error);
+      throw error;
+    }
+  };
+
+  const signUp = async (email: string, password: string, userData?: any): Promise<boolean> => {
+    console.log('AuthProvider: Tentando cadastro para:', email);
+    
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            app_context: 'admin_web',
+            ...userData
+          }
+        }
+      });
+
+      if (error) {
+        console.error('AuthProvider: Erro de cadastro:', error.message);
+        return false;
+      }
+
+      console.log('AuthProvider: Cadastro realizado com sucesso');
+      return true;
+    } catch (error) {
+      console.error('AuthProvider: Exceção durante cadastro:', error);
+      return false;
+    }
+  };
+
   const logout = async () => {
     console.log('AuthProvider: Fazendo logout...');
     try {
@@ -180,6 +235,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user, 
       login: authFunction, 
       signIn: authFunction,
+      signInWithOAuth,
+      signUp,
       logout, 
       isLoading,
       isAdmin

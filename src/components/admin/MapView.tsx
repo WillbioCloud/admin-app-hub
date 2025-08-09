@@ -31,6 +31,7 @@ export function MapView({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
+  const [tokenReady, setTokenReady] = useState(false);
   const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
   const [uploadDialog, setUploadDialog] = useState<{
     open: boolean;
@@ -58,6 +59,7 @@ export function MapView({
         if (data?.token) {
           mapboxgl.accessToken = data.token;
           console.log('Token do Mapbox configurado com sucesso');
+          setTokenReady(true);
         } else {
           console.warn('Token do Mapbox não disponível');
         }
@@ -97,7 +99,7 @@ export function MapView({
 
   // Inicializar mapa
   useEffect(() => {
-    if (!mapContainer.current || map.current) return;
+    if (!mapContainer.current || map.current || !tokenReady) return;
 
     // Verificar se o token do Mapbox está configurado
     if (!mapboxgl.accessToken) {
@@ -202,7 +204,7 @@ export function MapView({
         map.current = null;
       }
     };
-  }, []);
+  }, [tokenReady]);
 
   // Adicionar marcadores dos pontos de interesse
   useEffect(() => {

@@ -11,6 +11,7 @@ interface MapViewProps {
   pointsOfInterest: PointOfInterest[];
   comercios: ComercioWithLocation[];
   onComercioLocationUpdate: (id: string, latitude: number, longitude: number) => void;
+  onPOILocationUpdate: (id: string, latitude: number, longitude: number) => void;
   onPOIImageUpdate: (id: string, imageUrl: string) => void;
   onComercioImageUpdate: (id: string, imageUrl: string) => void;
   selectedComercio?: string;
@@ -24,6 +25,7 @@ export function MapView({
   pointsOfInterest, 
   comercios, 
   onComercioLocationUpdate,
+  onPOILocationUpdate,
   onPOIImageUpdate,
   onComercioImageUpdate,
   selectedComercio 
@@ -265,15 +267,21 @@ export function MapView({
           </div>
         `);
 
-        const marker = new mapboxgl.Marker(el)
+        const marker = new mapboxgl.Marker(el, { draggable: true })
           .setLngLat([poi.longitude, poi.latitude])
           .setPopup(popup)
           .addTo(map.current!);
 
+        // Event listener para arrastar POI
+        marker.on('dragend', () => {
+          const lngLat = marker.getLngLat();
+          onPOILocationUpdate(poi.id, lngLat.lat, lngLat.lng);
+        });
+
         markersRef.current[`poi-${poi.id}`] = marker;
       }
     });
-  }, [pointsOfInterest, isMapReady]);
+  }, [pointsOfInterest, isMapReady, onPOILocationUpdate]);
 
   // Adicionar marcadores dos comércios
   useEffect(() => {
@@ -441,7 +449,7 @@ export function MapView({
         <div className="space-y-2 text-xs">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-blue-500 rounded-full border border-white"></div>
-            <span>Pontos de Interesse</span>
+            <span>Pontos de Interesse (arrastáveis)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-green-500 rounded-full border border-white flex items-center justify-center text-xs">🏪</div>
@@ -449,7 +457,7 @@ export function MapView({
           </div>
         </div>
         <div className="mt-2 pt-2 border-t text-xs text-gray-500">
-          💡 Dica: Arraste os marcadores verdes para reposicionar comércios
+          💡 Dica: Arraste os marcadores azuis e verdes para reposicionar
         </div>
       </div>
 

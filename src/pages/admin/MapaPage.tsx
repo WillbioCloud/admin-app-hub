@@ -33,6 +33,10 @@ export default function MapaPage() {
     updateComercioImageMutation.mutate({ id, image_url: imageUrl });
   };
 
+  const handlePOILocationUpdate = (id: string, latitude: number, longitude: number) => {
+    updatePOIMutation.mutate({ id, latitude, longitude });
+  };
+
   const handlePOIImageUpdate = (id: string, imageUrl: string) => {
     updatePOIMutation.mutate({ id, image_url: imageUrl });
   };
@@ -82,6 +86,7 @@ export default function MapaPage() {
               pointsOfInterest={pointsOfInterest}
               comercios={comercios}
               onComercioLocationUpdate={handleLocationUpdate}
+              onPOILocationUpdate={handlePOILocationUpdate}
               onPOIImageUpdate={handlePOIImageUpdate}
               onComercioImageUpdate={handleComercioImageUpdate}
               selectedComercio={selectedComercio}

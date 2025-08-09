@@ -134,14 +134,24 @@ export const useUpdatePointOfInterest = () => {
   return useMutation({
     mutationFn: async ({ 
       id, 
+      latitude,
+      longitude,
       image_url 
     }: { 
       id: string; 
-      image_url: string;
+      latitude?: number;
+      longitude?: number;
+      image_url?: string;
     }) => {
+      const updateData: any = {};
+      
+      if (latitude !== undefined) updateData.latitude = latitude;
+      if (longitude !== undefined) updateData.longitude = longitude;
+      if (image_url !== undefined) updateData.image_url = image_url;
+
       const { data, error } = await supabase
         .from('points_of_interest')
-        .update({ image_url })
+        .update(updateData)
         .eq('id', id)
         .select();
 

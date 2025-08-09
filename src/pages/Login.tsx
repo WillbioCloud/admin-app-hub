@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
-import { SocialLoginButtons } from '@/components/auth/SocialLoginButtons';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -116,12 +115,6 @@ const Login = () => {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? 'Entrando...' : 'Entrar'}
             </Button>
-            
-            <SocialLoginButtons 
-              isLoading={isLoading}
-              onStartLoading={() => setIsLoading(true)}
-              onStopLoading={() => setIsLoading(false)}
-            />
             
             <div className="text-center text-sm">
               Não tem uma conta?{' '}

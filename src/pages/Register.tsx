@@ -7,8 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { SocialLoginButtons } from '@/components/auth/SocialLoginButtons';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -23,7 +23,7 @@ const Register = () => {
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  const { user, isLoading: authLoading, signUp } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   // Redirecionar se já estiver logado
@@ -58,17 +58,39 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      const success = await signUp(formData.email, formData.password, {
-        full_name: formData.fullName,
-        user_type: formData.userType,
+      console.log('Iniciando criação de usuário com dados:', {
+        email: formData.email,
+        userType: formData.userType,
+        fullName: formData.fullName,
         phone: formData.phone
       });
 
-      if (!success) {
-        throw new Error('Erro no cadastro. Tente novamente.');
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/login`,
+          data: {
+            full_name: formData.fullName,
+            user_type: formData.userType,
+            app_context: 'admin_web',
+            phone: formData.phone || ''
+          }
+        }
+      });
+
+      console.log('Resposta do signUp:', { data, error: signUpError });
+
+      if (signUpError) {
+        console.error('Erro detalhado do signUp:', signUpError);
+        throw signUpError;
       }
 
-      setSuccess('Conta criada com sucesso! Verifique seu email para confirmar a conta.');
+      if (!data.user) {
+        throw new Error('Usuário não foi criado corretamente');
+      }
+
+      setSuccess('Conta criada com sucesso! Você pode fazer login agora.');
       
       // Limpar formulário
       setFormData({
@@ -232,12 +254,6 @@ const Register = () => {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? 'Criando conta...' : 'Criar Conta'}
             </Button>
-            
-            <SocialLoginButtons 
-              isLoading={isLoading}
-              onStartLoading={() => setIsLoading(true)}
-              onStopLoading={() => setIsLoading(false)}
-            />
             
             <div className="text-center text-sm">
               Já tem uma conta?{' '}

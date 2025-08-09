@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .from('admin_profiles')
             .select('id, full_name, user_type, avatar_url')
             .eq('id', supabaseUser.id)
-            .single();
+            .maybeSingle();
 
         // Prioridade 1: Perfil do painel web (admin ou comerciante)
         if (adminProfile) {
@@ -108,7 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .from('profiles')
             .select('id, full_name, user_type, avatar_url')
             .eq('id', supabaseUser.id)
-            .single();
+            .maybeSingle();
 
         if (mobileProfile) {
             console.log('AuthProvider: Perfil de comerciante (mobile) encontrado.');

@@ -5,6 +5,7 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 import { PointOfInterest, ComercioWithLocation } from '@/hooks/useMapData';
 import { ImageUploadDialog } from './ImageUploadDialog';
+import { supabase } from '@/integrations/supabase/client';
 
 interface MapViewProps {
   pointsOfInterest: PointOfInterest[];
@@ -43,12 +44,29 @@ export function MapView({
     title: ''
   });
 
-  // Configurar token do Mapbox
+  // Configurar token do Mapbox de forma segura
   useEffect(() => {
-    // IMPORTANTE: Para que o mapa funcione, você precisa configurar um token válido do Mapbox
-    // Visite https://mapbox.com/ e crie uma conta para obter seu token público
-    // Por enquanto, deixamos em branco para evitar erros
-    mapboxgl.accessToken = 'pk.eyJ1Ijoid2lsbGJpbyIsImEiOiJjbWR1Z2lvNmMwM2x4MnFwcnM4dmprMjUyIn0.9K8joxkaeNBYtunymoH86w';
+    const fetchMapboxToken = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+        
+        if (error) {
+          console.error('Erro ao obter token do Mapbox:', error);
+          return;
+        }
+        
+        if (data?.token) {
+          mapboxgl.accessToken = data.token;
+          console.log('Token do Mapbox configurado com sucesso');
+        } else {
+          console.warn('Token do Mapbox não disponível');
+        }
+      } catch (error) {
+        console.error('Erro ao buscar token do Mapbox:', error);
+      }
+    };
+
+    fetchMapboxToken();
     
     // Adicionar função global para editar localização
     (window as any).editLocation = (comercioId: string) => {

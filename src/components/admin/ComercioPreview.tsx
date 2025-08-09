@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LayoutPreview } from '@/components/comerciante/LayoutPreview';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { 
@@ -21,51 +24,196 @@ import {
   ArrowLeft,
   ZoomIn,
   Download,
-  ExternalLink
+  ExternalLink,
+  Upload,
+  X,
+  Save,
+  Plus
 } from 'lucide-react';
-import { Comercio } from '@/hooks/useComercios';
+import { Comercio, useAdminUpdateComercio } from '@/hooks/useComercios';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface ComercioPreviewProps {
   comercio: Comercio;
+  isEditing?: boolean;
+  onSaveSuccess?: () => void;
 }
 
-export const ComercioPreview = ({ comercio }: ComercioPreviewProps) => {
+export const ComercioPreview = ({ comercio, isEditing = false, onSaveSuccess }: ComercioPreviewProps) => {
   const [activeTab, setActiveTab] = useState("resumo");
-  const layout = comercio.layout_template as 'moderno' | 'classico' || 'moderno';
-  const primaryColor = comercio.primary_color || '#3B82F6';
+  
+  // Estados para edição
+  const [editData, setEditData] = useState(comercio);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(comercio.logo_url);
+  const [capaFile, setCapaFile] = useState<File | null>(null);
+  const [capaPreview, setCapaPreview] = useState<string | null>(comercio.capa_url);
+  const [galeriaFiles, setGaleriaFiles] = useState<File[]>([]);
+  const [galeriaPreviews, setGaleriaPreviews] = useState<string[]>(comercio.galeria_urls || []);
+  const [loading, setSaving] = useState(false);
+  
+  const updateComercio = useAdminUpdateComercio();
+
+  // Resetar dados quando o comércio mudar
+  useEffect(() => {
+    setEditData(comercio);
+    setLogoPreview(comercio.logo_url);
+    setCapaPreview(comercio.capa_url);
+    setGaleriaPreviews(comercio.galeria_urls || []);
+    setLogoFile(null);
+    setCapaFile(null);
+    setGaleriaFiles([]);
+  }, [comercio]);
+
+  const uploadImage = async (file: File, folder: string): Promise<string> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${comercio.user_id}-${folder}-${Date.now()}.${fileExt}`;
+    const filePath = `comercios-media/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('app-media')
+      .upload(filePath, file, { upsert: true });
+    
+    if (uploadError) throw uploadError;
+
+    const { data } = supabase.storage.from('app-media').getPublicUrl(filePath);
+    return data.publicUrl;
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'capa' | 'galeria') => {
+    const files = event.target.files;
+    if (!files) return;
+
+    if (type === 'logo' && files[0]) {
+      setLogoFile(files[0]);
+      setLogoPreview(URL.createObjectURL(files[0]));
+    } else if (type === 'capa' && files[0]) {
+      setCapaFile(files[0]);
+      setCapaPreview(URL.createObjectURL(files[0]));
+    } else if (type === 'galeria') {
+      const newFiles = Array.from(files);
+      setGaleriaFiles(prev => [...prev, ...newFiles]);
+      const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+      setGaleriaPreviews(prev => [...prev, ...newPreviews]);
+    }
+  };
+
+  const removerImagemGaleria = (index: number) => {
+    const isNewFile = index >= (comercio.galeria_urls?.length || 0);
+    
+    if (isNewFile) {
+      // Remove arquivo novo
+      const fileIndex = index - (comercio.galeria_urls?.length || 0);
+      setGaleriaFiles(prev => prev.filter((_, i) => i !== fileIndex));
+    }
+    
+    setGaleriaPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const payload: any = { ...editData };
+
+      // Upload das imagens
+      if (logoFile) payload.logo_url = await uploadImage(logoFile, 'logo');
+      if (capaFile) payload.capa_url = await uploadImage(capaFile, 'capa');
+      
+      // Upload da galeria (apenas novos arquivos)
+      if (galeriaFiles.length > 0) {
+        const galeriaUrls = await Promise.all(
+          galeriaFiles.map((file, index) => uploadImage(file, `galeria-${index}`))
+        );
+        
+        // Combinar URLs existentes com novas
+        const existingUrls = comercio.galeria_urls || [];
+        const newGaleriaUrls = galeriaPreviews.slice(0, existingUrls.length);
+        payload.galeria_urls = [...newGaleriaUrls, ...galeriaUrls];
+      } else {
+        // Manter apenas as URLs que ainda estão nos previews
+        payload.galeria_urls = galeriaPreviews.filter(url => url.startsWith('http'));
+      }
+
+      await updateComercio.mutateAsync({ id: comercio.id, ...payload });
+      onSaveSuccess?.();
+      
+    } catch (error: any) {
+      toast.error(`Erro ao salvar: ${error.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const currentData = isEditing ? editData : comercio;
+  const layout = currentData.layout_template as 'moderno' | 'classico' || 'moderno';
+  const primaryColor = currentData.primary_color || '#3B82F6';
   
   return (
     <div className="space-y-6">
+      {/* Botão Salvar quando em modo edição */}
+      {isEditing && (
+        <div className="flex justify-end">
+          <Button onClick={handleSave} disabled={loading || updateComercio.isPending}>
+            <Save className="h-4 w-4 mr-2" />
+            {loading || updateComercio.isPending ? 'Salvando...' : 'Salvar Alterações'}
+          </Button>
+        </div>
+      )}
       {/* Header com informações básicas e status */}
       <Card>
         <CardHeader>
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle className="text-2xl">{comercio.nome}</CardTitle>
+              <CardTitle className="text-2xl flex items-center gap-2">
+                {isEditing ? (
+                  <Input 
+                    value={editData.nome} 
+                    onChange={(e) => setEditData({...editData, nome: e.target.value})}
+                    className="text-2xl font-bold border-dashed"
+                  />
+                ) : (
+                  currentData.nome
+                )}
+                {currentData.status === 'pending' && !isEditing && (
+                  <Badge variant="secondary" className="bg-orange-100 text-orange-800 animate-pulse">
+                    NEW
+                  </Badge>
+                )}
+              </CardTitle>
               <div className="flex items-center gap-2 mt-2">
-                {comercio.categoria && (
-                  <Badge variant="outline">{comercio.categoria}</Badge>
+                {isEditing ? (
+                  <Input 
+                    value={editData.categoria || ''} 
+                    onChange={(e) => setEditData({...editData, categoria: e.target.value})}
+                    placeholder="Categoria"
+                    className="w-32 border-dashed"
+                  />
+                ) : (
+                  currentData.categoria && (
+                    <Badge variant="outline">{currentData.categoria}</Badge>
+                  )
                 )}
                 <Badge 
-                  variant={comercio.status === 'approved' ? 'default' : 
-                           comercio.status === 'pending' ? 'secondary' : 'destructive'}
+                  variant={currentData.status === 'approved' ? 'default' : 
+                           currentData.status === 'pending' ? 'secondary' : 'destructive'}
                 >
-                  {comercio.status === 'approved' ? 'Aprovado' : 
-                   comercio.status === 'pending' ? 'Pendente' : 'Rejeitado'}
+                  {currentData.status === 'approved' ? 'Aprovado' : 
+                   currentData.status === 'pending' ? 'Pendente' : 'Rejeitado'}
                 </Badge>
-                <Badge variant={comercio.ativo ? 'default' : 'destructive'}>
-                  {comercio.ativo ? 'Ativo' : 'Inativo'}
+                <Badge variant={currentData.ativo ? 'default' : 'destructive'}>
+                  {currentData.ativo ? 'Ativo' : 'Inativo'}
                 </Badge>
               </div>
             </div>
             <div className="text-sm text-muted-foreground">
               <div className="flex items-center gap-1 mb-1">
                 <Calendar className="h-4 w-4" />
-                Criado: {new Date(comercio.created_at).toLocaleDateString('pt-BR')}
+                Criado: {new Date(currentData.created_at).toLocaleDateString('pt-BR')}
               </div>
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                Atualizado: {new Date(comercio.updated_at).toLocaleDateString('pt-BR')}
+                Atualizado: {new Date(currentData.updated_at).toLocaleDateString('pt-BR')}
               </div>
             </div>
           </div>
@@ -267,18 +415,47 @@ export const ComercioPreview = ({ comercio }: ComercioPreviewProps) => {
               <CardTitle className="text-lg flex items-center gap-2">
                 <ImageIcon className="h-5 w-5" />
                 Logo do Comércio
+                {isEditing && (
+                  <Badge variant="outline" className="text-xs">
+                    Editável
+                  </Badge>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {comercio.logo_url ? (
+              {logoPreview ? (
                 <div className="space-y-4">
                   <div className="flex items-center gap-4">
                     <img 
-                      src={comercio.logo_url} 
+                      src={logoPreview} 
                       alt="Logo" 
                       className="w-24 h-24 object-cover rounded-lg border shadow-sm" 
                     />
                     <div className="space-y-2">
+                      {isEditing && (
+                        <div className="space-x-2">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleFileChange(e, 'logo')}
+                            className="hidden"
+                            id="logo-upload"
+                          />
+                          <Label htmlFor="logo-upload" className="cursor-pointer">
+                            <Button variant="outline" size="sm" asChild>
+                              <span>
+                                <Upload className="h-4 w-4 mr-2" />
+                                {logoFile ? 'Trocar Logo' : 'Atualizar Logo'}
+                              </span>
+                            </Button>
+                          </Label>
+                          {logoFile && (
+                            <Badge variant="secondary" className="bg-green-100 text-green-800">
+                              Novo arquivo selecionado
+                            </Badge>
+                          )}
+                        </div>
+                      )}
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button variant="outline" size="sm">
@@ -288,14 +465,14 @@ export const ComercioPreview = ({ comercio }: ComercioPreviewProps) => {
                         </DialogTrigger>
                         <DialogContent className="max-w-2xl">
                           <img 
-                            src={comercio.logo_url} 
+                            src={logoPreview} 
                             alt="Logo Ampliado" 
                             className="w-full h-auto rounded-lg" 
                           />
                         </DialogContent>
                       </Dialog>
                       <Button variant="outline" size="sm" asChild>
-                        <a href={comercio.logo_url} target="_blank" rel="noopener noreferrer">
+                        <a href={logoPreview} target="_blank" rel="noopener noreferrer">
                           <ExternalLink className="h-4 w-4 mr-2" />
                           Abrir Original
                         </a>
@@ -303,13 +480,32 @@ export const ComercioPreview = ({ comercio }: ComercioPreviewProps) => {
                     </div>
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    <strong>URL:</strong> {comercio.logo_url}
+                    <strong>URL:</strong> {logoPreview}
                   </div>
                 </div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
                   <p>Nenhum logo definido para este comércio</p>
+                  {isEditing && (
+                    <div className="mt-4">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileChange(e, 'logo')}
+                        className="hidden"
+                        id="logo-upload-empty"
+                      />
+                      <Label htmlFor="logo-upload-empty" className="cursor-pointer">
+                        <Button variant="outline" size="sm" asChild>
+                          <span>
+                            <Upload className="h-4 w-4 mr-2" />
+                            Adicionar Logo
+                          </span>
+                        </Button>
+                      </Label>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -321,18 +517,47 @@ export const ComercioPreview = ({ comercio }: ComercioPreviewProps) => {
               <CardTitle className="text-lg flex items-center gap-2">
                 <ImageIcon className="h-5 w-5" />
                 Imagem de Capa
+                {isEditing && (
+                  <Badge variant="outline" className="text-xs">
+                    Editável
+                  </Badge>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {comercio.capa_url ? (
+              {capaPreview ? (
                 <div className="space-y-4">
                   <div className="space-y-4">
                     <img 
-                      src={comercio.capa_url} 
+                      src={capaPreview} 
                       alt="Capa" 
                       className="w-full h-48 object-cover rounded-lg border shadow-sm" 
                     />
                     <div className="flex gap-2">
+                      {isEditing && (
+                        <div className="flex gap-2">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleFileChange(e, 'capa')}
+                            className="hidden"
+                            id="capa-upload"
+                          />
+                          <Label htmlFor="capa-upload" className="cursor-pointer">
+                            <Button variant="outline" size="sm" asChild>
+                              <span>
+                                <Upload className="h-4 w-4 mr-2" />
+                                {capaFile ? 'Trocar Capa' : 'Atualizar Capa'}
+                              </span>
+                            </Button>
+                          </Label>
+                          {capaFile && (
+                            <Badge variant="secondary" className="bg-green-100 text-green-800">
+                              Novo arquivo selecionado
+                            </Badge>
+                          )}
+                        </div>
+                      )}
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button variant="outline" size="sm">
@@ -342,14 +567,14 @@ export const ComercioPreview = ({ comercio }: ComercioPreviewProps) => {
                         </DialogTrigger>
                         <DialogContent className="max-w-4xl">
                           <img 
-                            src={comercio.capa_url} 
+                            src={capaPreview} 
                             alt="Capa Ampliada" 
                             className="w-full h-auto rounded-lg" 
                           />
                         </DialogContent>
                       </Dialog>
                       <Button variant="outline" size="sm" asChild>
-                        <a href={comercio.capa_url} target="_blank" rel="noopener noreferrer">
+                        <a href={capaPreview} target="_blank" rel="noopener noreferrer">
                           <ExternalLink className="h-4 w-4 mr-2" />
                           Abrir Original
                         </a>
@@ -357,13 +582,32 @@ export const ComercioPreview = ({ comercio }: ComercioPreviewProps) => {
                     </div>
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    <strong>URL:</strong> {comercio.capa_url}
+                    <strong>URL:</strong> {capaPreview}
                   </div>
                 </div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
                   <p>Nenhuma imagem de capa definida para este comércio</p>
+                  {isEditing && (
+                    <div className="mt-4">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileChange(e, 'capa')}
+                        className="hidden"
+                        id="capa-upload-empty"
+                      />
+                      <Label htmlFor="capa-upload-empty" className="cursor-pointer">
+                        <Button variant="outline" size="sm" asChild>
+                          <span>
+                            <Upload className="h-4 w-4 mr-2" />
+                            Adicionar Capa
+                          </span>
+                        </Button>
+                      </Label>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -374,14 +618,19 @@ export const ComercioPreview = ({ comercio }: ComercioPreviewProps) => {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <ImageIcon className="h-5 w-5" />
-                Galeria de Imagens {comercio.galeria_urls?.length ? `(${comercio.galeria_urls.length} imagens)` : ''}
+                Galeria de Imagens {galeriaPreviews?.length ? `(${galeriaPreviews.length} imagens)` : ''}
+                {isEditing && (
+                  <Badge variant="outline" className="text-xs">
+                    Editável
+                  </Badge>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {comercio.galeria_urls && comercio.galeria_urls.length > 0 ? (
+              {galeriaPreviews && galeriaPreviews.length > 0 ? (
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {comercio.galeria_urls.map((url, index) => (
+                    {galeriaPreviews.map((url, index) => (
                       <div key={index} className="space-y-2">
                         <div className="relative group">
                           <img 
@@ -389,48 +638,91 @@ export const ComercioPreview = ({ comercio }: ComercioPreviewProps) => {
                             alt={`Galeria ${index + 1}`} 
                             className="w-full h-32 object-cover rounded-lg border shadow-sm transition-transform group-hover:scale-105" 
                           />
+                          {isEditing && (
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="absolute top-2 right-2 w-6 h-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => removerImagemGaleria(index)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          )}
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button variant="secondary" size="sm">
-                                  <ZoomIn className="h-4 w-4" />
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-4xl">
-                                <div className="space-y-4">
-                                  <img 
-                                    src={url} 
-                                    alt={`Galeria ${index + 1} Ampliada`} 
-                                    className="w-full h-auto rounded-lg" 
-                                  />
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-sm text-muted-foreground">
-                                      Imagem {index + 1} de {comercio.galeria_urls?.length}
-                                    </span>
-                                    <Button variant="outline" size="sm" asChild>
-                                      <a href={url} target="_blank" rel="noopener noreferrer">
-                                        <ExternalLink className="h-4 w-4 mr-2" />
-                                        Abrir Original
-                                      </a>
-                                    </Button>
+                            {!isEditing && (
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button variant="secondary" size="sm">
+                                    <ZoomIn className="h-4 w-4" />
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-4xl">
+                                  <div className="space-y-4">
+                                    <img 
+                                      src={url} 
+                                      alt={`Galeria ${index + 1} Ampliada`} 
+                                      className="w-full h-auto rounded-lg" 
+                                    />
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-sm text-muted-foreground">
+                                        Imagem {index + 1} de {galeriaPreviews?.length}
+                                      </span>
+                                      <Button variant="outline" size="sm" asChild>
+                                        <a href={url} target="_blank" rel="noopener noreferrer">
+                                          <ExternalLink className="h-4 w-4 mr-2" />
+                                          Abrir Original
+                                        </a>
+                                      </Button>
+                                    </div>
                                   </div>
-                                </div>
-                              </DialogContent>
-                            </Dialog>
+                                </DialogContent>
+                              </Dialog>
+                            )}
                           </div>
                         </div>
                         <div className="text-xs text-muted-foreground truncate">
                           Imagem {index + 1}
+                          {index >= (comercio.galeria_urls?.length || 0) && (
+                            <Badge variant="secondary" className="ml-1 text-xs bg-green-100 text-green-800">
+                              NOVA
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     ))}
                   </div>
                   
+                  {/* Botão para adicionar mais imagens */}
+                  {isEditing && (
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => handleFileChange(e, 'galeria')}
+                        className="hidden"
+                        id="galeria-upload"
+                      />
+                      <Label htmlFor="galeria-upload" className="cursor-pointer">
+                        <div className="space-y-2">
+                          <Upload className="h-8 w-8 mx-auto text-gray-400" />
+                          <p className="text-sm text-gray-500">Adicionar mais imagens à galeria</p>
+                          <Button variant="outline" size="sm" asChild>
+                            <span>
+                              <Plus className="h-4 w-4 mr-2" />
+                              Selecionar Imagens
+                            </span>
+                          </Button>
+                        </div>
+                      </Label>
+                    </div>
+                  )}
+                  
                   {/* URLs da galeria */}
                   <div className="space-y-2">
                     <h4 className="font-medium text-sm">URLs das imagens:</h4>
                     <div className="space-y-1 text-xs text-muted-foreground bg-muted p-3 rounded max-h-32 overflow-y-auto">
-                      {comercio.galeria_urls.map((url, index) => (
+                      {galeriaPreviews.map((url, index) => (
                         <div key={index} className="flex justify-between items-center">
                           <span>{index + 1}. {url}</span>
                           <Button variant="ghost" size="sm" asChild className="h-6 px-2">
@@ -448,6 +740,26 @@ export const ComercioPreview = ({ comercio }: ComercioPreviewProps) => {
                   <ImageIcon className="h-16 w-16 mx-auto mb-4 opacity-50" />
                   <p className="text-lg">Nenhuma imagem na galeria</p>
                   <p className="text-sm">Este comércio ainda não possui imagens na galeria</p>
+                  {isEditing && (
+                    <div className="mt-4">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => handleFileChange(e, 'galeria')}
+                        className="hidden"
+                        id="galeria-upload-empty"
+                      />
+                      <Label htmlFor="galeria-upload-empty" className="cursor-pointer">
+                        <Button variant="outline" size="sm" asChild>
+                          <span>
+                            <Upload className="h-4 w-4 mr-2" />
+                            Adicionar Imagens
+                          </span>
+                        </Button>
+                      </Label>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>

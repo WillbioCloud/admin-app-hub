@@ -227,6 +227,7 @@ export function ComerciosPage() {
           comercio={selectedComercio}
           open={previewDialogOpen}
           onOpenChange={setPreviewDialogOpen}
+          onUpdate={refetch}
         />
 
         {/* Dialog de Criação de Comércio */}

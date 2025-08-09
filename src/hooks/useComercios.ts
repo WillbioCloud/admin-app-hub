@@ -269,3 +269,23 @@ export const useUpdateComercio = () => {
     }
   });
 };
+
+// Hook específico para admin atualizar comércio (não muda status)
+export const useAdminUpdateComercio = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updateData }: Partial<Comercio> & { id: string }) => {
+      const { data, error } = await supabase.from('comercios').update(updateData as any).eq('id', id).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['comercios'] });
+      queryClient.invalidateQueries({ queryKey: ['meu-comercio', data.user_id] });
+      toast.success('Comércio atualizado com sucesso!');
+    },
+    onError: (error) => {
+      toast.error(`Erro ao atualizar: ${error.message}`);
+    }
+  });
+};

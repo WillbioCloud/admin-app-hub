@@ -8,6 +8,7 @@ import { useComercios, useUpdateComercioAtivoStatus, Comercio } from '@/hooks/us
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ComercioPreviewDialog } from '@/components/admin/ComercioPreviewDialog';
+import { ComercioDialog } from '@/components/admin/ComercioDialog';
 
 /**
  * ComerciosPage Unificada (Versão Final)
@@ -20,10 +21,11 @@ import { ComercioPreviewDialog } from '@/components/admin/ComercioPreviewDialog'
  * - Adiciona tooltips (dicas de ferramenta) em todos os elementos interativos para melhor usabilidade.
  */
 export function ComerciosPage() {
-  const { data: comercios = [], isLoading, isError, error } = useComercios();
+  const { data: comercios = [], isLoading, isError, error, refetch } = useComercios();
   const updateStatusMutation = useUpdateComercioAtivoStatus();
   const [selectedComercio, setSelectedComercio] = useState<Comercio | null>(null);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   // Função para ativar/inativar a visibilidade do comércio.
   const handleVisibilityToggle = (id: string, currentStatus: boolean | null) => {
@@ -35,6 +37,11 @@ export function ComerciosPage() {
   const handleViewComercio = (comercio: Comercio) => {
     setSelectedComercio(comercio);
     setPreviewDialogOpen(true);
+  };
+
+  // Função para lidar com o sucesso da criação do comércio
+  const handleCreateSuccess = () => {
+    refetch();
   };
 
   // Funções para estilizar o badge de status de aprovação.
@@ -84,7 +91,7 @@ export function ComerciosPage() {
           </div>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button onClick={() => alert('Função para criar um novo comércio a ser implementada.')} className="hover:shadow-lg transition-shadow">
+              <Button onClick={() => setCreateDialogOpen(true)} className="hover:shadow-lg transition-shadow">
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Comércio
               </Button>
@@ -220,6 +227,13 @@ export function ComerciosPage() {
           comercio={selectedComercio}
           open={previewDialogOpen}
           onOpenChange={setPreviewDialogOpen}
+        />
+
+        {/* Dialog de Criação de Comércio */}
+        <ComercioDialog 
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          onSuccess={handleCreateSuccess}
         />
       </div>
     </TooltipProvider>

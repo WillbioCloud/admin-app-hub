@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          created_at: string
+          description: string
+          icon_url: string | null
+          id: string
+          name: string
+          rarity: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          icon_url?: string | null
+          id?: string
+          name: string
+          rarity?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          icon_url?: string | null
+          id?: string
+          name?: string
+          rarity?: string | null
+        }
+        Relationships: []
+      }
       admin_profiles: {
         Row: {
           avatar_url: string | null
@@ -531,8 +558,50 @@ export type Database = {
         }
         Relationships: []
       }
+      mission_steps: {
+        Row: {
+          completion_data: string
+          completion_type: string
+          description: string | null
+          id: string
+          mission_id: string
+          step_number: number
+          step_xp_reward: number | null
+          title: string
+        }
+        Insert: {
+          completion_data: string
+          completion_type: string
+          description?: string | null
+          id?: string
+          mission_id: string
+          step_number: number
+          step_xp_reward?: number | null
+          title: string
+        }
+        Update: {
+          completion_data?: string
+          completion_type?: string
+          description?: string | null
+          id?: string
+          mission_id?: string
+          step_number?: number
+          step_xp_reward?: number | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_steps_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       missions: {
         Row: {
+          achievement_id: string | null
           approved_at: string | null
           approved_by: string | null
           coin_reward: number
@@ -546,6 +615,7 @@ export type Database = {
           is_unique: boolean
           location_type: string | null
           loteamento_id: string | null
+          reward_id: string | null
           status: string | null
           title: string
           type: string
@@ -553,6 +623,7 @@ export type Database = {
           xp_reward: number
         }
         Insert: {
+          achievement_id?: string | null
           approved_at?: string | null
           approved_by?: string | null
           coin_reward?: number
@@ -566,6 +637,7 @@ export type Database = {
           is_unique?: boolean
           location_type?: string | null
           loteamento_id?: string | null
+          reward_id?: string | null
           status?: string | null
           title: string
           type: string
@@ -573,6 +645,7 @@ export type Database = {
           xp_reward?: number
         }
         Update: {
+          achievement_id?: string | null
           approved_at?: string | null
           approved_by?: string | null
           coin_reward?: number
@@ -586,6 +659,7 @@ export type Database = {
           is_unique?: boolean
           location_type?: string | null
           loteamento_id?: string | null
+          reward_id?: string | null
           status?: string | null
           title?: string
           type?: string
@@ -593,6 +667,20 @@ export type Database = {
           xp_reward?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_achievement"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_reward"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "missions_comercio_id_fkey"
             columns: ["comercio_id"]
@@ -1153,6 +1241,32 @@ export type Database = {
         }
         Relationships: []
       }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_claimed_rewards: {
         Row: {
           claimed_at: string
@@ -1178,6 +1292,32 @@ export type Database = {
             columns: ["reward_id"]
             isOneToOne: false
             referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_completed_mission_steps: {
+        Row: {
+          completed_at: string
+          step_id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          step_id: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          step_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_completed_mission_steps_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "mission_steps"
             referencedColumns: ["id"]
           },
         ]

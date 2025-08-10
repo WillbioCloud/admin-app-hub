@@ -20,7 +20,18 @@ import { useMeuComercio, useCreateComercio, useUpdateComercio, Comercio } from '
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-const CATEGORIAS = ['Alimentação', 'Saúde', 'Fitness', 'Serviços', 'Varejo', 'Supermercado'];
+const CATEGORIAS = [
+  'Alimentação', 'Bares e Restaurantes', 'Lanchonetes', 'Doces e Confeitarias',
+  'Saúde', 'Farmácias', 'Clínicas', 'Laboratórios', 'Fisioterapia',
+  'Fitness', 'Academias', 'Pilates', 'Yoga', 'Esportes',
+  'Serviços', 'Barbearias', 'Salões de Beleza', 'Estética', 'Mecânicas',
+  'Varejo', 'Lojas de Roupas', 'Calçados', 'Acessórios', 'Decoração',
+  'Supermercados', 'Padarias', 'Açougues', 'Hortifruti',
+  'Educação', 'Escolas', 'Cursos', 'Idiomas',
+  'Tecnologia', 'Assistência Técnica', 'Informática', 'Celulares',
+  'Casa e Construção', 'Materiais de Construção', 'Marcenaria', 'Pintura',
+  'Pet Shop', 'Veterinária', 'Banho e Tosa'
+];
 
 const comercioSchema = z.object({
   nome: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres.'),

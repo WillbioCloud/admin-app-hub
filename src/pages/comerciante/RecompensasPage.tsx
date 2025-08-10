@@ -7,6 +7,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Edit, Trash2, Gift, Coins, Package } from 'lucide-react';
 import { useMinhasRecompensas, useDeleteReward, Reward } from '@/hooks/useRewards';
 import { RewardDialog } from '@/components/rewards/RewardDialog';
+import { RewardFormWithMissionSelect } from '@/components/rewards/RewardFormWithMissionSelect';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function RecompensasPage() {

@@ -36,8 +36,8 @@ const AdminPerfilPage = () => {
   } = useReports();
   const form = useForm<AdminFormData>({
     defaultValues: {
-      nome: 'Administrador do App',
-      email: 'admin@app.com',
+      nome: user?.name || 'Administrador do App',
+      email: user?.email || 'admin@app.com',
       bio: 'Responsável pela administração geral do aplicativo e aprovação de comércios.',
       telefone: '(11) 98765-4321'
     }

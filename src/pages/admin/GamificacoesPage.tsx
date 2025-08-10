@@ -218,12 +218,12 @@ export default function GamificacoesPage() {
                       <div>{gamification.coin_reward} Moedas</div>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <div className="font-medium">{gamification.created_by ? 'Usuário logado' : 'Sistema'}</div>
-                      <div className="text-muted-foreground">ID: {gamification.created_by || 'N/A'}</div>
-                    </div>
-                  </TableCell>
+                   <TableCell>
+                     <div className="text-sm">
+                       <div className="font-medium">Carregando nome...</div>
+                       <div className="text-muted-foreground">ID: {gamification.created_by || 'Sistema'}</div>
+                     </div>
+                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       <Badge 

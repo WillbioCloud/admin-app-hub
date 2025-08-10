@@ -26,10 +26,11 @@ interface AchievementDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   achievement?: Achievement | null;
-  onSuccess: () => void;
+  onSubmit?: (achievementId: string) => void;
+  onSuccess?: () => void;
 }
 
-export function AchievementDialog({ open, onOpenChange, achievement, onSuccess }: AchievementDialogProps) {
+export function AchievementDialog({ open, onOpenChange, achievement, onSubmit, onSuccess }: AchievementDialogProps) {
   const [loading, setLoading] = useState(false);
   const [iconFile, setIconFile] = useState<File | null>(null);
   const [iconPreview, setIconPreview] = useState<string | null>(achievement?.icon_url || null);
@@ -94,16 +95,24 @@ export function AchievementDialog({ open, onOpenChange, achievement, onSuccess }
         icon_url: iconUrl,
       };
 
+      let achievementId: string;
       if (achievement) {
-        await updateAchievement.mutateAsync({
+        const result = await updateAchievement.mutateAsync({
           id: achievement.id,
           ...achievementData,
         });
+        achievementId = result.id;
       } else {
-        await createAchievement.mutateAsync(achievementData);
+        const result = await createAchievement.mutateAsync(achievementData);
+        achievementId = result.id;
       }
 
-      onSuccess();
+      if (onSubmit) {
+        onSubmit(achievementId);
+      }
+      if (onSuccess) {
+        onSuccess();
+      }
       onOpenChange(false);
       
       // Reset form

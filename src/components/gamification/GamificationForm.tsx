@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -26,6 +26,8 @@ import {
 import { CodeGenerator } from './CodeGenerator';
 import { RewardFormWithGamification } from '@/components/rewards/RewardFormWithGamification';
 import { useMissionReward } from '@/hooks/useGamifications';
+import { AchievementDialog } from '@/components/admin/AchievementDialog';
+import { MissionStepsManager } from '@/components/admin/MissionStepsManager';
 
 const gamificationSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
@@ -44,7 +46,7 @@ type GamificationFormData = z.infer<typeof gamificationSchema>;
 
 interface GamificationFormProps {
   defaultValues?: Partial<GamificationFormData>;
-  onSubmit: (data: GamificationFormData, rewardId?: string) => void;
+  onSubmit: (data: GamificationFormData, rewardId?: string, achievementId?: string) => void;
   onCancel: () => void;
   isEditing?: boolean;
   userRole?: 'admin' | 'comerciante';
@@ -60,6 +62,9 @@ export function GamificationForm({
   missionId
 }: GamificationFormProps) {
   const { data: existingReward } = useMissionReward(missionId);
+  const [achievementDialogOpen, setAchievementDialogOpen] = useState(false);
+  const [selectedAchievementId, setSelectedAchievementId] = useState<string>('');
+  
   const form = useForm<GamificationFormData>({
     resolver: zodResolver(gamificationSchema),
     defaultValues: {
@@ -81,7 +86,12 @@ export function GamificationForm({
 
   const handleSubmit = async (rewardData?: any, rewardId?: string) => {
     const gamificationData = form.getValues();
-    await onSubmit(gamificationData, rewardId);
+    await onSubmit(gamificationData, rewardId, selectedAchievementId);
+  };
+
+  const handleAchievementCreated = (achievementId: string) => {
+    setSelectedAchievementId(achievementId);
+    setAchievementDialogOpen(false);
   };
 
   return (
@@ -285,8 +295,30 @@ export function GamificationForm({
           />
         </div>
 
+        {/* Seção de Conquista (apenas para Admin) */}
+        {userRole === 'admin' && (
+          <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+            <h3 className="text-lg font-semibold">Conquista Associada</h3>
+            <p className="text-sm text-muted-foreground">
+              Opcional: Vincule uma conquista que será desbloqueada ao completar esta missão
+            </p>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setAchievementDialogOpen(true)}
+            >
+              {selectedAchievementId ? 'Editar Conquista' : 'Criar Conquista'}
+            </Button>
+          </div>
+        )}
+
         </div>
       </Form>
+
+      {/* Gerenciamento de Passos da Missão */}
+      {isEditing && missionId && userRole === 'admin' && (
+        <MissionStepsManager missionId={missionId} />
+      )}
 
       <RewardFormWithGamification
         onSubmit={handleSubmit}
@@ -299,6 +331,13 @@ export function GamificationForm({
           stock: existingReward.stock || 1,
           is_active: existingReward.is_active,
         } : undefined}
+      />
+
+      {/* Dialog para Criação de Conquista */}
+      <AchievementDialog
+        open={achievementDialogOpen}
+        onOpenChange={setAchievementDialogOpen}
+        onSubmit={handleAchievementCreated}
       />
     </div>
   );

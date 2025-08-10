@@ -1144,6 +1144,41 @@ export type Database = {
           },
         ]
       }
+      reward_code_usage: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          reward_id: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          reward_id: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          reward_id?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_code_usage_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rewards: {
         Row: {
           coin_cost: number
@@ -1156,6 +1191,7 @@ export type Database = {
           is_active: boolean
           mission_id_unlock: string | null
           mission_unlock_id: string | null
+          reward_codes: string[] | null
           stock: number | null
           title: string
         }
@@ -1170,6 +1206,7 @@ export type Database = {
           is_active?: boolean
           mission_id_unlock?: string | null
           mission_unlock_id?: string | null
+          reward_codes?: string[] | null
           stock?: number | null
           title: string
         }
@@ -1184,6 +1221,7 @@ export type Database = {
           is_active?: boolean
           mission_id_unlock?: string | null
           mission_unlock_id?: string | null
+          reward_codes?: string[] | null
           stock?: number | null
           title?: string
         }
@@ -1514,6 +1552,10 @@ export type Database = {
           notification_message: string
         }
         Returns: undefined
+      }
+      generate_reward_codes: {
+        Args: { reward_id_param: string; stock_amount: number }
+        Returns: string[]
       }
       get_admin_user_role: {
         Args: Record<PropertyKey, never>

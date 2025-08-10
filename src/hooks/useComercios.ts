@@ -23,6 +23,8 @@ export interface Comercio {
   created_at: string;
   updated_at: string;
   endereco: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 // --- HOOKS PARA O PAINEL DO ADMIN ---

@@ -59,6 +59,16 @@ export const useCreateRecompensa = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (novaRecompensa: any) => {
+      // Se tem estoque, gerar códigos automaticamente
+      let rewardCodes: string[] = [];
+      if (novaRecompensa.stock && novaRecompensa.stock > 0) {
+        for (let i = 0; i < novaRecompensa.stock; i++) {
+          const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+          rewardCodes.push(code);
+        }
+        novaRecompensa.reward_codes = rewardCodes;
+      }
+
       const { data, error } = await supabase.from('rewards').insert(novaRecompensa).select().single();
       if (error) throw error;
       return data;

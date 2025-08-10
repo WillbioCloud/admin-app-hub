@@ -255,26 +255,87 @@ export const ComercioPreview = ({ comercio, isEditing = false, onSaveSuccess }: 
                   Informações de Contato
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {comercio.whatsapp && (
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span>{comercio.whatsapp}</span>
-                  </div>
-                )}
-                {comercio.instagram && (
-                  <div className="flex items-center gap-2">
-                    <Instagram className="h-4 w-4 text-muted-foreground" />
-                    <span>{comercio.instagram}</span>
-                  </div>
-                )}
-                {comercio.endereco && (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span>{comercio.endereco}</span>
-                  </div>
-                )}
-              </CardContent>
+               <CardContent className="space-y-3">
+                 {isEditing ? (
+                   <div className="space-y-3">
+                     <div>
+                       <Label className="text-sm">WhatsApp</Label>
+                       <Input 
+                         value={editData.whatsapp || ''} 
+                         onChange={(e) => setEditData({...editData, whatsapp: e.target.value})}
+                         placeholder="(11) 99999-9999"
+                       />
+                     </div>
+                     <div>
+                       <Label className="text-sm">Instagram</Label>
+                       <Input 
+                         value={editData.instagram || ''} 
+                         onChange={(e) => setEditData({...editData, instagram: e.target.value})}
+                         placeholder="@usuario"
+                       />
+                     </div>
+                     <div>
+                       <Label className="text-sm">Endereço</Label>
+                       <Input 
+                         value={editData.endereco || ''} 
+                         onChange={(e) => setEditData({...editData, endereco: e.target.value})}
+                         placeholder="Rua, número, bairro"
+                       />
+                     </div>
+                     <div className="grid grid-cols-2 gap-2">
+                       <div>
+                         <Label className="text-sm">Latitude</Label>
+                         <Input 
+                           type="number"
+                           step="any"
+                           value={editData.latitude || ''} 
+                           onChange={(e) => setEditData({...editData, latitude: parseFloat(e.target.value) || null})}
+                           placeholder="-23.550520"
+                         />
+                       </div>
+                       <div>
+                         <Label className="text-sm">Longitude</Label>
+                         <Input 
+                           type="number"
+                           step="any"
+                           value={editData.longitude || ''} 
+                           onChange={(e) => setEditData({...editData, longitude: parseFloat(e.target.value) || null})}
+                           placeholder="-46.633308"
+                         />
+                       </div>
+                     </div>
+                   </div>
+                 ) : (
+                   <>
+                     {currentData.whatsapp && (
+                       <div className="flex items-center gap-2">
+                         <Phone className="h-4 w-4 text-muted-foreground" />
+                         <span>{currentData.whatsapp}</span>
+                       </div>
+                     )}
+                     {currentData.instagram && (
+                       <div className="flex items-center gap-2">
+                         <Instagram className="h-4 w-4 text-muted-foreground" />
+                         <span>{currentData.instagram}</span>
+                       </div>
+                     )}
+                     {currentData.endereco && (
+                       <div className="flex items-center gap-2">
+                         <MapPin className="h-4 w-4 text-muted-foreground" />
+                         <span>{currentData.endereco}</span>
+                       </div>
+                     )}
+                     {(currentData.latitude && currentData.longitude) && (
+                       <div className="flex items-center gap-2">
+                         <MapPin className="h-4 w-4 text-muted-foreground" />
+                         <span className="text-xs">
+                           {currentData.latitude.toFixed(6)}, {currentData.longitude.toFixed(6)}
+                         </span>
+                       </div>
+                     )}
+                   </>
+                 )}
+               </CardContent>
             </Card>
 
             <Card>
@@ -304,11 +365,23 @@ export const ComercioPreview = ({ comercio, isEditing = false, onSaveSuccess }: 
               <CardHeader>
                 <CardTitle className="text-lg">Descrição</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {comercio.descricao || 'Nenhuma descrição fornecida'}
-                </p>
-              </CardContent>
+               <CardContent>
+                 {isEditing ? (
+                   <div>
+                     <Label className="text-sm">Descrição</Label>
+                     <Textarea 
+                       value={editData.descricao || ''} 
+                       onChange={(e) => setEditData({...editData, descricao: e.target.value})}
+                       placeholder="Descreva o comércio..."
+                       className="min-h-[100px]"
+                     />
+                   </div>
+                 ) : (
+                   <p className="text-sm text-muted-foreground">
+                     {currentData.descricao || 'Nenhuma descrição fornecida'}
+                   </p>
+                 )}
+               </CardContent>
             </Card>
 
             <Card>

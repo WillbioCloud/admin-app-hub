@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMeuComercio } from '@/hooks/useComercios';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { CreateCommerceCard } from '@/components/comerciante/CreateCommerceCard';
 
 const ComercianteDashboard = () => {
   const navigate = useNavigate();
@@ -74,16 +75,12 @@ const ComercianteDashboard = () => {
       {renderStatusAlert()}
 
       {!meuComercio && !isLoading && (
-         <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Nenhum comércio cadastrado</AlertTitle>
-          <AlertDescription>
-            Você ainda não criou o perfil do seu comércio. Acesse a aba Perfil para começar.
-          </AlertDescription>
-        </Alert>
+        <CreateCommerceCard />
       )}
 
-      <div className="grid gap-4 md:grid-cols-3">
+      {meuComercio && (
+        <>
+        <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Status do Perfil</CardTitle>
@@ -182,7 +179,9 @@ const ComercianteDashboard = () => {
             </Button>
           </CardContent>
         </Card>
-      </div>
+        </div>
+        </>
+      )}
     </div>
   );
 };

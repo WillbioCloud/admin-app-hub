@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapView } from '@/components/admin/MapView';
 import { ComerciosList } from '@/components/admin/ComerciosList';
+import { PointsOfInterestList } from '@/components/admin/PointsOfInterestList';
 import { usePointsOfInterest, useComerciasWithLocation, useUpdateComercioLocation, useUpdatePointOfInterest, useUpdateComercioImage } from '@/hooks/useMapData';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Map } from 'lucide-react';
 
 export default function MapaPage() {
   const [selectedComercio, setSelectedComercio] = useState<string>();
+  const [selectedPOI, setSelectedPOI] = useState<string>();
+  const [activeTab, setActiveTab] = useState<'comercios' | 'pois'>('comercios');
   
   const { 
     data: pointsOfInterest = [], 
@@ -94,20 +97,48 @@ export default function MapaPage() {
           </CardContent>
         </Card>
 
-        {/* Lista de Comércios */}
+        {/* Lista de Locais */}
         <Card className="overflow-hidden">
           <CardHeader>
-            <CardTitle>Comércios ({comercios.length})</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Locais no Mapa</CardTitle>
+              <div className="flex bg-muted rounded-lg p-1">
+                <Button 
+                  variant={activeTab === 'comercios' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setActiveTab('comercios')}
+                  className="text-xs"
+                >
+                  Comércios ({comercios.length})
+                </Button>
+                <Button 
+                  variant={activeTab === 'pois' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setActiveTab('pois')}
+                  className="text-xs"
+                >
+                  POIs ({pointsOfInterest.length})
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="p-0 h-[calc(100%-4rem)] overflow-y-auto">
             <div className="p-4">
-              <ComerciosList
-                comercios={comercios}
-                selectedComercio={selectedComercio}
-                onSelectComercio={setSelectedComercio}
-                onAddLocation={handleLocationUpdate}
-                onUpdateImage={handleComercioImageUpdate}
-              />
+              {activeTab === 'comercios' ? (
+                <ComerciosList
+                  comercios={comercios}
+                  selectedComercio={selectedComercio}
+                  onSelectComercio={setSelectedComercio}
+                  onAddLocation={handleLocationUpdate}
+                  onUpdateImage={handleComercioImageUpdate}
+                />
+              ) : (
+                <PointsOfInterestList
+                  pointsOfInterest={pointsOfInterest}
+                  selectedPOI={selectedPOI}
+                  onSelectPOI={setSelectedPOI}
+                />
+              )}
             </div>
           </CardContent>
         </Card>

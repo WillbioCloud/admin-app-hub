@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { LogOut } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { AppHeader } from './AppHeader'; // Importe o novo header
 
 interface DashboardLayoutProps {
   children: React.ReactNode;

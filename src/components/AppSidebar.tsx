@@ -16,6 +16,7 @@ export function AppSidebar() {
     title: 'Dashboard',
     url: user?.role === 'admin' ? '/admin/dashboard' : '/dashboard',
     icon: Home,
+    backgroundColor: 'green',
     color: 'text-blue-500'
   }, {
     title: 'Usuários',

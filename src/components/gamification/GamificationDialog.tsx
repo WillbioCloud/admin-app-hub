@@ -29,12 +29,16 @@ export function GamificationDialog({
   const createGamification = useCreateGamification();
   const updateGamification = useUpdateGamification();
 
-  const handleSubmit = async (data: any, rewardId?: string) => {
+  const handleSubmit = async (data: any, rewardId?: string, achievementId?: string) => {
     try {
       if (isEditing && gamification) {
         await updateGamification.mutateAsync({ id: gamification.id, ...data });
       } else {
-        await createGamification.mutateAsync({ gamificationData: data, rewardId });
+        await createGamification.mutateAsync({ 
+          gamificationData: data, 
+          rewardId,
+          achievementId 
+        });
       }
       onSubmit();
       onOpenChange(false);

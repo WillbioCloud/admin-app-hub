@@ -127,7 +127,7 @@ export default function GamificacoesPage() {
         </Button>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
         <Card className="relative overflow-hidden bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div>
@@ -164,7 +164,20 @@ export default function GamificacoesPage() {
         <Card className="relative overflow-hidden bg-gradient-to-br from-purple-500/20 to-purple-600/20 border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div>
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total XP Disponível</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Com Conquistas</CardTitle>
+              <div className="text-3xl font-bold text-purple-600 mt-2">
+                {gamifications.filter(g => g.achievement).length}
+              </div>
+            </div>
+            <div className="p-3 bg-background/50 rounded-lg">
+              <GamepadIcon className="h-6 w-6 text-purple-600" />
+            </div>
+          </CardHeader>
+        </Card>
+        <Card className="relative overflow-hidden bg-gradient-to-br from-orange-500/20 to-orange-600/20 border-0 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total XP</CardTitle>
               <div className="text-3xl font-bold text-foreground mt-2">
                 {gamifications.reduce((sum, g) => sum + g.xp_reward, 0)}
               </div>
@@ -190,6 +203,7 @@ export default function GamificacoesPage() {
                 <TableHead>Título</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Recompensas</TableHead>
+                <TableHead>Conquistas</TableHead>
                 <TableHead>Criado por</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Local</TableHead>
@@ -213,9 +227,42 @@ export default function GamificacoesPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
+                    <div className="text-sm space-y-1">
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium">{gamification.xp_reward}</span>
+                        <span className="text-blue-600">XP</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium">{gamification.coin_reward}</span>
+                        <span className="text-yellow-600">Moedas</span>
+                      </div>
+                      {gamification.reward && (
+                        <div className="flex items-center gap-1">
+                          <span className="text-green-600">🎁</span>
+                          <span className="text-xs text-green-600 font-medium">{gamification.reward.title}</span>
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
                     <div className="text-sm">
-                      <div>{gamification.xp_reward} XP</div>
-                      <div>{gamification.coin_reward} Moedas</div>
+                      {gamification.achievement ? (
+                        <div className="flex items-center gap-2">
+                          {gamification.achievement.icon_url && (
+                            <img 
+                              src={gamification.achievement.icon_url} 
+                              alt={gamification.achievement.name}
+                              className="w-6 h-6 object-cover rounded"
+                            />
+                          )}
+                          <div>
+                            <div className="text-purple-600 font-medium">{gamification.achievement.name}</div>
+                            <div className="text-xs text-purple-500">Conquista</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Nenhuma conquista</span>
+                      )}
                     </div>
                   </TableCell>
                    <TableCell>

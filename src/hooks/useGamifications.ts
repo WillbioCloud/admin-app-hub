@@ -22,6 +22,19 @@ export interface Gamification {
   approved_by: string | null;
   status: string;
   comercio_id?: string;
+  achievement_id?: string;
+  reward_id?: string;
+  // Dados aninhados para exibição
+  achievement?: {
+    id: string;
+    name: string;
+    icon_url: string | null;
+  } | null;
+  reward?: {
+    id: string;
+    title: string;
+    coin_cost: number;
+  } | null;
 }
 
 // Alias para manter compatibilidade
@@ -49,13 +62,49 @@ export const useGamifications = () => {
   return useQuery({
     queryKey: ['gamifications'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Buscar missões primeiro
+      const { data: missions, error: missionsError } = await supabase
         .from('missions')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data || [];
+      if (missionsError) throw missionsError;
+
+      // Para cada missão, buscar achievement e reward se existirem
+      const gamificationsWithRelations = await Promise.all(
+        (missions || []).map(async (mission) => {
+          let achievement = null;
+          let reward = null;
+
+          // Buscar achievement se existe
+          if (mission.achievement_id) {
+            const { data: achievementData } = await supabase
+              .from('achievements')
+              .select('id, name, icon_url')
+              .eq('id', mission.achievement_id)
+              .single();
+            achievement = achievementData;
+          }
+
+          // Buscar reward se existe
+          if (mission.reward_id) {
+            const { data: rewardData } = await supabase
+              .from('rewards')
+              .select('id, title, coin_cost')
+              .eq('id', mission.reward_id)
+              .single();
+            reward = rewardData;
+          }
+
+          return {
+            ...mission,
+            achievement,
+            reward
+          };
+        })
+      );
+
+      return gamificationsWithRelations;
     },
   });
 };
@@ -63,20 +112,31 @@ export const useGamifications = () => {
 export const useCreateGamificacao = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ gamificationData, rewardId }: { gamificationData: any, rewardId?: string }) => {
-      const { data: missionData, error: missionError } = await supabase
+    mutationFn: async ({ gamificationData, rewardId, achievementId }: { 
+      gamificationData: any, 
+      rewardId?: string,
+      achievementId?: string 
+    }) => {
+      // Preparar dados da missão com achievement_id e reward_id
+      const missionData = {
+        ...gamificationData,
+        achievement_id: achievementId || null,
+        reward_id: rewardId || null
+      };
+
+      const { data: mission, error: missionError } = await supabase
         .from('missions')
-        .insert(gamificationData)
+        .insert(missionData)
         .select()
         .single();
       
       if (missionError) throw missionError;
 
       // Se uma recompensa foi criada junto, associa ela à missão
-      if (rewardId && missionData) {
+      if (rewardId && mission) {
         const { error: updateError } = await supabase
           .from('rewards')
-          .update({ mission_unlock_id: missionData.id })
+          .update({ mission_unlock_id: mission.id })
           .eq('id', rewardId);
         
         if (updateError) {
@@ -85,7 +145,7 @@ export const useCreateGamificacao = () => {
         }
       }
 
-      return missionData;
+      return mission;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['minhas-gamificacoes'] });

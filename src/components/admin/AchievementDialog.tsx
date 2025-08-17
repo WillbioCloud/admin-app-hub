@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, Crop } from 'lucide-react';
 import { useCreateAchievement, useUpdateAchievement, Achievement } from '@/hooks/useAchievements';
 
 const achievementSchema = z.object({
@@ -34,6 +34,9 @@ export function AchievementDialog({ open, onOpenChange, achievement, onSubmit, o
   const [loading, setLoading] = useState(false);
   const [iconFile, setIconFile] = useState<File | null>(null);
   const [iconPreview, setIconPreview] = useState<string | null>(achievement?.icon_url || null);
+  const [showCropper, setShowCropper] = useState(false);
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const createAchievement = useCreateAchievement();
   const updateAchievement = useUpdateAchievement();
@@ -69,9 +72,61 @@ export function AchievementDialog({ open, onOpenChange, achievement, onSubmit, o
         toast.error('A imagem deve ter no máximo 5MB');
         return;
       }
-      setIconFile(file);
-      setIconPreview(URL.createObjectURL(file));
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageUrl = e.target?.result as string;
+        setOriginalImage(imageUrl);
+        setShowCropper(true);
+      };
+      reader.readAsDataURL(file);
     }
+  };
+
+  const cropImage = useCallback((imageUrl: string): Promise<Blob> => {
+    return new Promise((resolve) => {
+      const canvas = canvasRef.current;
+      const ctx = canvas?.getContext('2d');
+      if (!canvas || !ctx) return;
+
+      const img = new Image();
+      img.onload = () => {
+        const size = Math.min(img.width, img.height);
+        const x = (img.width - size) / 2;
+        const y = (img.height - size) / 2;
+
+        canvas.width = 200;
+        canvas.height = 200;
+        
+        ctx.drawImage(img, x, y, size, size, 0, 0, 200, 200);
+        
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+        }, 'image/png', 1);
+      };
+      img.src = imageUrl;
+    });
+  }, []);
+
+  const handleCropConfirm = async () => {
+    if (!originalImage) return;
+    
+    try {
+      const croppedBlob = await cropImage(originalImage);
+      const file = new File([croppedBlob], 'achievement-icon.png', { type: 'image/png' });
+      
+      setIconFile(file);
+      setIconPreview(URL.createObjectURL(croppedBlob));
+      setShowCropper(false);
+      setOriginalImage(null);
+    } catch (error) {
+      toast.error('Erro ao processar a imagem');
+    }
+  };
+
+  const handleCropCancel = () => {
+    setShowCropper(false);
+    setOriginalImage(null);
   };
 
   const removeIcon = () => {
@@ -205,11 +260,11 @@ export function AchievementDialog({ open, onOpenChange, achievement, onSubmit, o
               <h3 className="text-lg font-semibold">Ícone da Conquista</h3>
               
               <div className="space-y-2">
-                <Label>Ícone</Label>
+                <Label>Ícone (formato quadrado 1:1)</Label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                   {iconPreview ? (
                     <div className="relative inline-block">
-                      <img src={iconPreview} alt="Ícone preview" className="w-24 h-24 object-cover rounded-full mx-auto" />
+                      <img src={iconPreview} alt="Ícone preview" className="w-24 h-24 object-cover rounded-lg mx-auto" />
                       <Button
                         type="button"
                         size="sm"
@@ -224,6 +279,7 @@ export function AchievementDialog({ open, onOpenChange, achievement, onSubmit, o
                     <div>
                       <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                       <p className="text-sm text-gray-500">Clique para fazer upload do ícone</p>
+                      <p className="text-xs text-gray-400">A imagem será cortada em formato 1:1</p>
                       <input
                         type="file"
                         accept="image/*"
@@ -239,6 +295,43 @@ export function AchievementDialog({ open, onOpenChange, achievement, onSubmit, o
                 </div>
               </div>
             </div>
+
+            {/* Modal de Crop */}
+            {showCropper && originalImage && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Crop className="h-5 w-5" />
+                    Ajustar Imagem
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <img 
+                        src={originalImage} 
+                        alt="Imagem original" 
+                        className="w-48 h-48 object-cover mx-auto border rounded-lg"
+                        style={{ objectPosition: 'center' }}
+                      />
+                      <p className="text-sm text-gray-500 mt-2">
+                        A imagem será cortada em formato quadrado (1:1)
+                      </p>
+                    </div>
+                    
+                    <div className="flex gap-2 justify-end">
+                      <Button variant="outline" onClick={handleCropCancel}>
+                        Cancelar
+                      </Button>
+                      <Button onClick={handleCropConfirm}>
+                        Confirmar Corte
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <canvas ref={canvasRef} className="hidden" />
 
             <div className="flex justify-end space-x-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

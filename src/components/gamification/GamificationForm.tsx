@@ -40,6 +40,7 @@ const gamificationSchema = z.object({
   is_unique: z.boolean(),
   loteamento_id: z.string().min(1, 'Loteamento é obrigatório'),
   location_type: z.string().min(1, 'Tipo de local é obrigatório'),
+  achievement_id: z.string().optional(),
 });
 
 type GamificationFormData = z.infer<typeof gamificationSchema>;
@@ -63,7 +64,9 @@ export function GamificationForm({
 }: GamificationFormProps) {
   const { data: existingReward } = useMissionReward(missionId);
   const [achievementDialogOpen, setAchievementDialogOpen] = useState(false);
-  const [selectedAchievementId, setSelectedAchievementId] = useState<string>('');
+  const [selectedAchievementId, setSelectedAchievementId] = useState<string>(
+    defaultValues?.achievement_id || ''
+  );
   
   const form = useForm<GamificationFormData>({
     resolver: zodResolver(gamificationSchema),
@@ -86,6 +89,10 @@ export function GamificationForm({
 
   const handleSubmit = async (rewardData?: any, rewardId?: string) => {
     const gamificationData = form.getValues();
+    // Adiciona o achievement_id aos dados da missão se houver conquista selecionada
+    if (selectedAchievementId) {
+      gamificationData.achievement_id = selectedAchievementId;
+    }
     await onSubmit(gamificationData, rewardId, selectedAchievementId);
   };
 
@@ -302,12 +309,19 @@ export function GamificationForm({
             <p className="text-sm text-muted-foreground">
               Opcional: Vincule uma conquista que será desbloqueada ao completar esta missão
             </p>
+            {selectedAchievementId && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <p className="text-sm text-green-700 font-medium">
+                  ✅ Conquista {isEditing ? 'associada' : 'criada'} e será vinculada a esta missão
+                </p>
+              </div>
+            )}
             <Button 
               type="button" 
               variant="outline" 
               onClick={() => setAchievementDialogOpen(true)}
             >
-              {selectedAchievementId ? 'Editar Conquista' : 'Criar Conquista'}
+              {selectedAchievementId ? 'Editar Conquista' : 'Criar Nova Conquista'}
             </Button>
           </div>
         )}

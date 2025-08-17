@@ -26,6 +26,7 @@ import AdminPerfilPage from "./pages/admin/AdminPerfilPage";
 import AdminRecompensasPage from "./pages/admin/RecompensasPage";
 import MapaPage from "./pages/admin/MapaPage";
 import LoteamentosPage from "./pages/admin/LoteamentosPage";
+import { ConquistasPage } from "./pages/admin/ConquistasPage";
 
 // Comerciante Pages
 import ComercianteDashboard from "./pages/comerciante/ComercianteDashboard";
@@ -71,6 +72,7 @@ const App = () => (
             <Route path="/admin/aprovacoes" element={<DashboardLayout><AprovacoesPage /></DashboardLayout>} />
             <Route path="/admin/perfil" element={<DashboardLayout><AdminPerfilPage /></DashboardLayout>} />
             <Route path="/admin/recompensas" element={<DashboardLayout><AdminRecompensasPage /></DashboardLayout>} />
+            <Route path="/admin/conquistas" element={<DashboardLayout><ConquistasPage /></DashboardLayout>} />
             <Route path="/admin/mapa" element={<DashboardLayout><MapaPage /></DashboardLayout>} />
             <Route path="/admin/loteamentos" element={<DashboardLayout><LoteamentosPage /></DashboardLayout>} />
 

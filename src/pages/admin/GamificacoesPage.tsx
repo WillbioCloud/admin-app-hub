@@ -246,7 +246,7 @@ export default function GamificacoesPage() {
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
-                      {gamification.achievement ? (
+                      {gamification.achievement && gamification.achievement.name ? (
                         <div className="flex items-center gap-2">
                           {gamification.achievement.icon_url && (
                             <img 

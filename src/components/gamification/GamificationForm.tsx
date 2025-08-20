@@ -93,6 +93,7 @@ export function GamificationForm({
     if (selectedAchievementId) {
       gamificationData.achievement_id = selectedAchievementId;
     }
+    console.log('Sending achievement_id:', selectedAchievementId, 'in data:', gamificationData);
     await onSubmit(gamificationData, rewardId, selectedAchievementId);
   };
 

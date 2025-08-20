@@ -162,6 +162,7 @@ export const useUpdateGamificacao = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...updateData }: any) => {
+      console.log('Updating mission with data:', updateData, 'achievement_id:', updateData.achievement_id);
       const { data, error } = await supabase.from('missions').update(updateData).eq('id', id).select().single();
       if (error) throw error;
       return data;

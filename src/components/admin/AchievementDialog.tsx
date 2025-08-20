@@ -287,8 +287,10 @@ export function AchievementDialog({ open, onOpenChange, achievement, onSubmit, o
                         className="hidden"
                         id="icon-upload"
                       />
-                      <Label htmlFor="icon-upload" className="cursor-pointer">
-                        <Button type="button" size="sm" className="mt-2">Selecionar Ícone</Button>
+                      <Label htmlFor="icon-upload" className="cursor-pointer inline-block">
+                        <span className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground mt-2">
+                          Selecionar Ícone
+                        </span>
                       </Label>
                     </div>
                   )}
